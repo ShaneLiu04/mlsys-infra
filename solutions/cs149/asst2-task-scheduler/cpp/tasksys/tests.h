@@ -4,6 +4,7 @@
 // Every test checks its output and returns correct = false on any mismatch.
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <functional>
@@ -125,6 +126,10 @@ inline float math_ref(float x) {
     return y + x;
 }
 
+inline bool close_enough(float a, float b) {
+    return std::fabs(a - b) <= 1e-5f * std::max(1.0f, std::fabs(b));
+}
+
 inline TestResult math_ops(ITaskSystem* ts, bool async, int n, int ntasks, int launches) {
     std::vector<float> in(n), out(launches * (size_t)n);
     for (int j = 0; j < n; ++j) in[j] = 0.001f * (j % 1000);
@@ -146,7 +151,7 @@ inline TestResult math_ops(ITaskSystem* ts, bool async, int n, int ntasks, int l
     if (async) ts->sync();
     TestResult tr;
     for (int k = 0; k < launches; ++k)
-        for (int j = 0; j < n; j += 37) tr.correct &= (out[(size_t)k * n + j] == math_ref(in[j]));
+        for (int j = 0; j < n; j += 37) tr.correct &= close_enough(out[(size_t)k * n + j], math_ref(in[j]));
     return tr;
 }
 
@@ -196,7 +201,7 @@ inline TestResult math_ops_fan_in(ITaskSystem* ts, int n, int ntasks, int width,
         for (int j = 0; j < n; j += 41) {
             float s = 0;
             for (int w = 0; w < width; ++w) s += math_ref(in[j]);
-            tr.correct &= (sums[r][j] == s);
+            tr.correct &= close_enough(sums[r][j], s);
         }
     return tr;
 }

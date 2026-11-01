@@ -1,0 +1,12 @@
+{"kind": "bw", "tag": "", "kernel": "scalar", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0062033575, "visible_gbs": 129.817823, "real_gbs": 173.090431, "correct": 1, "placement": "local"}
+{"kind": "bw", "tag": "", "kernel": "simd", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.00613336793, "visible_gbs": 131.299211, "real_gbs": 175.065614, "correct": 1, "placement": "local"}
+{"kind": "bw", "tag": "", "kernel": "stream", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0044984861, "visible_gbs": 179.017196, "real_gbs": 179.017196, "correct": 1, "placement": "local"}
+{"kind": "bw", "tag": "", "kernel": "read", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.00290777749, "visible_gbs": 184.632735, "real_gbs": 184.632735, "correct": 1, "placement": "local"}
+{"kind": "bw", "tag": "", "kernel": "scalar", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.00875227666, "visible_gbs": 92.0110732, "real_gbs": 122.681431, "correct": 1, "placement": "remote"}
+{"kind": "bw", "tag": "", "kernel": "simd", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0085714045, "visible_gbs": 93.9526735, "real_gbs": 125.270231, "correct": 1, "placement": "remote"}
+{"kind": "bw", "tag": "", "kernel": "stream", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.00627817251, "visible_gbs": 128.270825, "real_gbs": 128.270825, "correct": 1, "placement": "remote"}
+{"kind": "bw", "tag": "", "kernel": "read", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.00526577979, "visible_gbs": 101.954683, "real_gbs": 101.954683, "correct": 1, "placement": "remote"}
+{"kind": "bw", "tag": "", "kernel": "scalar", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.00737687293, "visible_gbs": 109.16636, "real_gbs": 145.555147, "correct": 1, "placement": "split"}
+{"kind": "bw", "tag": "", "kernel": "simd", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.00728640798, "visible_gbs": 110.521723, "real_gbs": 147.362298, "correct": 1, "placement": "split"}
+{"kind": "bw", "tag": "", "kernel": "stream", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.00462577655, "visible_gbs": 174.091065, "real_gbs": 174.091065, "correct": 1, "placement": "split"}
+{"kind": "bw", "tag": "", "kernel": "read", "threads": 12, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.00340209935, "visible_gbs": 157.805771, "real_gbs": 157.805771, "correct": 1, "placement": "split"}

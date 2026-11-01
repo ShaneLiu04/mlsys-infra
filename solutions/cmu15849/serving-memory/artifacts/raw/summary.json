@@ -1,0 +1,33 @@
+{
+ "model": "Llama-3-8B",
+ "gpu": "H100 SXM 80GB",
+ "kv_bytes_per_token": 131072,
+ "weights_GB": 16.060522496,
+ "kv_budget_tokens": 426784,
+ "lengths": {
+  "prompt_mean": 414.7481,
+  "prompt_p50": 254.0,
+  "prompt_p99": 2583.130000000003,
+  "output_mean": 186.9628,
+  "output_p50": 127.5,
+  "output_p99": 1019.0200000000004,
+  "dist": {
+   "prompt_median": 256.0,
+   "prompt_sigma": 1.0,
+   "output_median": 128.0,
+   "output_sigma": 0.9,
+   "prompt_clip": [
+    8,
+    3072
+   ],
+   "output_clip": [
+    4,
+    1024
+   ]
+  }
+ },
+ "ttft_slo_s": 1.0,
+ "tpot_slo_s": 0.05,
+ "n_requests": 3000,
+ "wall_s": 16.77585589978844
+}

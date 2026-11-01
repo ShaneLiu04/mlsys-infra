@@ -1,0 +1,18 @@
+{
+ "alpha_s": 5e-06,
+ "link_bw_Bps": 450000000000.0,
+ "collectives": {
+  "ring_beats_tree_full_from_bytes": 4268891.901551223,
+  "ring_beats_tree_ring_from_bytes": 4268891.901551223,
+  "ring_beats_halving_doubling_full_from_bytes": null,
+  "ring_beats_halving_doubling_ring_from_bytes": 5180327.045591676
+ },
+ "gloo": {
+  "gloo": "ok",
+  "w2_alpha_us": 181.4932494729358,
+  "w4_alpha_us": 232.312397858915,
+  "w2_bw_GBps": 0.9712502186112904,
+  "w4_bw_GBps": 1.424759675704785
+ },
+ "wall_s": 24.185069299768656
+}

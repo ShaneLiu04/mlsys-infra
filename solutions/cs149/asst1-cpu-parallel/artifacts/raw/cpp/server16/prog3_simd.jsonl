@@ -1,0 +1,2 @@
+{"kind": "simd", "tag": "", "view": 1, "scalar_s": 0.332101548, "avx2_s": 0.0447398145, "avx512_s": 0.0296377614, "avx2_speedup": 7.42295318, "avx512_speedup": 11.205352, "util_w8": 0.957043224, "util_w16": 0.929498579, "correct": 1}
+{"kind": "simd", "tag": "", "view": 2, "scalar_s": 0.185858931, "avx2_s": 0.0312492363, "avx512_s": 0.0223497003, "avx2_speedup": 5.94763115, "avx512_speedup": 8.31594736, "util_w8": 0.831139401, "util_w16": 0.741279411, "correct": 1}

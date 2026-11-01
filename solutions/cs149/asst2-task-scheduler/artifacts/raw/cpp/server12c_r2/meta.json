@@ -1,0 +1,25 @@
+{
+  "platform": "server12c_r2",
+  "cores": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    6,
+    10,
+    11,
+    14,
+    16,
+    19,
+    23
+  ],
+  "smt_offset": 64,
+  "machine": "Linux-5.15.0-78-generic-x86_64-with-glibc2.35",
+  "processor": "x86_64",
+  "python": "3.12.3",
+  "started": "2026-10-28 11:51:46",
+  "gxx": "g++ (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0",
+  "cpu_model": "Intel(R) Xeon(R) Gold 6459C",
+  "finished": "2026-10-28 11:57:17"
+}

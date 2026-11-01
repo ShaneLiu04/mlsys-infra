@@ -1,0 +1,140 @@
+{"kind": "env", "gpu": "NVIDIA GeForce RTX 5090", "sms": 170, "vram_bytes": 33670758400, "torch": "2.8.0+cu128", "cuda": "12.8", "triton": "3.4.0", "python": "3.12.3"}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "impl": "sdpa_padded_4096", "block": 0, "time_s": 0.0002561599910259247, "kv_read_bytes": 3054080, "eff_gbps": 11.92254882492915, "alloc_bytes": 33554432}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "impl": "sdpa_padded_batchmax", "block": 0, "time_s": 0.00010411200299859048, "kv_read_bytes": 3054080, "eff_gbps": 29.33456193366434, "alloc_bytes": 7798784}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 8, "impl": "triton_paged", "time_s": 4.6832000836730006e-05, "kv_read_bytes": 3054080, "eff_gbps": 65.21352804565008, "alloc_bytes": 3084288}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 8, "tokens_per_iter": 16, "time_s": 8.127999678254126e-05, "eff_gbps": 37.57480463700029}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 8, "tokens_per_iter": 32, "time_s": 5.769599974155426e-05, "eff_gbps": 52.9339991278523}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 8, "tokens_per_iter": 128, "time_s": 4.3359998613595965e-05, "eff_gbps": 70.43542660636437}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 8, "impl": "torch_gather", "time_s": 0.00012751999497413635, "kv_read_bytes": 3054080, "eff_gbps": 23.949812738146903, "alloc_bytes": 3084288}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 8, "impl": "triton_contig_table", "time_s": 4.659200087189674e-05, "kv_read_bytes": 3054080, "eff_gbps": 65.54944932279466, "alloc_bytes": 3084288}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 16, "impl": "triton_paged", "time_s": 4.96160015463829e-05, "kv_read_bytes": 3054080, "eff_gbps": 61.554335392079736, "alloc_bytes": 3129344}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 16, "tokens_per_iter": 16, "time_s": 7.913599908351898e-05, "eff_gbps": 38.5928027114028}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 16, "tokens_per_iter": 32, "time_s": 5.5824000388383864e-05, "eff_gbps": 54.70908531728063}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 16, "tokens_per_iter": 128, "time_s": 4.665600135922432e-05, "eff_gbps": 65.45953170065613}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 16, "impl": "torch_gather", "time_s": 0.0001276480033993721, "kv_read_bytes": 3054080, "eff_gbps": 23.925795301668014, "alloc_bytes": 3129344}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 16, "impl": "triton_contig_table", "time_s": 4.963199980556965e-05, "kv_read_bytes": 3054080, "eff_gbps": 61.53449411597706, "alloc_bytes": 3129344}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 32, "impl": "triton_paged", "time_s": 4.5056000351905825e-05, "kv_read_bytes": 3054080, "eff_gbps": 67.78409037966938, "alloc_bytes": 3162112}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 32, "tokens_per_iter": 32, "time_s": 5.8816000819206235e-05, "eff_gbps": 51.92600580559528}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 32, "tokens_per_iter": 128, "time_s": 4.108799993991852e-05, "eff_gbps": 74.33021817722619}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 32, "impl": "torch_gather", "time_s": 0.00012697599828243256, "kv_read_bytes": 3054080, "eff_gbps": 24.0524196801888, "alloc_bytes": 3162112}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 32, "impl": "triton_contig_table", "time_s": 4.45920005440712e-05, "kv_read_bytes": 3054080, "eff_gbps": 68.48941430608365, "alloc_bytes": 3162112}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 64, "impl": "triton_paged", "time_s": 4.9375999718904496e-05, "kv_read_bytes": 3054080, "eff_gbps": 61.8535324324925, "alloc_bytes": 3276800}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 64, "tokens_per_iter": 128, "time_s": 5.0047999247908597e-05, "eff_gbps": 61.02301881983072}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 64, "impl": "torch_gather", "time_s": 0.00015302399545907977, "kv_read_bytes": 3054080, "eff_gbps": 19.95817708744047, "alloc_bytes": 3276800}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 16, "block": 64, "impl": "triton_contig_table", "time_s": 5.776000022888184e-05, "kv_read_bytes": 3054080, "eff_gbps": 52.87534605086208, "alloc_bytes": 3276800}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "impl": "sdpa_padded_4096", "block": 0, "time_s": 0.0003041599988937378, "kv_read_bytes": 17003008, "eff_gbps": 55.901525716207736, "alloc_bytes": 134217728}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "impl": "sdpa_padded_batchmax", "block": 0, "time_s": 0.0001656000018119812, "kv_read_bytes": 17003008, "eff_gbps": 102.6751679586626, "alloc_bytes": 61603840}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 8, "impl": "triton_paged", "time_s": 7.446400076150894e-05, "kv_read_bytes": 17003008, "eff_gbps": 228.3386310984918, "alloc_bytes": 17117184}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 8, "tokens_per_iter": 16, "time_s": 0.00015457600355148316, "eff_gbps": 109.99772027575399}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 8, "tokens_per_iter": 32, "time_s": 0.00010047999769449234, "eff_gbps": 169.21783827759774}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 8, "tokens_per_iter": 128, "time_s": 6.407999992370604e-05, "eff_gbps": 265.3403249101726}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 8, "impl": "torch_gather", "time_s": 0.00017363199591636657, "kv_read_bytes": 17003008, "eff_gbps": 97.92554598168559, "alloc_bytes": 17117184}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 8, "impl": "triton_contig_table", "time_s": 7.619199901819228e-05, "kv_read_bytes": 17003008, "eff_gbps": 223.160019675297, "alloc_bytes": 17117184}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 16, "impl": "triton_paged", "time_s": 7.940800115466119e-05, "kv_read_bytes": 17003008, "eff_gbps": 214.12210045287023, "alloc_bytes": 17260544}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 16, "tokens_per_iter": 16, "time_s": 0.00015476800501346589, "eff_gbps": 109.86125975146233}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 16, "tokens_per_iter": 32, "time_s": 9.992000088095666e-05, "eff_gbps": 170.16621147008547}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 16, "tokens_per_iter": 128, "time_s": 7.227199897170066e-05, "eff_gbps": 235.26411669694951}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 16, "impl": "torch_gather", "time_s": 0.0001740799993276596, "kv_read_bytes": 17003008, "eff_gbps": 97.67352978900426, "alloc_bytes": 17260544}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 16, "impl": "triton_contig_table", "time_s": 7.93600007891655e-05, "kv_read_bytes": 17003008, "eff_gbps": 214.25161077268172, "alloc_bytes": 17260544}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 32, "impl": "triton_paged", "time_s": 7.160000130534172e-05, "kv_read_bytes": 17003008, "eff_gbps": 237.4721744415875, "alloc_bytes": 17514496}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 32, "tokens_per_iter": 32, "time_s": 0.00010305600240826608, "eff_gbps": 164.98804147904923}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 32, "tokens_per_iter": 128, "time_s": 6.07680007815361e-05, "eff_gbps": 279.8019974546577}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 32, "impl": "torch_gather", "time_s": 0.0001735199987888336, "kv_read_bytes": 17003008, "eff_gbps": 97.98875126026212, "alloc_bytes": 17514496}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 32, "impl": "triton_contig_table", "time_s": 7.214399799704551e-05, "kv_read_bytes": 17003008, "eff_gbps": 235.6815323805082, "alloc_bytes": 17514496}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 64, "impl": "triton_paged", "time_s": 7.932800054550171e-05, "kv_read_bytes": 17003008, "eff_gbps": 214.33803805816655, "alloc_bytes": 18022400}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 64, "tokens_per_iter": 128, "time_s": 6.107199937105179e-05, "eff_gbps": 278.4092247692066}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 64, "impl": "torch_gather", "time_s": 0.00017446400225162506, "kv_read_bytes": 17003008, "eff_gbps": 97.45854606428773, "alloc_bytes": 18022400}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 64, "block": 64, "impl": "triton_contig_table", "time_s": 7.788800075650214e-05, "kv_read_bytes": 17003008, "eff_gbps": 218.30073740313043, "alloc_bytes": 18022400}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "impl": "sdpa_padded_4096", "block": 0, "time_s": 0.0005365919768810272, "kv_read_bytes": 68307456, "eff_gbps": 127.29869051908146, "alloc_bytes": 536870912}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "impl": "sdpa_padded_batchmax", "block": 0, "time_s": 0.0004481440037488937, "kv_read_bytes": 68307456, "eff_gbps": 152.42300561556632, "alloc_bytes": 424935424}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 8, "impl": "triton_paged", "time_s": 0.00015854400396347047, "kv_read_bytes": 68307456, "eff_gbps": 430.8422538372279, "alloc_bytes": 68743168}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 8, "tokens_per_iter": 16, "time_s": 0.0003870079964399338, "eff_gbps": 176.50140727932418}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 8, "tokens_per_iter": 32, "time_s": 0.00023641599714756013, "eff_gbps": 288.9290776603649}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 8, "tokens_per_iter": 128, "time_s": 0.00013651199638843538, "eff_gbps": 500.3769471339053}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 8, "impl": "torch_gather", "time_s": 0.0007140320241451263, "kv_read_bytes": 68307456, "eff_gbps": 95.664415166506, "alloc_bytes": 68743168}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 8, "impl": "triton_contig_table", "time_s": 0.00015679999440908432, "kv_read_bytes": 68307456, "eff_gbps": 435.63430124741484, "alloc_bytes": 68743168}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 16, "impl": "triton_paged", "time_s": 0.00016510400176048277, "kv_read_bytes": 68307456, "eff_gbps": 413.72380603526483, "alloc_bytes": 69238784}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 16, "tokens_per_iter": 16, "time_s": 0.0003862719982862473, "eff_gbps": 176.83771099913042}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 16, "tokens_per_iter": 32, "time_s": 0.00023048000037670136, "eff_gbps": 296.37042645069795}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 16, "tokens_per_iter": 128, "time_s": 0.00015091200172901153, "eff_gbps": 452.6310380711654}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 16, "impl": "torch_gather", "time_s": 0.0007131359875202179, "kv_read_bytes": 68307456, "eff_gbps": 95.78461498980718, "alloc_bytes": 69238784}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 16, "impl": "triton_contig_table", "time_s": 0.0001653119996190071, "kv_read_bytes": 68307456, "eff_gbps": 413.20325298482567, "alloc_bytes": 69238784}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 32, "impl": "triton_paged", "time_s": 0.0001534239947795868, "kv_read_bytes": 68307456, "eff_gbps": 445.220163235434, "alloc_bytes": 70270976}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 32, "tokens_per_iter": 32, "time_s": 0.00023696000128984451, "eff_gbps": 288.26576480495436}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 32, "tokens_per_iter": 128, "time_s": 0.00012895999848842621, "eff_gbps": 529.6794106750117}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 32, "impl": "torch_gather", "time_s": 0.0007192479968070984, "kv_read_bytes": 68307456, "eff_gbps": 94.9706586646497, "alloc_bytes": 70270976}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 32, "impl": "triton_contig_table", "time_s": 0.00015375999361276629, "kv_read_bytes": 68307456, "eff_gbps": 444.2472609099316, "alloc_bytes": 70270976}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 64, "impl": "triton_paged", "time_s": 0.00016315200179815292, "kv_read_bytes": 68307456, "eff_gbps": 418.67372295258787, "alloc_bytes": 72286208}
+{"kind": "paged_tile", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 64, "tokens_per_iter": 128, "time_s": 0.000129551999270916, "eff_gbps": 527.2589877764611}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 64, "impl": "torch_gather", "time_s": 0.0007186079919338226, "kv_read_bytes": 68307456, "eff_gbps": 95.05524119788875, "alloc_bytes": 72286208}
+{"kind": "paged_time", "H": 14, "Hk": 2, "D": 64, "batch": 256, "block": 64, "impl": "triton_contig_table", "time_s": 0.0001648639962077141, "kv_read_bytes": 68307456, "eff_gbps": 414.32609648706216, "alloc_bytes": 72286208}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "impl": "sdpa_padded_4096", "block": 0, "time_s": 0.00033579200506210326, "kv_read_bytes": 24432640, "eff_gbps": 72.76123204744346, "alloc_bytes": 268435456}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "impl": "sdpa_padded_batchmax", "block": 0, "time_s": 0.00012046400085091591, "kv_read_bytes": 24432640, "eff_gbps": 202.8210903457988, "alloc_bytes": 62390272}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 8, "impl": "triton_paged", "time_s": 6.604800000786781e-05, "kv_read_bytes": 24432640, "eff_gbps": 369.92248057608884, "alloc_bytes": 24674304}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 8, "tokens_per_iter": 16, "time_s": 0.000110944002866745, "eff_gbps": 220.2249726769466}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 8, "tokens_per_iter": 32, "time_s": 8.564799651503564e-05, "eff_gbps": 285.26808558459174}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 8, "tokens_per_iter": 128, "time_s": 7.043199986219406e-05, "eff_gbps": 346.8968657400677}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 8, "impl": "torch_gather", "time_s": 0.00016447999328374864, "kv_read_bytes": 24432640, "eff_gbps": 148.54475314727566, "alloc_bytes": 24674304}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 8, "impl": "triton_contig_table", "time_s": 7.29439966380596e-05, "kv_read_bytes": 24432640, "eff_gbps": 334.9506625093793, "alloc_bytes": 24674304}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 16, "impl": "triton_paged", "time_s": 6.302400305867195e-05, "kv_read_bytes": 24432640, "eff_gbps": 387.6719791545854, "alloc_bytes": 25034752}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 16, "tokens_per_iter": 16, "time_s": 0.00010896000266075134, "eff_gbps": 224.23494312928207}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 16, "tokens_per_iter": 32, "time_s": 7.576000317931176e-05, "eff_gbps": 322.50051444918586}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 16, "tokens_per_iter": 128, "time_s": 5.9999998658895494e-05, "eff_gbps": 407.21067576853454}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 16, "impl": "torch_gather", "time_s": 0.00016385599970817564, "kv_read_bytes": 24432640, "eff_gbps": 149.1104386993095, "alloc_bytes": 25034752}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 16, "impl": "triton_contig_table", "time_s": 7.039999961853027e-05, "kv_read_bytes": 24432640, "eff_gbps": 347.05454733509663, "alloc_bytes": 25034752}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 32, "impl": "triton_paged", "time_s": 7.51039981842041e-05, "kv_read_bytes": 24432640, "eff_gbps": 325.3174343671451, "alloc_bytes": 25296896}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 32, "tokens_per_iter": 32, "time_s": 7.759999856352806e-05, "eff_gbps": 314.8536140757523}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 32, "tokens_per_iter": 128, "time_s": 5.337600037455559e-05, "eff_gbps": 457.74580014517295}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 32, "impl": "torch_gather", "time_s": 0.00014455999433994293, "kv_read_bytes": 24432640, "eff_gbps": 169.01384170329268, "alloc_bytes": 25296896}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 32, "impl": "triton_contig_table", "time_s": 7.548800110816955e-05, "kv_read_bytes": 24432640, "eff_gbps": 323.66256413372986, "alloc_bytes": 25296896}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 64, "impl": "triton_paged", "time_s": 6.462400034070015e-05, "kv_read_bytes": 24432640, "eff_gbps": 378.07377864555286, "alloc_bytes": 26214400}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 64, "tokens_per_iter": 128, "time_s": 5.244800075888634e-05, "eff_gbps": 465.84502071531}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 64, "impl": "torch_gather", "time_s": 0.0001454399973154068, "kv_read_bytes": 24432640, "eff_gbps": 167.99120222076482, "alloc_bytes": 26214400}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 16, "block": 64, "impl": "triton_contig_table", "time_s": 6.507200002670287e-05, "kv_read_bytes": 24432640, "eff_gbps": 375.470862889935, "alloc_bytes": 26214400}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "impl": "sdpa_padded_4096", "block": 0, "time_s": 0.0011555839776992798, "kv_read_bytes": 136024064, "eff_gbps": 117.71023709658759, "alloc_bytes": 1073741824}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "impl": "sdpa_padded_batchmax", "block": 0, "time_s": 0.0005739359855651855, "kv_read_bytes": 136024064, "eff_gbps": 237.00215254154142, "alloc_bytes": 492830720}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 8, "impl": "triton_paged", "time_s": 0.00018929599970579148, "kv_read_bytes": 136024064, "eff_gbps": 718.5786504279645, "alloc_bytes": 136937472}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 8, "tokens_per_iter": 16, "time_s": 0.0003747359961271286, "eff_gbps": 362.9863834961135}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 8, "tokens_per_iter": 32, "time_s": 0.0002510880082845688, "eff_gbps": 541.7385916966537}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 8, "tokens_per_iter": 128, "time_s": 0.00020512000471353532, "eff_gbps": 663.1438225148605}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 8, "impl": "torch_gather", "time_s": 0.000952864021062851, "kv_read_bytes": 136024064, "eff_gbps": 142.75285979239197, "alloc_bytes": 136937472}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 8, "impl": "triton_contig_table", "time_s": 0.00018641600012779237, "kv_read_bytes": 136024064, "eff_gbps": 729.6801986243264, "alloc_bytes": 136937472}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 16, "impl": "triton_paged", "time_s": 0.00018351999670267107, "kv_read_bytes": 136024064, "eff_gbps": 741.194782279659, "alloc_bytes": 138084352}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 16, "tokens_per_iter": 16, "time_s": 0.0003638399988412857, "eff_gbps": 373.85681737355225}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 16, "tokens_per_iter": 32, "time_s": 0.00022465600073337554, "eff_gbps": 605.4771007939156}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 16, "tokens_per_iter": 128, "time_s": 0.00014641600102186203, "eff_gbps": 929.0245809929588}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 16, "impl": "torch_gather", "time_s": 0.000954255998134613, "kv_read_bytes": 136024064, "eff_gbps": 142.54462562027473, "alloc_bytes": 138084352}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 16, "impl": "triton_contig_table", "time_s": 0.0001841759979724884, "kv_read_bytes": 136024064, "eff_gbps": 738.5547818251475, "alloc_bytes": 138084352}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 32, "impl": "triton_paged", "time_s": 0.00022783999890089036, "kv_read_bytes": 136024064, "eff_gbps": 597.0157332171074, "alloc_bytes": 140115968}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 32, "tokens_per_iter": 32, "time_s": 0.00023201599717140198, "eff_gbps": 586.2701954103283}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 32, "tokens_per_iter": 128, "time_s": 0.00014739200472831725, "eff_gbps": 922.8727450361273}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 32, "impl": "torch_gather", "time_s": 0.0009541119933128357, "kv_read_bytes": 136024064, "eff_gbps": 142.56613998499463, "alloc_bytes": 140115968}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 32, "impl": "triton_contig_table", "time_s": 0.00022857600450515748, "kv_read_bytes": 136024064, "eff_gbps": 595.0933664033437, "alloc_bytes": 140115968}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 64, "impl": "triton_paged", "time_s": 0.00018275199830532075, "kv_read_bytes": 136024064, "eff_gbps": 744.3095849094184, "alloc_bytes": 144179200}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 64, "tokens_per_iter": 128, "time_s": 0.00014710400253534317, "eff_gbps": 924.6795576980912}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 64, "impl": "torch_gather", "time_s": 0.0009650239944458008, "kv_read_bytes": 136024064, "eff_gbps": 140.95407449233076, "alloc_bytes": 144179200}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 64, "block": 64, "impl": "triton_contig_table", "time_s": 0.00018363199383020402, "kv_read_bytes": 136024064, "eff_gbps": 740.7427276848888, "alloc_bytes": 144179200}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "impl": "sdpa_padded_4096", "block": 0, "time_s": 0.003632704019546509, "kv_read_bytes": 546459648, "eff_gbps": 150.42779292220388, "alloc_bytes": 4294967296}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "impl": "sdpa_padded_batchmax", "block": 0, "time_s": 0.0029727360010147093, "kv_read_bytes": 546459648, "eff_gbps": 183.82380669305053, "alloc_bytes": 3399483392}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 8, "impl": "triton_paged", "time_s": 0.0005261919796466827, "kv_read_bytes": 546459648, "eff_gbps": 1038.5176307075722, "alloc_bytes": 549945344}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 8, "tokens_per_iter": 16, "time_s": 0.0010823680162429811, "eff_gbps": 504.8741646088377}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 8, "tokens_per_iter": 32, "time_s": 0.0007120800018310548, "eff_gbps": 767.4132774334685}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 8, "tokens_per_iter": 128, "time_s": 0.0005628800094127655, "eff_gbps": 970.8279542030701}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 8, "impl": "torch_gather", "time_s": 0.005594143867492676, "kv_read_bytes": 546459648, "eff_gbps": 97.68423210841125, "alloc_bytes": 549945344}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 8, "impl": "triton_contig_table", "time_s": 0.0005258079767227173, "kv_read_bytes": 546459648, "eff_gbps": 1039.2760707169211, "alloc_bytes": 549945344}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 16, "impl": "triton_paged", "time_s": 0.0005261119902133941, "kv_read_bytes": 546459648, "eff_gbps": 1038.6755256772474, "alloc_bytes": 553910272}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 16, "tokens_per_iter": 16, "time_s": 0.0010732160210609437, "eff_gbps": 509.1795475246346}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 16, "tokens_per_iter": 32, "time_s": 0.0006372320055961609, "eff_gbps": 857.5521053572332}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 16, "tokens_per_iter": 128, "time_s": 0.0004779839962720871, "eff_gbps": 1143.259297930414}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 16, "impl": "torch_gather", "time_s": 0.005619695901870728, "kv_read_bytes": 546459648, "eff_gbps": 97.24007447059373, "alloc_bytes": 553910272}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 16, "impl": "triton_contig_table", "time_s": 0.0005248159766197205, "kv_read_bytes": 546459648, "eff_gbps": 1041.2404963730028, "alloc_bytes": 553910272}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 32, "impl": "triton_paged", "time_s": 0.0006062560081481934, "kv_read_bytes": 546459648, "eff_gbps": 901.3678061008565, "alloc_bytes": 562167808}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 32, "tokens_per_iter": 32, "time_s": 0.0006572959721088409, "eff_gbps": 831.3753182554302}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 32, "tokens_per_iter": 128, "time_s": 0.00046928000450134275, "eff_gbps": 1164.463950644282}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 32, "impl": "torch_gather", "time_s": 0.00562935996055603, "kv_read_bytes": 546459648, "eff_gbps": 97.07314007790407, "alloc_bytes": 562167808}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 32, "impl": "triton_contig_table", "time_s": 0.0006065599918365479, "kv_read_bytes": 546459648, "eff_gbps": 900.9160764880396, "alloc_bytes": 562167808}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 64, "impl": "triton_paged", "time_s": 0.0005146720111370086, "kv_read_bytes": 546459648, "eff_gbps": 1061.762901761, "alloc_bytes": 578289664}
+{"kind": "paged_tile", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 64, "tokens_per_iter": 128, "time_s": 0.00046584001183509825, "eff_gbps": 1173.0629274357827}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 64, "impl": "torch_gather", "time_s": 0.005629728078842163, "kv_read_bytes": 546459648, "eff_gbps": 97.06679263137474, "alloc_bytes": 578289664}
+{"kind": "paged_time", "H": 32, "Hk": 8, "D": 128, "batch": 256, "block": 64, "impl": "triton_contig_table", "time_s": 0.0005146079957485199, "kv_read_bytes": 546459648, "eff_gbps": 1061.8949812568505, "alloc_bytes": 578289664}
+{"kind": "done", "cmd": "paged", "wall_s": 22.218189239501953}

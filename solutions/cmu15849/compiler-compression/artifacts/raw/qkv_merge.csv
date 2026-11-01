@@ -1,0 +1,5 @@
+tokens,variant,matmul_kernels,matmul_hbm_MB,matmul_time_us,bound
+1,separate,3,50.368512,15.035376716417911,memory
+1,merged,1,50.352128,15.030485970149254,memory
+4096,separate,3,201.326592,208.45139555915065,compute
+4096,merged,1,134.217728,208.45139555915065,compute

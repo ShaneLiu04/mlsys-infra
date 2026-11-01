@@ -1,0 +1,22 @@
+{
+  "machine": "Intel64 Family 6 Model 106 Stepping 6, GenuineIntel",
+  "cpu_count": 8,
+  "python": "3.12.10",
+  "numpy": "2.5.3",
+  "accel_model": {
+    "partitions": 128,
+    "sbuf_bytes": 25165824,
+    "psum_bytes": 2097152,
+    "pe_rows": 128,
+    "pe_cols": 128,
+    "moving_max": 512,
+    "freq_hz": 1400000000.0,
+    "hbm_bw": 410000000000.0,
+    "dma_overhead_s": 1e-06,
+    "bytes_per_el": 2,
+    "acc_bytes": 4,
+    "sbuf_bufs": 2
+  },
+  "accel_peak_tflops": 45.8752,
+  "elapsed_s": 38.8
+}

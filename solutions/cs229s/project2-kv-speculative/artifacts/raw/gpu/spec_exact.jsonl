@@ -1,0 +1,6 @@
+{"target": "gpt2-xl", "draft": "gpt2", "dtype": "float32", "graph": false, "gamma": 1, "n_prompts": 20, "n_new": 64, "identical": 20, "diffs": []}
+{"target": "gpt2-xl", "draft": "gpt2", "dtype": "float32", "graph": false, "gamma": 4, "n_prompts": 20, "n_new": 64, "identical": 20, "diffs": []}
+{"target": "gpt2-xl", "draft": "gpt2", "dtype": "float32", "graph": false, "gamma": 8, "n_prompts": 20, "n_new": 64, "identical": 20, "diffs": []}
+{"target": "gpt2-xl", "draft": "gpt2", "dtype": "float32", "graph": true, "gamma": 1, "n_prompts": 20, "n_new": 64, "identical": 20, "diffs": []}
+{"target": "gpt2-xl", "draft": "gpt2", "dtype": "float32", "graph": true, "gamma": 4, "n_prompts": 20, "n_new": 64, "identical": 20, "diffs": []}
+{"target": "gpt2-xl", "draft": "gpt2", "dtype": "float32", "graph": true, "gamma": 8, "n_prompts": 20, "n_new": 64, "identical": 20, "diffs": []}

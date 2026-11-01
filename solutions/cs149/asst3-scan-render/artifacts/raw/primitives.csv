@@ -1,0 +1,4 @@
+primitive,n,output_len,correct,scan_based_ms,numpy_builtin_ms
+find_repeats,1048576,10516,True,22.329,1.236
+stream_compact(v>1),1048576,165711,True,26.696,4.589
+segmented_exclusive_scan,1048576,1048576,True,167.578,4.251

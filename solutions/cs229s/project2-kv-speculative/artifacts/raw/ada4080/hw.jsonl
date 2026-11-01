@@ -1,0 +1,4 @@
+{"kind": "copy_bw", "bytes_moved": 4294967296, "ms": 6.863856077194214, "GBps": 625.7367939678135}
+{"kind": "gemm_fp16", "n": 4096, "ms": 1.3772000074386597, "TFLOPs": 99.79592849960213}
+{"kind": "gemm_fp16", "n": 8192, "ms": 10.373631954193115, "TFLOPs": 105.99100031995714}
+{"kind": "device", "name": "NVIDIA GeForce RTX 4080 SUPER", "sms": 80, "mem_GB": 33.796456448, "torch": "2.8.0+cu128", "cuda": "12.8"}

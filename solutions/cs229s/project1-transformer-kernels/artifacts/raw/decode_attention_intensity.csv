@@ -1,0 +1,5 @@
+variant,n_heads,n_kv_heads,seq,kv_bytes_per_token_kib,kv_cache_gb_per_seq,attn_flops_per_token_g,intensity_flop_per_byte,gpu_ridge,attn_time_us_per_seq,bound
+MHA,32,32,4096,512,2.14748,2.14748,1,295.224,641.04,memory
+GQA-8,32,8,4096,128,0.536871,2.14748,4,295.224,160.26,memory
+GQA-4,32,4,4096,64,0.268435,2.14748,8,295.224,80.13,memory
+MQA,32,1,4096,16,0.0671089,2.14748,32,295.224,20.0325,memory

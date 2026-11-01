@@ -1,0 +1,15 @@
+{
+ "fusion_hbm_GB": {
+  "unfused": 1.375789056,
+  "elementwise_fused": 1.040244736,
+  "epilogue_fused": 0.704700416
+ },
+ "schedule": {
+  "best": "Schedule(order='ijk', tm=256, tn=256, tk=64)",
+  "best_ms": 5.990611524776119,
+  "compute_floor_ms": 2.292965351150657,
+  "ridge_flop_per_byte": 295.2238805970149,
+  "cache_bytes": 233472
+ },
+ "wall_s": 63.6899019991979
+}

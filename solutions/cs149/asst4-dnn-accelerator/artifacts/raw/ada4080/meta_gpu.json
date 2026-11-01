@@ -1,0 +1,15 @@
+{
+  "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+  "sm_count": 80,
+  "cc": "8.9",
+  "total_mem_gb": 33.796456448,
+  "l2_mb": 64.0,
+  "nvidia_smi": "NVIDIA GeForce RTX 4080 SUPER, 595.71.05, 3105 MHz, 11501 MHz, 320.00 W",
+  "nvcc": "Build cuda_12.8.r12.8/compiler.35583870_0",
+  "torch": "2.8.0+cu128",
+  "cuda": "12.8",
+  "cudnn": 91002,
+  "python": "3.12.3",
+  "host": "autodl-container-27ef4b9fdf-48884360",
+  "time": "2026-10-28 17:51:39"
+}

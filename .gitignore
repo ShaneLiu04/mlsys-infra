@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local agent instructions and private notes
+AGENTS.md
+CLAUDE.md
+.claude/
+.opencode/
+.codex/
+.cursor/
+.windsurf/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+tmp_*.py
+
+# Build noise from CUDA / C++ starter code when it is mirrored
+build/
+*.o
+*.so
+*.exe
+*.egg-info/
+
+# Large local artifacts; small CSV/JSON/PNG under artifacts/ are committed
+solutions/**/checkpoints/
+solutions/**/runs/
+solutions/**/wandb/
+solutions/**/*.ckpt
+solutions/**/*.pt
+solutions/**/*.pth
+solutions/**/*.safetensors
+*.nsys-rep
+*.ncu-rep
+*.log
+*.tar
+*.tar.gz
+
+# Compiled lab binaries (rebuilt by scripts/build_cpp.py, gpu/run_gpu.sh)
+solutions/**/cpp/bin/
+solutions/**/gpu/bin/
+
+# LaTeX intermediates; only .tex, .bib and .pdf are committed (figures are read from the labs' artifacts/figures)
+reports/**/*.aux
+reports/**/*.fls
+reports/**/*.fdb_latexmk
+reports/**/*.xdv
+reports/**/*.out
+reports/**/*.toc
+reports/**/*.lof
+reports/**/*.lot
+reports/**/*.bbl
+reports/**/*.blg
+reports/**/*.synctex.gz
+reports/**/*.run.xml
+reports/**/*-blx.bib

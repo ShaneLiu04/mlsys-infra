@@ -1,0 +1,36 @@
+{
+  "runs": [
+    {
+      "platform": "local4c",
+      "cores": [
+        0,
+        2,
+        4,
+        6
+      ],
+      "smt_offset": 1,
+      "remote_cores": [],
+      "max_threads": 4,
+      "uname": "Windows-2022Server-10.0.20348-SP0",
+      "python": "3.12.10",
+      "started": "2026-10-28 11:06:29",
+      "finished": "2026-10-28 11:11:33"
+    },
+    {
+      "platform": "local4c",
+      "cores": [
+        0,
+        2,
+        4,
+        6
+      ],
+      "smt_offset": 1,
+      "remote_cores": [],
+      "max_threads": 4,
+      "uname": "Windows-2022Server-10.0.20348-SP0",
+      "python": "3.12.10",
+      "started": "2026-10-28 11:20:12",
+      "finished": "2026-10-28 11:25:10"
+    }
+  ]
+}

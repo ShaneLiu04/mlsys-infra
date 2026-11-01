@@ -1,0 +1,46 @@
+% Shared preamble for the assignment reports. Use with:
+%   \documentclass[11pt,a4paper]{ctexart}  (XeLaTeX)
+%   \input{../common/preamble.tex}
+\usepackage[margin=2.3cm]{geometry}
+\setmainfont{texgyretermes}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+\setsansfont{texgyreheros}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+\setmonofont{texgyrecursor}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{graphicx}
+\usepackage{booktabs,multirow,makecell,array,tabularx}
+\usepackage[table]{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{subcaption}
+\usepackage{siunitx}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage{float}
+
+\setlength{\emergencystretch}{3em}
+\linespread{1.15}
+\setlist{leftmargin=*,itemsep=2pt,topsep=3pt}
+\graphicspath{{figures/}}
+
+\crefname{figure}{图}{图}
+\crefname{table}{表}{表}
+\crefname{section}{第}{第}
+\creflabelformat{section}{#2#1#3 节}
+\crefname{equation}{式}{式}
+\crefformat{equation}{式~(#2#1#3)}
+
+\lstset{basicstyle=\ttfamily\footnotesize,columns=fullflexible,breaklines=true,frame=single,
+  framerule=0.3pt,rulecolor=\color{black!40},backgroundcolor=\color{black!3},
+  keywordstyle=\color{blue!60!black}\bfseries,commentstyle=\color{green!40!black},
+  numbers=left,numberstyle=\tiny\color{black!50},xleftmargin=1.5em}
+
+% Interview boxes: question, model answer, common wrong answer.
+\newtcolorbox{iqbox}[1]{enhanced,breakable,colback=blue!3,colframe=blue!45!black,boxrule=0.5pt,arc=1.5pt,
+  left=4pt,right=4pt,top=3pt,bottom=3pt,fonttitle=\bfseries\small,title={面试追问：#1}}
+\newtcolorbox{findingbox}[1][]{enhanced,breakable,colback=green!3,colframe=green!40!black,boxrule=0.5pt,arc=1.5pt,
+  left=4pt,right=4pt,top=3pt,bottom=3pt,fonttitle=\bfseries\small,title={结论#1}}
+\newtcolorbox{caveatbox}{enhanced,breakable,colback=orange!4,colframe=orange!60!black,boxrule=0.5pt,arc=1.5pt,
+  left=4pt,right=4pt,top=3pt,bottom=3pt,fonttitle=\bfseries\small,title={不能推出的结论}}
+
+\newcommand{\authorline}{ShaneLiu04\thanks{GitHub: \url{https://github.com/ShaneLiu04}。代码与原始指标：\url{https://gitee.com/liu-xingyan04/mlsys-infra}。本文基于公开课程材料独立完成，与课程团队无隶属关系。}}

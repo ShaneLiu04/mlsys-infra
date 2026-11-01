@@ -1,0 +1,5 @@
+{"kind":"attrs","kernel":"upsweep_k","block":256,"regs":10,"static_smem":0,"blocks_per_sm":6,"occupancy":1}
+{"kind":"attrs","kernel":"blelloch_block_pad","block":512,"regs":18,"static_smem":4224,"blocks_per_sm":3,"occupancy":1}
+{"kind":"attrs","kernel":"blelloch_block_nopad","block":512,"regs":18,"static_smem":4224,"blocks_per_sm":3,"occupancy":1}
+{"kind":"attrs","kernel":"raking_block","block":256,"regs":64,"static_smem":16928,"blocks_per_sm":4,"occupancy":0.666667}
+{"kind":"attrs","kernel":"uniform_add","block":256,"regs":14,"static_smem":0,"blocks_per_sm":6,"occupancy":1}

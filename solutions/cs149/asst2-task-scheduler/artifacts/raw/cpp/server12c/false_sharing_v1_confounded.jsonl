@@ -1,0 +1,14 @@
+{"mode": "false_sharing", "layout": "packed", "threads": 1, "iters": 50000000, "ns_per_inc": [1.87588997, 1.87761463, 1.8900628], "ns_med": 1.87761463, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "padded", "threads": 1, "iters": 50000000, "ns_per_inc": [0.279545523, 0.27982302, 0.317722484], "ns_med": 0.27982302, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "packed", "threads": 2, "iters": 50000000, "ns_per_inc": [1.9677116, 1.97060667, 2.44398192], "ns_med": 1.97060667, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "padded", "threads": 2, "iters": 50000000, "ns_per_inc": [0.279767439, 0.279837549, 0.280372016], "ns_med": 0.279837549, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "packed", "threads": 4, "iters": 50000000, "ns_per_inc": [1.98872171, 1.99476521, 2.44685266], "ns_med": 1.99476521, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "padded", "threads": 4, "iters": 50000000, "ns_per_inc": [0.281438306, 0.282028019, 0.283641294], "ns_med": 0.282028019, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "packed", "threads": 6, "iters": 50000000, "ns_per_inc": [2.07635257, 2.08482232, 2.53564719], "ns_med": 2.08482232, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "padded", "threads": 6, "iters": 50000000, "ns_per_inc": [0.286249071, 0.287273228, 0.665984228], "ns_med": 0.287273228, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "packed", "threads": 8, "iters": 50000000, "ns_per_inc": [2.07819439, 2.10417565, 2.4521596], "ns_med": 2.10417565, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "padded", "threads": 8, "iters": 50000000, "ns_per_inc": [0.425399095, 0.532436036, 1.25717659], "ns_med": 0.532436036, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "packed", "threads": 12, "iters": 50000000, "ns_per_inc": [2.07301561, 2.07576241, 2.57042632], "ns_med": 2.07576241, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "padded", "threads": 12, "iters": 50000000, "ns_per_inc": [0.282686986, 0.283582099, 0.285528712], "ns_med": 0.283582099, "correct": 1, "placement": "cores"}
+{"mode": "false_sharing", "layout": "packed", "threads": 2, "iters": 50000000, "ns_per_inc": [4.24144119, 4.3126788, 4.50521346], "ns_med": 4.3126788, "correct": 1, "placement": "smt_siblings"}
+{"mode": "false_sharing", "layout": "padded", "threads": 2, "iters": 50000000, "ns_per_inc": [0.972930454, 0.976359844, 1.00822043], "ns_med": 0.976359844, "correct": 1, "placement": "smt_siblings"}

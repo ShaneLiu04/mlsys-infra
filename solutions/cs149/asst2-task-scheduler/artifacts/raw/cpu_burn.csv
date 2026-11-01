@@ -1,0 +1,6 @@
+system,threads,idle_wall_s,idle_cpu_s,idle_cores_burned,sleeptask_wall_s,sleeptask_cpu_s,sleeptask_cores_burned
+serial,8,1.0,0.0,0.0,1.647,0.0,0.0
+spawn,8,1.0,0.0,0.0,0.243,0.031,0.128
+spinning,8,1.01,1.016,1.006,1.908,1.906,0.999
+spinning_yield,8,1.001,1.922,1.92,0.209,0.203,0.973
+sleeping,8,1.0,0.0,0.0,0.21,0.0,0.0

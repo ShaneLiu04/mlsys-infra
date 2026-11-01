@@ -1,0 +1,9 @@
+{"part": "env", "gpu": "NVIDIA GeForce RTX 5090", "cc": "12.0", "sms": 170, "vram_gb": 31.4, "torch": "2.8.0+cu128", "triton": "3.4.0", "cuda": "12.8", "cudnn": 91002}
+{"part": "prune_ppl", "model": "gpt2", "method": "dense", "sparsity": 0.0, "ppl": 29.961806713226835}
+{"part": "prune_ppl", "model": "gpt2", "method": "magnitude_0.3", "sparsity": 0.30011025181523077, "ppl": 42.46121375214672}
+{"part": "prune_ppl", "model": "gpt2", "method": "magnitude_0.5", "sparsity": 0.5001380943957671, "ppl": 538.3455456892923}
+{"part": "prune_ppl", "model": "gpt2", "method": "magnitude_0.7", "sparsity": 0.7001694220083731, "ppl": 5698.523152131702}
+{"part": "prune_ppl", "model": "gpt2", "method": "magnitude_2:4", "sparsity": 0.5, "ppl": 735.9470573657687}
+{"part": "prune_ppl", "model": "gpt2", "method": "magnitude_4:8", "sparsity": 0.5, "ppl": 346.50559022197103}
+{"part": "prune_ppl", "model": "gpt2", "method": "wanda_0.5", "sparsity": 0.5, "ppl": 47.20781349669909}
+{"part": "prune_ppl", "model": "gpt2", "method": "wanda_2:4", "sparsity": 0.5, "ppl": 116.38236362473984}

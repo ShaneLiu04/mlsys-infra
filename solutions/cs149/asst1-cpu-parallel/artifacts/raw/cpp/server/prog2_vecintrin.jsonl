@@ -1,0 +1,24 @@
+{"kind": "clamped_exp", "width": 2, "n": 10000, "dist": "uniform", "instructions": 182124, "enabled_lanes": 295938, "total_lanes": 364248, "utilization": 0.812462937, "correct": 1}
+{"kind": "clamped_exp", "width": 2, "n": 10000, "dist": "sorted", "instructions": 148880, "enabled_lanes": 279325, "total_lanes": 297760, "utilization": 0.938087722, "correct": 1}
+{"kind": "clamped_exp", "width": 2, "n": 10000, "dist": "constant", "instructions": 160000, "enabled_lanes": 300000, "total_lanes": 320000, "utilization": 0.9375, "correct": 1}
+{"kind": "clamped_exp", "width": 2, "n": 10000, "dist": "skewed", "instructions": 111968, "enabled_lanes": 181812, "total_lanes": 223936, "utilization": 0.811892684, "correct": 1}
+{"kind": "clamped_exp", "width": 2, "n": 10000, "dist": "one_slow_per_vector", "instructions": 240000, "enabled_lanes": 341054, "total_lanes": 480000, "utilization": 0.710529167, "correct": 1}
+{"kind": "array_sum", "width": 2, "n": 10000, "instructions": 10003, "expected_instructions": 10003, "utilization": 1, "rel_err": 7.7889564e-07, "correct": 1}
+{"kind": "clamped_exp", "width": 4, "n": 10000, "dist": "uniform", "instructions": 104376, "enabled_lanes": 309252, "total_lanes": 417504, "utilization": 0.740716257, "correct": 1}
+{"kind": "clamped_exp", "width": 4, "n": 10000, "dist": "sorted", "instructions": 74448, "enabled_lanes": 279333, "total_lanes": 297792, "utilization": 0.938013781, "correct": 1}
+{"kind": "clamped_exp", "width": 4, "n": 10000, "dist": "constant", "instructions": 80000, "enabled_lanes": 300000, "total_lanes": 320000, "utilization": 0.9375, "correct": 1}
+{"kind": "clamped_exp", "width": 4, "n": 10000, "dist": "skewed", "instructions": 68448, "enabled_lanes": 194276, "total_lanes": 273792, "utilization": 0.709575152, "correct": 1}
+{"kind": "clamped_exp", "width": 4, "n": 10000, "dist": "one_slow_per_vector", "instructions": 120000, "enabled_lanes": 280517, "total_lanes": 480000, "utilization": 0.584410417, "correct": 1}
+{"kind": "array_sum", "width": 4, "n": 10000, "instructions": 5005, "expected_instructions": 5005, "utilization": 1, "rel_err": 3.8944782e-07, "correct": 1}
+{"kind": "clamped_exp", "width": 8, "n": 10000, "dist": "uniform", "instructions": 56464, "enabled_lanes": 317804, "total_lanes": 451712, "utilization": 0.703554477, "correct": 1}
+{"kind": "clamped_exp", "width": 8, "n": 10000, "dist": "sorted", "instructions": 37232, "enabled_lanes": 279349, "total_lanes": 297856, "utilization": 0.937865949, "correct": 1}
+{"kind": "clamped_exp", "width": 8, "n": 10000, "dist": "constant", "instructions": 40000, "enabled_lanes": 300000, "total_lanes": 320000, "utilization": 0.9375, "correct": 1}
+{"kind": "clamped_exp", "width": 8, "n": 10000, "dist": "skewed", "instructions": 43744, "enabled_lanes": 213316, "total_lanes": 349952, "utilization": 0.609557882, "correct": 1}
+{"kind": "clamped_exp", "width": 8, "n": 10000, "dist": "one_slow_per_vector", "instructions": 60000, "enabled_lanes": 250257, "total_lanes": 480000, "utilization": 0.52136875, "correct": 1}
+{"kind": "array_sum", "width": 8, "n": 10000, "instructions": 2507, "expected_instructions": 2507, "utilization": 1, "rel_err": 1.9472391e-07, "correct": 1}
+{"kind": "clamped_exp", "width": 16, "n": 10000, "dist": "uniform", "instructions": 29388, "enabled_lanes": 322428, "total_lanes": 470208, "utilization": 0.685713557, "correct": 1}
+{"kind": "clamped_exp", "width": 16, "n": 10000, "dist": "sorted", "instructions": 18628, "enabled_lanes": 279397, "total_lanes": 298048, "utilization": 0.937422831, "correct": 1}
+{"kind": "clamped_exp", "width": 16, "n": 10000, "dist": "constant", "instructions": 20000, "enabled_lanes": 300000, "total_lanes": 320000, "utilization": 0.9375, "correct": 1}
+{"kind": "clamped_exp", "width": 16, "n": 10000, "dist": "skewed", "instructions": 26800, "enabled_lanes": 233028, "total_lanes": 428800, "utilization": 0.543442164, "correct": 1}
+{"kind": "clamped_exp", "width": 16, "n": 10000, "dist": "one_slow_per_vector", "instructions": 30000, "enabled_lanes": 235130, "total_lanes": 480000, "utilization": 0.489854167, "correct": 1}
+{"kind": "array_sum", "width": 16, "n": 10000, "instructions": 1259, "expected_instructions": 1259, "utilization": 1, "rel_err": 0, "correct": 1}

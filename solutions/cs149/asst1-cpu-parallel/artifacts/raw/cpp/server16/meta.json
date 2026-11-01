@@ -1,0 +1,32 @@
+{
+  "runs": [
+    {
+      "platform": "server16",
+      "cores": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        10,
+        11,
+        14,
+        16,
+        19,
+        23,
+        24,
+        27,
+        29,
+        30
+      ],
+      "smt_offset": null,
+      "remote_cores": [],
+      "max_threads": 16,
+      "uname": "Linux-5.15.0-78-generic-x86_64-with-glibc2.35",
+      "python": "3.12.3",
+      "started": "2026-10-28 11:15:53",
+      "finished": "2026-10-28 11:18:15"
+    }
+  ]
+}

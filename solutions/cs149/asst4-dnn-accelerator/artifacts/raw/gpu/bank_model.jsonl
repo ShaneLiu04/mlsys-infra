@@ -1,0 +1,24 @@
+{"kernel": "smem8", "access": "A load As[ty][k]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "smem8", "access": "B load Bs[k][tx]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "smem8", "access": "A store As[ty][tx]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "smem16", "access": "A load As[ty][k]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "smem16", "access": "B load Bs[k][tx]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "smem16", "access": "A store As[ty][tx]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "smem32", "access": "A load As[ty][k]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "smem32", "access": "B load Bs[k][tx]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "smem32", "access": "A store As[ty][tx]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "reg1d", "access": "A load As[(trow*TM+i)*BK+k]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "reg1d", "access": "B load Bs[k*BN+tcol]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "reg1d", "access": "A store As[r*BK+c]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "reg2d", "access": "A load As[k*BM+trow*TM+i]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "reg2d", "access": "B load Bs[k*BN+tcol*TN+j]", "wavefronts": 4, "ideal": 1, "conflict_degree": 4.0}
+{"kernel": "reg2d", "access": "A store As[c*BM+r] (transpose)", "wavefronts": 8, "ideal": 1, "conflict_degree": 8.0}
+{"kernel": "reg2d", "access": "B store Bs[r*BN+c]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "reg2d_nc", "access": "A load As[k*LDA+trow*TM+i]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "reg2d_nc", "access": "B load Bs[k*BN+tcol+j*16]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "reg2d_nc", "access": "A store As[c*LDA+r] (transpose)", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "reg2d_nc", "access": "B store Bs[r*BN+c]", "wavefronts": 1, "ideal": 1, "conflict_degree": 1.0}
+{"kernel": "vec4", "access": "A load float4 As[k][trow*8]", "wavefronts": 4, "ideal": 4, "conflict_degree": 1.0}
+{"kernel": "vec4", "access": "B load float4 Bs[k][tcol*8]", "wavefronts": 8, "ideal": 4, "conflict_degree": 2.0}
+{"kernel": "vec4", "access": "A store As[ak+q][ar] (transpose)", "wavefronts": 2, "ideal": 1, "conflict_degree": 2.0}
+{"kernel": "vec4", "access": "B store float4 Bs[br][bc]", "wavefronts": 4, "ideal": 4, "conflict_degree": 1.0}

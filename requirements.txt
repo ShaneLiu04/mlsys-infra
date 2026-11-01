@@ -1,0 +1,12 @@
+# CPU dependencies for every test suite, experiment script and figure in this repo.
+# Tested with Python 3.12: numpy 2.5, scipy 1.18, pandas 3.1, matplotlib 3.11, torch 2.6 (CPU), transformers 4.57.
+# CPU-only torch: pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+# GPU extras (Triton kernels, CUDA benchmarks): see requirements-gpu.txt.
+numpy>=1.26
+scipy>=1.11
+pandas>=2.1
+matplotlib>=3.8
+pytest>=8.0
+torch>=2.3
+safetensors>=0.4
+transformers>=4.45

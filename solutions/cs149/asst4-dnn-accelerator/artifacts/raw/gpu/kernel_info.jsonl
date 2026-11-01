@@ -1,0 +1,13 @@
+{"kernel": "naive", "regs": 40, "smem_bytes": 0, "threads": 1024, "blocks_per_sm": 1, "warps_per_sm": 32, "theoretical_occupancy": 0.6666666666666666, "max_warps_per_sm": 48}
+{"kernel": "coalesced", "regs": 40, "smem_bytes": 0, "threads": 1024, "blocks_per_sm": 1, "warps_per_sm": 32, "theoretical_occupancy": 0.6666666666666666, "max_warps_per_sm": 48}
+{"kernel": "smem8", "regs": 39, "smem_bytes": 512, "threads": 64, "blocks_per_sm": 24, "warps_per_sm": 48, "theoretical_occupancy": 1.0, "max_warps_per_sm": 48}
+{"kernel": "smem16", "regs": 40, "smem_bytes": 2048, "threads": 256, "blocks_per_sm": 6, "warps_per_sm": 48, "theoretical_occupancy": 1.0, "max_warps_per_sm": 48}
+{"kernel": "smem32", "regs": 40, "smem_bytes": 8192, "threads": 1024, "blocks_per_sm": 1, "warps_per_sm": 32, "theoretical_occupancy": 0.6666666666666666, "max_warps_per_sm": 48}
+{"kernel": "reg1d", "regs": 51, "smem_bytes": 4096, "threads": 512, "blocks_per_sm": 2, "warps_per_sm": 32, "theoretical_occupancy": 0.6666666666666666, "max_warps_per_sm": 48}
+{"kernel": "reg2d", "regs": 110, "smem_bytes": 8192, "threads": 256, "blocks_per_sm": 2, "warps_per_sm": 16, "theoretical_occupancy": 0.3333333333333333, "max_warps_per_sm": 48}
+{"kernel": "vec4", "regs": 119, "smem_bytes": 8192, "threads": 256, "blocks_per_sm": 2, "warps_per_sm": 16, "theoretical_occupancy": 0.3333333333333333, "max_warps_per_sm": 48}
+{"kernel": "vec4_db", "regs": 128, "smem_bytes": 16384, "threads": 256, "blocks_per_sm": 2, "warps_per_sm": 16, "theoretical_occupancy": 0.3333333333333333, "max_warps_per_sm": 48}
+{"kernel": "wmma_fp16", "regs": 118, "smem_bytes": 37888, "threads": 256, "blocks_per_sm": 2, "warps_per_sm": 16, "theoretical_occupancy": 0.3333333333333333, "max_warps_per_sm": 48}
+{"kernel": "skinny8", "regs": 64, "smem_bytes": 8192, "threads": 256, "blocks_per_sm": 4, "warps_per_sm": 32, "theoretical_occupancy": 0.6666666666666666, "max_warps_per_sm": 48}
+{"kernel": "vec4_db_lb2", "regs": 127, "smem_bytes": 16384, "threads": 256, "blocks_per_sm": 2, "warps_per_sm": 16, "theoretical_occupancy": 0.3333333333333333, "max_warps_per_sm": 48}
+{"kernel": "reg2d_nc", "regs": 104, "smem_bytes": 8320, "threads": 256, "blocks_per_sm": 2, "warps_per_sm": 16, "theoretical_occupancy": 0.3333333333333333, "max_warps_per_sm": 48}

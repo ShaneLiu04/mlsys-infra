@@ -1,0 +1,65 @@
+{
+  "runs": [
+    {
+      "platform": "server_r2",
+      "cores": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        10,
+        11,
+        14,
+        16,
+        19,
+        23
+      ],
+      "smt_offset": 64,
+      "remote_cores": [
+        32,
+        33,
+        34,
+        36,
+        37,
+        38,
+        40,
+        41,
+        43,
+        44,
+        45,
+        47
+      ],
+      "max_threads": 12,
+      "uname": "Linux-5.15.0-78-generic-x86_64-with-glibc2.35",
+      "python": "3.12.3",
+      "started": "2026-10-28 11:07:43",
+      "finished": "2026-10-28 11:11:48"
+    },
+    {
+      "platform": "server_r2",
+      "cores": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        10,
+        11,
+        14,
+        16,
+        19,
+        23
+      ],
+      "smt_offset": 64,
+      "remote_cores": [],
+      "max_threads": 12,
+      "uname": "Linux-5.15.0-78-generic-x86_64-with-glibc2.35",
+      "python": "3.12.3",
+      "started": "2026-10-28 11:23:08",
+      "finished": "2026-10-28 11:26:32"
+    }
+  ]
+}

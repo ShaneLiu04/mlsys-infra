@@ -1,0 +1,29 @@
+{"kind": "env", "gpu": "NVIDIA GeForce RTX 5090", "sms": 170, "vram_bytes": 33670758400, "torch": "2.8.0+cu128", "cuda": "12.8", "python": "3.12.3"}
+{"kind": "recompute", "model": "gpt2-774m", "ckpt": "none", "every": 1, "batch": 8, "seq": 1024, "activations": 16880459264, "peak_bwd_over_static": 20174102016, "static": 9305754624, "peak_total": 29471336960, "step_s": 0.28264261689037085, "tokens_per_s": 28983.59805088221, "mfu_nominal": 0.7208423540590273}
+{"kind": "recompute", "model": "gpt2-774m", "ckpt": "full", "every": 1, "batch": 8, "seq": 1024, "activations": 3348418048, "peak_bwd_over_static": 7235057152, "static": 9305754624, "peak_total": 16540811776, "step_s": 0.33605250529944897, "tokens_per_s": 24377.143067867593, "mfu_nominal": 0.6062765969713864}
+{"kind": "recompute", "model": "gpt2-774m", "ckpt": "full", "every": 2, "batch": 8, "seq": 1024, "activations": 10110178816, "peak_bwd_over_static": 13403821568, "static": 9305754624, "peak_total": 22709576192, "step_s": 0.31002084724605083, "tokens_per_s": 26424.029457278226, "mfu_nominal": 0.657184093026357}
+{"kind": "recompute", "model": "gpt2-774m", "ckpt": "mlp", "every": 1, "batch": 8, "seq": 1024, "activations": 9131089408, "peak_bwd_over_static": 12545869312, "static": 9305754624, "peak_total": 21851623936, "step_s": 0.30898339208215475, "tokens_per_s": 26512.75184985299, "mfu_nominal": 0.6593906809803118}
+{"kind": "recompute", "model": "gpt2-774m", "ckpt": "attn", "every": 1, "batch": 8, "seq": 1024, "activations": 12599217664, "peak_bwd_over_static": 15892860416, "static": 9305754624, "peak_total": 25198615040, "step_s": 0.30604328121989965, "tokens_per_s": 26767.455790391443, "mfu_nominal": 0.6657253461162114}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "none", "every": 1, "batch": 4, "ok": true, "step_s": 0.15673290193080902, "peak_total": 20160621056, "tokens_per_s": 26133.632118980426}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "none", "every": 1, "batch": 8, "ok": true, "step_s": 0.283646984025836, "peak_total": 29471336960, "tokens_per_s": 28880.96987223327}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "none", "every": 1, "batch": 12, "ok": false}
+{"kind": "maxbatch", "model": "gpt2-774m", "ckpt": "none", "every": 1, "seq": 1024, "max_batch": 8, "step_s": 0.283646984025836, "tokens_per_s": 28880.96987223327}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "full", "every": 1, "batch": 4, "ok": true, "step_s": 0.18393624760210514, "peak_total": 13695754752, "tokens_per_s": 22268.585194042644}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "full", "every": 1, "batch": 8, "ok": true, "step_s": 0.3366099465638399, "peak_total": 16540811776, "tokens_per_s": 24336.773418685483}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "full", "every": 1, "batch": 12, "ok": true, "step_s": 0.5002619531005621, "peak_total": 19385868800, "tokens_per_s": 24563.131223233122}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "full", "every": 1, "batch": 16, "ok": true, "step_s": 0.6707239858806133, "peak_total": 22461340160, "tokens_per_s": 24427.33575196206}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "full", "every": 1, "batch": 20, "ok": true, "step_s": 0.8328291736543179, "peak_total": 25718102528, "tokens_per_s": 24590.87727455214}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "full", "every": 1, "batch": 24, "ok": true, "step_s": 0.9948908109217882, "peak_total": 28974864896, "tokens_per_s": 24702.20825261196}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "full", "every": 1, "batch": 32, "ok": false}
+{"kind": "maxbatch", "model": "gpt2-774m", "ckpt": "full", "every": 1, "seq": 1024, "max_batch": 24, "step_s": 0.9948908109217882, "tokens_per_s": 24702.20825261196}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "mlp", "every": 1, "batch": 4, "ok": true, "step_s": 0.1691176723688841, "peak_total": 16351179264, "tokens_per_s": 24219.82246223028}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "mlp", "every": 1, "batch": 8, "ok": true, "step_s": 0.30910154059529305, "peak_total": 21851623936, "tokens_per_s": 26502.61782656656}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "mlp", "every": 1, "batch": 12, "ok": true, "step_s": 0.4589182585477829, "peak_total": 27642636800, "tokens_per_s": 26776.010261358046}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "mlp", "every": 1, "batch": 16, "ok": false}
+{"kind": "maxbatch", "model": "gpt2-774m", "ckpt": "mlp", "every": 1, "seq": 1024, "max_batch": 12, "step_s": 0.4589182585477829, "tokens_per_s": 26776.010261358046}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "full", "every": 2, "batch": 4, "ok": true, "step_s": 0.1698244009166956, "peak_total": 16722749952, "tokens_per_s": 24119.031057316795}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "full", "every": 2, "batch": 8, "ok": true, "step_s": 0.3103862851858139, "peak_total": 22709576192, "tokens_per_s": 26392.91873059349}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "full", "every": 2, "batch": 12, "ok": true, "step_s": 0.46012426912784576, "peak_total": 28993315328, "tokens_per_s": 26705.82889116369}
+{"kind": "maxbatch_try", "model": "gpt2-774m", "ckpt": "full", "every": 2, "batch": 16, "ok": false}
+{"kind": "maxbatch", "model": "gpt2-774m", "ckpt": "full", "every": 2, "seq": 1024, "max_batch": 12, "step_s": 0.46012426912784576, "tokens_per_s": 26705.82889116369}
+{"kind": "done", "cmd": "recompute", "wall_s": 39.25871443748474}

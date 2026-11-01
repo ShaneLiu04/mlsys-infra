@@ -1,0 +1,327 @@
+\section{LLM 推理与服务}
+\label{sec:infer}
+
+LLM 推理是 2023 年以来面试权重上升最快的方向。它与训练的根本区别在于自回归 decode：每生成一个 token 都要把全部权重
+与该序列的全部 KV cache 读一遍，而计算量只有 $2N$ FLOPs。本节从 roofline 出发区分 prefill 与 decode，推导 KV cache 的大小，
+再讨论批处理与调度（continuous batching、PagedAttention、chunked prefill、PD 分离、前缀缓存）、推测解码与量化。
+
+\subsection{Prefill 与 decode 的 roofline}
+
+prefill 一次处理整段 prompt，线性层是 $[B\cdot T_p, d]\times[d,d]$ 的 GEMM，强度很高，受算力限制，决定首 token 时延（TTFT）；
+decode 每步每条序列只处理一个 token，线性层退化为 GEMV（batch 为 $B$ 时为 $M=B$ 的瘦 GEMM），受带宽限制，决定每 token 时延（TPOT）。
+Pope 等人对此做了系统分析~\cite{pope2023efficiently}。忽略非矩阵运算，单个 decode 步的 roofline 下界为
+\begin{equation}
+t_{\text{dec}} \approx \max\!\left(\frac{2NB + 4Ld\,TB}{P_{\text{peak}}},\ \frac{sN + \mathrm{KV}(T,B)}{\mathrm{BW}}\right),
+\label{eq:decode}
+\end{equation}
+其中 $4LdTB$ 是 attention 对上下文 $T$ 的点积与加权求和，$\mathrm{KV}(T,B)$ 是 KV cache 字节数（式~\eqref{eq:kv}）。
+只看权重时强度 $I\approx2NB/(sN)=B$（BF16），所以\emph{临界 batch 约等于拐点}：H100 上 $B^\ast\approx295$。
+但 KV 读取不能被 batch 分摊，长上下文下它先成为瓶颈：图~\ref{fig:intbatch} 显示，上下文 4096 时 Llama-3-8B 的 decode 强度在大 batch 下趋于约 30，
+32K 时只有约 7，永远到不了拐点；而 prefill（每序列 512 token）的线性层强度在 batch 1 时就已超过 400。
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig_intensity_batch}
+\caption{Llama-3-8B 在 BF16 下 prefill 与 decode 的算术强度随 batch 的变化（\texttt{mlsys\_calc.decode\_step\_time}）。
+不计 KV（ctx=0）时 decode 强度等于 $B$，在 $B\approx295$ 越过 H100 拐点；计入 KV 后强度饱和于一个与上下文长度相关的常数。
+prefill 的线性层在任何 batch 下都受算力限制。}
+\label{fig:intbatch}
+\end{figure}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{fig_decode_throughput}
+\caption{decode 吞吐的 roofline 上界随 batch 的变化。左：Llama-3-8B 单张 H100；右：Llama-3-70B 在理想 TP=8 的 8 卡 H100 上（聚合算力与带宽，忽略 all-reduce）。
+实线表示权重与 KV 能放入 HBM，虚线表示放不下。ctx=0 曲线在 $B^\ast=295$ 处出现从访存受限到算力受限的拐点；
+上下文越长，曲线越早饱和，并且在到达拐点前就因 KV 放不下而终止。}
+\label{fig:decodetput}
+\end{figure*}
+
+\begin{est}{H100 上 Llama-3-8B 的 decode 上限}
+权重 $8.03\times10^9\times2\approx16.06$~GB。batch=1、上下文 4096：KV 0.54~GB，每步读 16.6~GB，$t\ge16.6/3.35\approx4.95$~ms，约 202~token/s；
+计算只有 $2N\approx16$~GFLOP，用到峰值的 0.3\%。batch=64：KV 34.4~GB，每步 15.05~ms，约 4252~token/s，仍受访存限制。
+batch=256 时 KV 达 137~GB，单卡放不下（\texttt{inference\_math.csv} 与配套实验 CS229S P2 一致）。
+对比短上下文的 7B 模型、batch=512：读权重 14~GB 需 4.2~ms，计算 $2\times7\times10^9\times512/989\times10^{12}\approx7.2$~ms，
+\emph{已受算力限制}——这是 RL rollout 等大 batch 场景中推测解码收益消失的原因。
+\end{est}
+
+\begin{qa}{prefill 和 decode 的瓶颈分别是什么？这对系统设计意味着什么？}
+\ans prefill 是 GEMM、受算力限制，决定 TTFT 与算力需求；decode 是 GEMV/瘦 GEMM、受带宽限制（读全部权重与 KV），决定 TPOT 与显存带宽、容量需求。
+两者混跑会互相干扰：一个长 prefill 让同批 decode 的 TPOT 抖动。这导出了 chunked prefill（把 prefill 切块混入 decode 步）与 PD 分离（分池部署，各自按 TTFT/TPOT 配并行度）。
+\wrong 「decode 慢是因为计算量大」。
+\end{qa}
+
+\subsection{KV cache 的大小}
+
+每层每个 token 存一个 K 向量与一个 V 向量，长度为 $n_{kv}\cdot d_{\text{head}}$：
+\begin{equation}
+\mathrm{KV}(T,B) = 2\cdot L\cdot n_{kv}\cdot d_{\text{head}}\cdot T\cdot B\cdot s .
+\label{eq:kv}
+\end{equation}
+Llama-3-8B（$L=32$、$n_{kv}=8$、$d_{\text{head}}=128$）为 128~KiB/token；Llama-3-70B（$L=80$、$n_{kv}=8$）为 320~KiB/token；
+没有 GQA 的 Llama-2-7B（$n_{kv}=32$）为 512~KiB/token~\cite{touvron2023llama,dubey2024llama3}。表~\ref{tab:kv} 与图~\ref{fig:kv} 给出了不同上下文下的数值。
+
+\begin{table}[!t]
+\centering
+\caption{KV cache 大小（BF16，batch=1，GiB；\texttt{mlsys\_calc.kv\_cache\_bytes}）}
+\label{tab:kv}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\columnwidth}{@{}l c c Y Y Y@{}}
+\toprule
+模型 & $n_{kv}$ & KiB/tok & 8K & 32K & 128K \\
+\midrule
+Llama-2-7B（MHA） & 32 & 512 & 4.0 & 16.0 & 64.0 \\
+Llama-3-8B（GQA-8） & 8 & 128 & 1.0 & 4.0 & 16.0 \\
+Llama-3-70B（GQA-8） & 8 & 320 & 2.5 & 10.0 & 40.0 \\
+70B 若为 MHA（反事实） & 64 & 2560 & 20.0 & 80.0 & 320.0 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig_kv_cache}
+\caption{KV cache 随上下文长度的增长（batch=1，BF16）。实线为 GQA-8 的真实模型，虚线为同规模 MHA。
+Llama-3-8B 在 128K 时 KV 为 16~GiB，已与其 16~GB 的权重相当；70B 若为 MHA，32K 上下文的一条序列就需 80~GiB，占满一张 H100。
+GQA 把 KV 缩小 $n_{\text{heads}}/n_{kv}$ 倍（8B 为 4 倍、70B 为 8 倍）。}
+\label{fig:kv}
+\end{figure}
+
+\begin{est}{8K 与 128K 上下文的 KV cache}
+Llama-3-8B：$2\times32\times8\times128\times2=131072$~B=128~KiB/token；8K 一条序列 1~GiB，batch 32 为 32~GiB（34~GB）；128K 一条序列 16~GiB。
+Llama-3-70B：320~KiB/token，8K 为 2.5~GiB，128K 为 40~GiB——一条 128K 序列就要半张 H100。同条件下 Llama-2-7B 的 8K、batch 32 需 128~GiB。
+在 128K 下，decode 的瓶颈已从「读权重」变为「读 KV」，这是 KV 量化、GQA/MLA 与上下文并行的出发点。
+\end{est}
+
+\begin{qa}{KV cache 为什么能省计算？它本身的代价是什么？}
+\ans 不缓存时每步要为全部前缀重算 K、V 投影，生成 $T$ 个 token 的总代价为 $O(T^2)$ 次线性层；缓存后每步只算新 token，总计 $O(T)$。
+代价是显存 $2Ln_{kv}d_{\text{head}}TBs$，它决定最大并发与最长上下文；每步仍需读全部 KV 做点积，attention 的读取量随 $T$ 线性增长。
+配套实验（CS229S P2，CPU）中 $T=1024$ 时 KV cache 把生成速度从 38.9 提到 499~token/s（12.8 倍），总耗时从 $\sim T^2$ 变为 $\sim T$。
+\wrong 「KV cache 减少了 attention 的计算」；或计算 KV 时用 $n_{\text{heads}}$ 而不是 $n_{kv}$（GQA 下差 4--8 倍）。
+\end{qa}
+
+\subsection{MQA、GQA 与 MLA}
+
+MQA~\cite{shazeer2019fast} 让所有查询头共享一组 K/V，KV 缩小 $n_{\text{heads}}$ 倍但有质量损失；GQA~\cite{ainslie2023gqa} 让每组查询头共享一组 K/V，
+在质量与 KV 大小之间折中，且可以从 MHA checkpoint 经少量 uptraining 得到。二者都不改变 attention 的 FLOPs（每个查询头仍与 $T$ 个 key 做点积），
+减少的是 KV 的存储与读取，因此 decode attention 的强度提高 $n_{\text{heads}}/n_{kv}$ 倍。DeepSeek-V2 的 MLA~\cite{deepseekai2024v2} 缓存一个低秩压缩的 latent
+（512 维）加一个解耦的 RoPE key（64 维），推理时把上投影矩阵吸收进查询与输出投影；论文报告其 KV cache 比 DeepSeek 67B 减少 93.3\%。
+
+\begin{qa}{GQA、MLA、KV INT8 量化各自省了什么、代价是什么？}
+\ans GQA 减少 KV 头数，KV 与 decode attention 的读取量降 $n_{\text{heads}}/n_{kv}$ 倍，改变模型结构，需要从训练开始或 uptrain；
+MLA 缓存低秩 latent，压缩比更高，但实现复杂（RoPE 需解耦、需要吸收投影矩阵的 kernel）；KV INT8/FP8 量化无需重训，KV 减半，有轻微精度损失与反量化开销。
+三者可以叠加。
+\wrong 「GQA 减少了 attention 的 FLOPs」。
+\end{qa}
+
+\subsection{批处理与调度}
+
+\textbf{Continuous batching}。传统的静态批处理要等一批中最长的请求生成完才能换下一批。Orca~\cite{yu2022orca} 提出 iteration-level 调度：
+每个 decode 步都可以让完成的请求离开、新请求加入；并用 selective batching 只对线性层拼批、对 attention 按请求分别计算。
+
+\textbf{PagedAttention}。按最大长度为每条序列连续预分配 KV 会产生大量内部碎片与预留浪费。vLLM~\cite{kwon2023vllm} 借鉴操作系统的分页：
+KV 按固定大小的块（默认 16 token）分配，用块表把逻辑块映射到物理块，浪费只发生在最后一块；并行采样与 beam search 可以共享前缀块（引用计数 + copy-on-write）。
+论文报告相对当时的系统吞吐提升 2--4 倍。
+
+\textbf{Chunked prefill}。Sarathi-Serve~\cite{agrawal2024sarathi,agrawal2023sarathi} 把长 prompt 切成固定预算的块，与 decode 拼在同一步里（stall-free batching）：
+decode 受访存限制，捎带的 prefill 计算几乎免费，同时消除了长 prefill 对 decode 的「卡顿」。
+
+\textbf{PD 分离}。DistServe~\cite{zhong2024distserve} 与 Splitwise~\cite{patel2024splitwise} 把 prefill 与 decode 放到不同的 GPU 池，
+各自选择并行度与 batch，按 goodput（满足 TTFT 与 TPOT SLO 的请求率）优化；代价是 KV 需要跨卡/跨机传输。DistServe 报告在相同 SLO 下可服务的请求率最高提升 7.4 倍。
+
+\textbf{前缀缓存}。SGLang~\cite{zheng2024sglang} 的 RadixAttention 用基数树管理 KV，自动复用不同请求间共享的前缀（系统提示词、few-shot 示例、多轮对话历史），
+配合缓存感知的调度（优先调度命中前缀长的请求）。
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{fig_lab_serving}
+\caption{本文配套实验（15-849 服务与显存）的 KV 分配与调度模拟（Llama-3-8B、H100，步长时间来自 roofline 模型）。
+左：10k 个请求（对数正态长度）的生命周期平均 KV 浪费与并发序列数：按 4096 连续预留浪费 85.6\%、并发 104；即使预知最终长度仍浪费 23.5\%；分页 block=16 浪费 1.25\%、并发 714。
+中：goodput 随到达率的变化（SLO：TTFT$\le$1~s 且 TPOT$\le$50~ms），static 峰值 0.97~req/s，continuous 70.2，chunked 85.7。
+右：P99 TTFT，虚线为 1~s 的 SLO。所有时延都是模型输出，没有 kernel launch 与 CPU 调度开销，绝对值偏乐观，可引用的是相对关系与拐点。}
+\label{fig:labserving}
+\end{figure*}
+
+\lab{15-849 服务与显存}实现了块表、引用计数、copy-on-write fork、swap/recompute 抢占，以及按块表 gather 的 attention（与连续实现逐元素相等），
+再用离散事件模拟比较三种调度（图~\ref{fig:labserving}）。饱和吞吐（$\lambda=160$~req/s）从 static 的 891~token/s 提到 continuous 的 14,050 与 chunked 的 16,156；
+最长单次迭代从 5448~ms 降到 121~ms 再到 9.2~ms；$\lambda=100$ 时 P99 TTFT 分别为 583~s、4.58~s 与 0.595~s。
+把 KV 预算压到 6.55~GB、$\lambda=60$ 时，continuous 抢占 73 次、重算 26,480 个 prefill token，goodput 跌到 6.9~req/s，而 chunked 只抢占 39 次、保住 51.1。
+分页浪费可以白板估算：每条序列浪费 $\le$ block$-1$ 个 token，平均约 block/2，$8/590\approx1.4\%$，与实测 1.25\% 吻合。
+
+\begin{qa}{PagedAttention 解决的是什么问题？代价呢？block 大小怎么取？}
+\ans 解决 KV 的内部碎片与预留浪费：连续预留按最大长度分配，平均浪费可达 80\% 以上；分页后浪费只在最后一块，并能在并行采样、beam search 与前缀间共享块。
+代价是 attention kernel 要按块表间接寻址，块越小访存越零碎、块表越大。block 越小浪费越少，vLLM 默认 16 是浪费与 kernel 效率的折中。
+\wrong 「PagedAttention 减少了 KV 的大小」——它减少的是浪费，不是 KV 本身。
+\end{qa}
+
+\begin{qa}{continuous batching 与 static batching 的区别？chunked prefill 又解决了什么？}
+\ans static batching 一批请求要等最长的那条结束，短请求空等，新请求排队；continuous（iteration-level）每个 decode 步重新组批，吞吐与平均时延都更好。
+但新请求的整段 prefill 混进一步时，这一步会变得很长，同批 decode 的 TPOT 尖峰明显；chunked prefill 给每步设 token 预算，把 prefill 切块，
+本文模拟中最长一步从 121~ms 降到 9.2~ms。
+\wrong 「continuous batching 就是 batch 更大」。
+\end{qa}
+
+\begin{qa}{chunked prefill 和 PD 分离怎么选？}
+\ans chunked prefill 在同一组 GPU 上平滑干扰，部署简单、无 KV 传输，但 prefill 与 decode 仍共享同一并行配置；PD 分离让两池各自按 TTFT、TPOT 选 TP 与 batch，
+在大规模、SLO 严格时 goodput 更高，代价是 KV 传输（70B、2K token 的 KV 为 640~MB，50~GB/s 上约 13~ms）与两池容量配比的运维复杂度。
+规模小或 prompt 短时选前者，规模大、prompt 长、SLO 严格时选后者。
+\wrong 「PD 分离总是更好」——小规模下两个池都吃不满。
+\end{qa}
+
+\begin{est}{70B 模型在线推理 100~req/s 需要多少张 H100？}
+假设输入 2K、输出 500 token，TTFT P99$<$2~s、TPOT P99$<$50~ms，8$\times$H100 节点、TP=8。
+\emph{权重}：$70.6\times10^9\times2=141$~GB，每卡 17.6~GB。\emph{KV 预算}：每卡 $80\times0.9-17.6-4\approx50$~GB，按 TP 切 KV 头后每卡 40~KiB/token，节点约 123 万 token，
+约 490 条 2.5K 的并发序列。\emph{decode}（batch 256、平均上下文 2.5K）：读权重 $141/(8\times3.35)\approx5.3$~ms，读 KV $256\times2500\times320\,\text{KiB}/26.8\,\text{TB/s}\approx7.8$~ms，
+计算 4.6~ms，仍受访存限制，单步约 13~ms，按 50\% 效率约 1 万 token/s/节点；需求 $100\times500=5$ 万 token/s，约 5 个节点。
+\emph{prefill}：$100\times2\text{K}$ token/s，$2\times70.6\times10^9\times2\times10^5\approx28$~PFLOP/s，单节点 7.9~PFLOP/s、按 50\% MFU 约 4，需约 7 个节点。
+合计约 12 个节点、96 张 H100，其中一半以上给 prefill。前缀缓存与 FP8 是最便宜的两项优化。
+\end{est}
+
+\begin{qa}{什么时候前缀缓存（prefix caching）最值钱？它的代价是什么？}
+\ans 当请求间共享长前缀时：固定的系统提示词、few-shot 模板、多轮对话、agent 的工具描述、对同一文档的多次提问。命中后省掉该段的 prefill 计算与 TTFT。
+代价是缓存占用 KV 显存（与并发争用）、需要淘汰策略（LRU/基于基数树的引用计数），以及路由要有亲和性（同一前缀落到同一实例），否则命中率很低。
+\wrong 「前缀缓存会改变模型输出」——命中的是完全相同前缀的精确 KV。
+\end{qa}
+
+\subsection{推测解码}
+
+推测解码~\cite{leviathan2023fast,chen2023accelerating} 用便宜的草稿模型 $q$ 连续提议 $\gamma$ 个 token，目标模型 $p$ 用一次前向并行验证。
+第 $i$ 个草稿 token 以概率 $\min(1,p(x)/q(x))$ 接受；第一次拒绝时从残差分布 $\mathrm{norm}(\max(0,p-q))$ 重采样并截断；全部接受时再由目标模型多采一个 token。
+设每个 token 的接受率为 $\alpha=\sum_x\min(p(x),q(x))=1-\mathrm{TV}(p,q)$（独立同分布假设），则每次目标前向产生的期望 token 数与加速比为
+\begin{equation}
+\mathbb{E}[\text{tokens}] = \sum_{i=0}^{\gamma}\alpha^i = \frac{1-\alpha^{\gamma+1}}{1-\alpha},\qquad
+S = \frac{\mathbb{E}[\text{tokens}]}{\gamma c + 1},
+\label{eq:spec}
+\end{equation}
+其中 $c$ 为一次草稿前向相对目标前向的成本。式中分母的「1」假设验证 $\gamma+1$ 个 token 与生成 1 个 token 同价——这在访存受限的 decode 上近似成立。
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{fig_speculative}
+\caption{推测解码。左：式~\eqref{eq:spec} 的期望 token 数随草稿长度 $\gamma$ 与接受率 $\alpha$ 的变化，五角星为 $\alpha=0.8,\gamma=4$ 时的 3.36。
+中：$\alpha=0.8$ 时理想加速比随 $\gamma$ 与草稿成本 $c$ 的变化，圆点为最优 $\gamma$：草稿越贵，最优 $\gamma$ 越短、收益越低。
+右：本文配套实验（CS229S P2，CPU，batch 1）中每次目标调用的实测 token 数（实心）与公式（空心）相差在 4\% 以内，但 CPU 上的墙钟加速只有 0.98--1.99 倍。}
+\label{fig:spec}
+\end{figure*}
+
+\begin{est}{$\alpha=0.8$、$\gamma=4$ 的推测解码}
+$\mathbb{E}=(1-0.8^5)/(1-0.8)=(1-0.32768)/0.2\approx3.36$ 个 token/次目标前向。若草稿成本 $c=0.05$，$S=3.36/(4\times0.05+1)=3.36/1.2\approx2.8$。
+由图~\ref{fig:spec} 中，$c=0.05$ 时最优 $\gamma$ 约为 8（$S\approx3.1$），$c=0.25$ 时最优 $\gamma$ 降到 3、$S$ 只有约 1.7。
+\end{est}
+
+\lab{CS229S P2}在合成语法上训练了 4 层目标模型（79.7 万参数）与 1 层草稿模型，实现了采样版接受--拒绝与贪心版推测解码，并用显式 $p,q$ 做了 60,000 次试验的分布检验。
+三个结论值得在面试中讲：（1）贪心版输出与目标模型逐 token 一致（16/16）；（2）$\alpha$ 必须用「接受数/（接受数+拒绝数）」估计，
+若用「接受数/提议数」，第一次拒绝之后从未被检验的草稿也进了分母，$\gamma=8$ 时会把 0.80 算成 0.41；
+（3）CPU 上验证 $\gamma+1$ 个 token 的前向是单 token 前向的 1.41--1.61 倍，草稿相对成本 $c=0.256$（被调用开销抬高，而非参数比 0.04），
+所以墙钟加速只有 0.98--1.99 倍。这不能推出「GPU 上也只有 2 倍」：GPU 上 batch=1 的 decode 受带宽限制，多验证几个 token 几乎不增加时间。
+
+Medusa~\cite{cai2024medusa} 在目标模型上加多个解码头并行预测后续 token，用树形 attention 一次验证多条候选；EAGLE~\cite{li2024eagle} 在特征层（倒数第二层隐状态）上做自回归草稿，
+接受率更高。它们都以「免去独立草稿模型」为目标，但仍受同一条约束：只有当验证近乎免费（访存受限）时才划算。
+
+\begin{qa}{推测解码为什么不改变输出分布？}
+\ans 对任一 token $x$，输出 $x$ 的概率 $=q(x)\min(1,p(x)/q(x))+P(\text{拒绝})\cdot\frac{\max(0,p(x)-q(x))}{\sum_y\max(0,p(y)-q(y))}$。
+第一项为 $\min(p,q)$；拒绝概率为 $1-\sum\min(p,q)=\sum\max(0,p-q)$，所以第二项为 $\max(0,p-q)$。两者之和恰为 $p(x)$。
+贪心版则保证输出与目标模型的贪心解码完全相同。
+\wrong 「草稿模型猜错的 token 会混进输出」；或「推测解码是近似方法」。
+\end{qa}
+
+\begin{qa}{大 batch 下推测解码还划算吗？}
+\ans 通常不划算。batch 越大，decode 越接近算力受限（7B、batch 512 时已受算力限制），多验证的 $\gamma$ 个 token 不再免费，
+式~\eqref{eq:spec} 的分母变成 $\gamma c+v$，$v$ 随 batch 增大而接近 $\gamma+1$；同时被拒绝的 token 浪费了算力。所以高吞吐服务通常只在低负载时打开推测解码，
+或者动态调整 $\gamma$。
+\wrong 「推测解码在任何负载下都能加速」。
+\end{qa}
+
+\subsection{量化}
+
+线性量化把张量映射到 $b$ 位整数网格：对称量化 $\text{scale}=\max|x|/(2^{b-1}-1)$，$q=\mathrm{round}(x/\text{scale})$，误差上界为 scale/2。
+粒度从粗到细为 per-tensor、per-channel、per-group（$g=64/128$）。LLM 量化的核心难点是激活离群值：少数固定通道的幅值比其它通道大数十到上百倍~\cite{dettmers2022llmint8}，
+per-tensor 的 scale 被它撑大，其余通道几乎都被量化成 0。表~\ref{tab:quant} 汇总了主要方法。
+
+\begin{table*}[!t]
+\centering
+\caption{LLM 量化方法对比（W$x$A$y$：权重 $x$ 位、激活 $y$ 位）}
+\label{tab:quant}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}l c L{3.4cm} Y Y@{}}
+\toprule
+方法 & 典型配置 & 核心思想 & 加速来源 & 代价与局限 \\
+\midrule
+LLM.int8()~\cite{dettmers2022llmint8} & W8A8 + FP16 离群 & 把幅值超阈值（6）的特征维拆出走 FP16，其余 INT8 & 显存减半 & 混合分解需额外 kernel，吞吐不一定提升 \\
+SmoothQuant~\cite{xiao2023smoothquant} & W8A8 & $XW=(X\mathrm{diag}(s)^{-1})(\mathrm{diag}(s)W)$，把激活难度按通道挪到权重 & INT8 tensor core，prefill 与 decode 都受益 & 需要校准；权重也变难量化 \\
+GPTQ~\cite{frantar2023gptq} & W4A16/W3A16 & 逐列量化，用 Hessian $H=X^\top X$ 的逆把舍入误差补偿到未量化的列 & decode 读权重字节减少 & 依赖校准数据的协方差；prefill 不加速 \\
+AWQ~\cite{lin2024awq} & W4A16 & 按激活幅值找出约 1\% 的显著权重通道，用等价缩放保护 & 同上，硬件友好（无混合精度） & 需要校准；仍是 weight-only \\
+QLoRA~\cite{dettmers2023qlora} & NF4 权重 + BF16 LoRA & 4 位 NormalFloat、双重量化、分页优化器 & 微调显存 & 训练吞吐低于 BF16 \\
+FP8~\cite{micikevicius2022fp8} & W8A8（E4M3） & 浮点格式自带动态范围，per-tensor/per-block scale & H100 tensor core 2 倍算力 & 需要 scale 管理；仅新硬件支持 \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{fig_lab_compress}
+\caption{本文配套实验（15-849 编译与压缩）。左：在 1024 个通道中放入 8 个离群通道，W8A8（权重 per-channel）的相对输出误差随离群倍数的变化。
+50 倍离群时 per-tensor 激活量化误差 10.2\%，per-token 5.17\%，SmoothQuant（$\alpha=0.5$）1.99\%，LLM.int8 0.49\%；虚线显示 per-tensor 下普通通道部分的误差高达 43.6\%（100 倍时 80.8\%），
+整体误差「只有」10\% 是因为离群通道同时主导了输出范数。右：Transformer MLP 块的融合，HBM 流量 $-49\%$ 而 roofline 时间仅 $-16\%$（第~\ref{sec:kernel} 节）。数据为合成，用于说明机制。}
+\label{fig:labcompress}
+\end{figure*}
+
+\lab{15-849 编译与压缩}的结果见图~\ref{fig:labcompress}。另有两点值得一提：权重量化方面，重尾（Student-$t$）权重下 INT8 per-tensor 误差 20.6\%，per-channel 1.97\%，group128 1.11\%，
+说明一个极大值决定了整表步长；GPTQ 只在输入有相关性时有用——输入谱衰减为 1.0 时测试误差 3.5\%（RTN 25.3\%），各向同性输入下反而略差（28.2\% 对 26.4\%），
+因为 $H\approx cI$ 时没有可利用的相关性，补偿只拟合了校准集的采样噪声。
+
+\begin{qa}{为什么 LLM 的激活难量化，权重容易？}
+\ans 权重近似零均值、离群值少；激活在少数固定通道上有大几十到上百倍的离群值，per-tensor INT8 的 scale 被撑大，普通通道只剩几个量化级。
+离群值按\emph{通道}出现而非按 token，所以 per-token 只能缓解（配套实验中误差减半）。LLM.int8 把离群通道拆出去走 FP16；SmoothQuant 用逐通道缩放把激活的难度挪到权重上。
+\wrong 「INT8 对所有张量都一样好做」。
+\end{qa}
+
+\begin{qa}{weight-only 量化（W4A16）为什么能加速 decode，却不一定加速 prefill？W4A16 与 W8A8 怎么选？}
+\ans decode 受带宽限制，读 INT4 权重比 BF16 少 4 倍字节，反量化在寄存器里做，计算不是瓶颈；prefill 受算力限制，权重仍要反量化成 BF16 才能上 tensor core，
+算力没省，反而多了反量化开销。小 batch、低时延的 decode 选 W4A16；大 batch、prefill 占比高、算力受限的服务选 W8A8 或 FP8（用 INT8/FP8 tensor core）。
+\wrong 「量化总是更快」；「4 位一定比 8 位快」。
+\end{qa}
+
+\begin{table*}[!t]
+\centering
+\caption{LLM 服务系统的关键技术对比}
+\label{tab:serving}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}l L{3.2cm} L{3.6cm} Y@{}}
+\toprule
+系统/技术 & 解决的问题 & 机制 & 代价与适用条件 \\
+\midrule
+Orca~\cite{yu2022orca} & 静态批处理的空等与排队 & iteration-level 调度、selective batching & 需要 KV 管理支持动态加入/离开 \\
+vLLM~\cite{kwon2023vllm} & KV 碎片与预留浪费 & PagedAttention：块表、引用计数、CoW、抢占（swap/recompute） & kernel 间接寻址；块大小折中 \\
+Sarathi-Serve~\cite{agrawal2024sarathi} & prefill 造成 decode 卡顿（TPOT 尖峰） & chunked prefill、stall-free batching、token 预算 & prefill 被切块后 TTFT 略增；预算需调 \\
+DistServe~\cite{zhong2024distserve} / Splitwise~\cite{patel2024splitwise} & prefill 与 decode 干扰、并行配置耦合 & PD 分离、按 goodput 规划两池并行度 & KV 跨机传输；容量配比与运维 \\
+SGLang~\cite{zheng2024sglang} & 请求间前缀重复计算；结构化程序 & RadixAttention 前缀缓存、缓存感知调度、约束解码 & 缓存占用显存；需要亲和路由 \\
+推测解码~\cite{leviathan2023fast,cai2024medusa,li2024eagle} & batch 小时 decode 带宽受限 & 草稿 + 并行验证，分布无偏 & 大 batch 下收益消失；需要草稿模型或额外头 \\
+S-LoRA~\cite{sheng2024slora} / Punica~\cite{chen2024punica} & 多 LoRA 适配器服务 & 统一分页、分段 gather-matmul（SGMV） & 异构 rank 的 kernel 效率 \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+表~\ref{tab:serving} 把本节讨论的服务技术放在一起。可以看到，它们几乎都在处理同一个约束：decode 受带宽与 KV 容量限制、prefill 受算力限制，
+而在线服务又要同时满足 TTFT 与 TPOT。面试中的系统设计题（如上面的 70B 估算）正是要求候选人把这些技术按收益排序：先 continuous batching + PagedAttention，
+再量化与前缀缓存，再 chunked prefill 或 PD 分离，最后是推测解码。
+
+\begin{keypts}
+\begin{itemize}
+\item decode 步 $\approx\max(2NB/P,\ (sN+\mathrm{KV})/\mathrm{BW})$；临界 batch $\approx$ 拐点（H100 约 295），但 KV 不能被 batch 分摊。
+\item KV $=2Ln_{kv}d_{\text{head}}TBs$：8B 128~KiB/token、70B 320~KiB/token；8K 1~GiB、128K 16~GiB（8B）。
+\item 调度演进：continuous batching → PagedAttention → chunked prefill → PD 分离 / 前缀缓存。
+\item 推测解码 $\mathbb{E}=(1-\alpha^{\gamma+1})/(1-\alpha)$，$\alpha=0.8,\gamma=4$ 时 3.36；分布无偏；大 batch 下不划算。
+\item 激活离群值按通道出现；W4A16 加速 decode，W8A8/FP8 加速 prefill。
+\end{itemize}
+\end{keypts}
+
+\begin{research}
+\begin{itemize}
+\item 本文模拟显示 chunked prefill 的吞吐优势部分来自 roofline 假设下「混合步完美重叠」。真实 GPU 上混合步的效率是多少？
+可以在真实引擎中固定 decode batch、改变捎带的 prefill token 数，测量步长时间与 $\max(F/P,B/\mathrm{BW})$ 的偏差。
+\item 推测解码的接受率 $\alpha$ 并非独立同分布：它随位置、温度与领域变化。一个可做的实验是按位置统计接受率，检验式~\eqref{eq:spec} 的偏差，
+并据此设计自适应 $\gamma$ 的策略；评估指标必须是同一负载下的 goodput，而不是 batch=1 的加速比。
+\end{itemize}
+\end{research}

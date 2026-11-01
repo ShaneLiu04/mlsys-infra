@@ -1,0 +1,5 @@
+graph,pass,kernels_before,kernels_after,max_abs_diff
+mlp,constant_fold+cse,7,7,0.0
+mlp,fuse_elementwise,7,5,0.0
+mlp,fuse_epilogue,7,3,0.0
+qkv,merge_shared_matmuls,4,2,1.734723475976807e-18

@@ -1,0 +1,23 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install CPU dependencies
+        run: pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+      - name: Repository checks (notes, links, lab layout, reports, secrets)
+        shell: pwsh
+        run: ./scripts/check-repo.ps1
+      - name: All test suites (GPU tests skip without CUDA; C++ tests use the runner's g++)
+        run: PYTHON=python ./scripts/run-all-tests.sh

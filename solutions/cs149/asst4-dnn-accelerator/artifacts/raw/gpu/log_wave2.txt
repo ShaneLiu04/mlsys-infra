@@ -1,0 +1,79 @@
+...........................................ss...............             [100%]
+58 passed, 2 skipped in 1.56s
+=== info 11:29:22
+{'kernel': 'naive', 'regs': 40, 'smem_bytes': 0, 'threads': 1024, 'blocks_per_sm': 1, 'warps_per_sm': 32, 'theoretical_occupancy': 0.6666666666666666, 'max_warps_per_sm': 48}
+{'kernel': 'coalesced', 'regs': 40, 'smem_bytes': 0, 'threads': 1024, 'blocks_per_sm': 1, 'warps_per_sm': 32, 'theoretical_occupancy': 0.6666666666666666, 'max_warps_per_sm': 48}
+{'kernel': 'smem8', 'regs': 39, 'smem_bytes': 512, 'threads': 64, 'blocks_per_sm': 24, 'warps_per_sm': 48, 'theoretical_occupancy': 1.0, 'max_warps_per_sm': 48}
+{'kernel': 'smem16', 'regs': 40, 'smem_bytes': 2048, 'threads': 256, 'blocks_per_sm': 6, 'warps_per_sm': 48, 'theoretical_occupancy': 1.0, 'max_warps_per_sm': 48}
+{'kernel': 'smem32', 'regs': 40, 'smem_bytes': 8192, 'threads': 1024, 'blocks_per_sm': 1, 'warps_per_sm': 32, 'theoretical_occupancy': 0.6666666666666666, 'max_warps_per_sm': 48}
+{'kernel': 'reg1d', 'regs': 51, 'smem_bytes': 4096, 'threads': 512, 'blocks_per_sm': 2, 'warps_per_sm': 32, 'theoretical_occupancy': 0.6666666666666666, 'max_warps_per_sm': 48}
+{'kernel': 'reg2d', 'regs': 110, 'smem_bytes': 8192, 'threads': 256, 'blocks_per_sm': 2, 'warps_per_sm': 16, 'theoretical_occupancy': 0.3333333333333333, 'max_warps_per_sm': 48}
+{'kernel': 'vec4', 'regs': 120, 'smem_bytes': 8192, 'threads': 256, 'blocks_per_sm': 2, 'warps_per_sm': 16, 'theoretical_occupancy': 0.3333333333333333, 'max_warps_per_sm': 48}
+{'kernel': 'vec4_db', 'regs': 129, 'smem_bytes': 16384, 'threads': 256, 'blocks_per_sm': 1, 'warps_per_sm': 8, 'theoretical_occupancy': 0.16666666666666666, 'max_warps_per_sm': 48}
+{'kernel': 'wmma_fp16', 'regs': 118, 'smem_bytes': 37888, 'threads': 256, 'blocks_per_sm': 2, 'warps_per_sm': 16, 'theoretical_occupancy': 0.3333333333333333, 'max_warps_per_sm': 48}
+{'kernel': 'skinny8', 'regs': 64, 'smem_bytes': 8192, 'threads': 256, 'blocks_per_sm': 4, 'warps_per_sm': 32, 'theoretical_occupancy': 0.6666666666666666, 'max_warps_per_sm': 48}
+wrote kernel_info.jsonl (11 rows)
+[info] 0.2 s
+=== skinny 11:29:23
+M=1 warm: coalesced=417GB/s, smem32=452GB/s, reg2d=81GB/s, skinny_k8=2100GB/s, skinny_k16=3122GB/s, skinny_k32=3095GB/s, skinny_k64=3099GB/s, skinny_best=3122GB/s, cublas_fp32=2161GB/s, cublas_bf16=683GB/s
+M=1 cold: coalesced=176GB/s, smem32=353GB/s, reg2d=52GB/s, skinny_k8=863GB/s, skinny_k16=1093GB/s, skinny_k32=1093GB/s, skinny_k64=1093GB/s, skinny_best=1093GB/s, cublas_fp32=1058GB/s, cublas_bf16=529GB/s
+M=2 warm: coalesced=417GB/s, smem32=452GB/s, reg2d=81GB/s, skinny_k8=2034GB/s, skinny_k16=2948GB/s, skinny_k32=2948GB/s, skinny_k64=2948GB/s, skinny_best=2948GB/s, cublas_fp32=1979GB/s, cublas_bf16=1426GB/s
+M=2 cold: coalesced=176GB/s, smem32=353GB/s, reg2d=52GB/s, skinny_k8=863GB/s, skinny_k16=1059GB/s, skinny_k32=1059GB/s, skinny_k64=1093GB/s, skinny_best=1093GB/s, cublas_fp32=1312GB/s, cublas_bf16=912GB/s
+M=4 warm: coalesced=408GB/s, smem32=453GB/s, reg2d=80GB/s, skinny_k8=2030GB/s, skinny_k16=2851GB/s, skinny_k32=2874GB/s, skinny_k64=2951GB/s, skinny_best=2951GB/s, cublas_fp32=1919GB/s, cublas_bf16=1443GB/s
+M=4 cold: coalesced=175GB/s, smem32=353GB/s, reg2d=52GB/s, skinny_k8=864GB/s, skinny_k16=1094GB/s, skinny_k32=1094GB/s, skinny_k64=1059GB/s, skinny_best=1094GB/s, cublas_fp32=1313GB/s, cublas_bf16=912GB/s
+M=8 warm: coalesced=394GB/s, smem32=453GB/s, reg2d=81GB/s, skinny_k8=1921GB/s, skinny_k16=2706GB/s, skinny_k32=2713GB/s, skinny_k64=2706GB/s, skinny_best=2713GB/s, cublas_fp32=1878GB/s, cublas_bf16=1298GB/s
+M=8 cold: coalesced=172GB/s, smem32=354GB/s, reg2d=52GB/s, skinny_k8=843GB/s, skinny_k16=1061GB/s, skinny_k32=1061GB/s, skinny_k64=1061GB/s, skinny_best=1061GB/s, cublas_fp32=1316GB/s, cublas_bf16=1175GB/s
+M=16 warm: coalesced=361GB/s, smem32=449GB/s, reg2d=81GB/s, skinny_k8=1099GB/s, skinny_k16=1645GB/s, skinny_k32=1645GB/s, skinny_k64=1645GB/s, skinny_best=1645GB/s, cublas_fp32=1825GB/s, cublas_bf16=1233GB/s
+M=16 cold: coalesced=166GB/s, smem32=355GB/s, reg2d=51GB/s, skinny_k8=600GB/s, skinny_k16=734GB/s, skinny_k32=734GB/s, skinny_k64=734GB/s, skinny_best=734GB/s, cublas_fp32=1270GB/s, cublas_bf16=1179GB/s
+M=32 warm: coalesced=301GB/s, smem32=447GB/s, reg2d=80GB/s, skinny_k8=610GB/s, skinny_k16=948GB/s, skinny_k32=949GB/s, skinny_k64=949GB/s, skinny_best=949GB/s, cublas_fp32=1790GB/s, cublas_bf16=1099GB/s
+M=32 cold: coalesced=158GB/s, smem32=358GB/s, reg2d=49GB/s, skinny_k8=421GB/s, skinny_k16=555GB/s, skinny_k32=555GB/s, skinny_k64=555GB/s, skinny_best=555GB/s, cublas_fp32=1148GB/s, cublas_bf16=724GB/s
+M=64 warm: coalesced=157GB/s, smem32=234GB/s, reg2d=75GB/s, skinny_k8=323GB/s, skinny_k16=512GB/s, skinny_k32=512GB/s, skinny_k64=512GB/s, skinny_best=512GB/s, cublas_fp32=1123GB/s, cublas_bf16=869GB/s
+M=64 cold: coalesced=107GB/s, smem32=205GB/s, reg2d=44GB/s, skinny_k8=262GB/s, skinny_k16=375GB/s, skinny_k32=375GB/s, skinny_k64=375GB/s, skinny_best=375GB/s, cublas_fp32=965GB/s, cublas_bf16=676GB/s
+M=128 warm: coalesced=83GB/s, smem32=121GB/s, reg2d=67GB/s, skinny_k8=170GB/s, skinny_k16=273GB/s, skinny_k32=272GB/s, skinny_k64=271GB/s, skinny_best=273GB/s, cublas_fp32=849GB/s, cublas_bf16=1048GB/s
+M=128 cold: coalesced=67GB/s, smem32=111GB/s, reg2d=38GB/s, skinny_k8=152GB/s, skinny_k16=231GB/s, skinny_k32=231GB/s, skinny_k64=231GB/s, skinny_best=231GB/s, cublas_fp32=791GB/s, cublas_bf16=1055GB/s
+wrote gemm_skinny.jsonl (160 rows)
+[skinny] 3.2 s
+=== fusion 11:29:28
+3x3 @112 C64   N=8   direct_unfused            0.551 ms err=1.0e-06 {'conv': 0.0005255680084228515, 'relu': 1.535999961197376e-05, 'pool': 1.0495999827980996e-05}
+3x3 @112 C64   N=8   direct_fused              0.526 ms err=1.0e-06 {'conv+relu+pool': 0.0005255039930343628}
+3x3 @112 C64   N=8   cudnn_unfused             0.345 ms err=7.3e-06 {'conv': 0.0003136639893054962, 'relu': 1.4527999795973301e-05, 'pool': 1.6607999801635744e-05}
+3x3 @112 C64   N=8   cudnn+fused_relu_pool     0.324 ms err=7.3e-06 {'conv': 0.0003130879998207092, 'relu+pool': 1.104000024497509e-05}
+3x3 @112 C64   N=8   igemm_relu+pool           0.685 ms err=1.0e-06 {'conv+relu': 0.0006744319796562195, 'pool': 1.0495999827980996e-05}
+3x3 @56 C128   N=8   direct_unfused            0.627 ms err=1.3e-06 {'conv': 0.0006071360111236572, 'relu': 1.0143999941647053e-05, 'pool': 9.279999881982804e-06}
+3x3 @56 C128   N=8   direct_fused              0.609 ms err=1.3e-06 {'conv+relu+pool': 0.0006092799901962281}
+3x3 @56 C128   N=8   cudnn_unfused             0.260 ms err=1.3e-06 {'conv': 0.00023747199773788453, 'relu': 1.0719999670982361e-05, 'pool': 1.2160000391304492e-05}
+3x3 @56 C128   N=8   cudnn+fused_relu_pool     0.247 ms err=1.3e-06 {'conv': 0.00023759999871253968, 'relu+pool': 9.184000082314015e-06}
+3x3 @56 C128   N=8   igemm_relu+pool           0.676 ms err=1.3e-06 {'conv+relu': 0.0006671680212020874, 'pool': 9.184000082314015e-06}
+3x3 @28 C256   N=8   direct_unfused            1.193 ms err=1.7e-06 {'conv': 0.0011742719411849975, 'relu': 9.472000412642956e-06, 'pool': 9.279999881982804e-06}
+3x3 @28 C256   N=8   direct_fused              1.177 ms err=1.7e-06 {'conv+relu+pool': 0.0011769599914550782}
+3x3 @28 C256   N=8   cudnn_unfused             0.254 ms err=1.7e-06 {'conv': 0.00023145599663257599, 'relu': 1.0879999957978725e-05, 'pool': 1.2160000391304492e-05}
+3x3 @28 C256   N=8   cudnn+fused_relu_pool     0.241 ms err=1.7e-06 {'conv': 0.00023132799565792083, 'relu+pool': 9.440000168979168e-06}
+3x3 @28 C256   N=8   igemm_relu+pool           1.132 ms err=1.7e-06 {'conv+relu': 0.0011230720281600953, 'pool': 9.279999881982804e-06}
+3x3 @14 C512   N=8   direct_unfused            2.339 ms err=2.8e-06 {'conv': 0.0023198399543762206, 'relu': 9.631999768316747e-06, 'pool': 9.216000325977802e-06}
+3x3 @14 C512   N=8   direct_fused              2.325 ms err=2.8e-06 {'conv+relu+pool': 0.002324671983718872}
+3x3 @14 C512   N=8   cudnn_unfused             0.162 ms err=1.6e-05 {'conv': 0.00013926400244235993, 'relu': 1.065600011497736e-05, 'pool': 1.1935999616980553e-05}
+3x3 @14 C512   N=8   cudnn+fused_relu_pool     0.148 ms err=1.6e-05 {'conv': 0.00013920000195503235, 'relu+pool': 9.151999838650227e-06}
+3x3 @14 C512   N=8   igemm_relu+pool           2.021 ms err=2.8e-06 {'conv+relu': 0.002011359930038452, 'pool': 9.184000082314015e-06}
+3x3 @112 C64   N=64  direct_unfused            4.230 ms err=1.0e-06 {'conv': 0.0037774078845977783, 'relu': 0.0002900800108909607, 'pool': 0.00016259199380874633}
+3x3 @112 C64   N=64  direct_fused              3.768 ms err=1.0e-06 {'conv+relu+pool': 0.003768415927886963}
+3x3 @112 C64   N=64  cudnn_unfused             2.062 ms err=7.1e-06 {'conv': 0.0015496319532394408, 'relu': 0.0002741760015487671, 'pool': 0.0002377600073814392}
+3x3 @112 C64   N=64  cudnn+fused_relu_pool     1.711 ms err=7.1e-06 {'conv': 0.0015483839511871338, 'relu+pool': 0.00016249600052833558}
+3x3 @112 C64   N=64  igemm_relu+pool           3.703 ms err=1.0e-06 {'conv+relu': 0.0035397439002990724, 'pool': 0.00016300800442695617}
+3x3 @56 C128   N=64  direct_unfused            3.986 ms err=1.3e-06 {'conv': 0.003765791893005371, 'relu': 0.00014720000326633452, 'pool': 7.337599992752076e-05}
+3x3 @56 C128   N=64  direct_fused              3.801 ms err=1.3e-06 {'conv+relu+pool': 0.0038013761043548585}
+3x3 @56 C128   N=64  cudnn_unfused             1.155 ms err=9.5e-06 {'conv': 0.0008977919816970826, 'relu': 0.0001377280056476593, 'pool': 0.00011952000111341476}
+3x3 @56 C128   N=64  cudnn+fused_relu_pool     0.961 ms err=9.5e-06 {'conv': 0.0008871039748191834, 'relu+pool': 7.372800260782241e-05}
+3x3 @56 C128   N=64  igemm_relu+pool           3.712 ms err=1.3e-06 {'conv+relu': 0.003638432025909424, 'pool': 7.366400212049484e-05}
+3x3 @28 C256   N=64  direct_unfused            7.342 ms err=2.5e-06 {'conv': 0.007293344020843506, 'relu': 3.254399821162224e-05, 'pool': 1.648000068962574e-05}
+3x3 @28 C256   N=64  direct_fused              7.282 ms err=2.5e-06 {'conv+relu+pool': 0.007282432079315186}
+3x3 @28 C256   N=64  cudnn_unfused             0.638 ms err=1.6e-05 {'conv': 0.0005878400206565857, 'relu': 2.4671999737620354e-05, 'pool': 2.5728000327944755e-05}
+3x3 @28 C256   N=64  cudnn+fused_relu_pool     0.608 ms err=1.6e-05 {'conv': 0.0005913919806480408, 'relu+pool': 1.644800044596195e-05}
+3x3 @28 C256   N=64  igemm_relu+pool           3.866 ms err=2.5e-06 {'conv+relu': 0.0038494720458984374, 'pool': 1.6224000602960586e-05}
+3x3 @14 C512   N=64  direct_unfused           14.523 ms err=2.7e-06 {'conv': 0.014496671676635741, 'relu': 1.535999961197376e-05, 'pool': 1.0495999827980996e-05}
+3x3 @14 C512   N=64  direct_fused             14.552 ms err=2.7e-06 {'conv+relu+pool': 0.014552319526672363}
+3x3 @14 C512   N=64  cudnn_unfused             0.614 ms err=2.8e-05 {'conv': 0.0005824000239372253, 'relu': 1.456000003963709e-05, 'pool': 1.6607999801635744e-05}
+3x3 @14 C512   N=64  cudnn+fused_relu_pool     0.602 ms err=2.8e-05 {'conv': 0.0005910080075263977, 'relu+pool': 1.0975999757647514e-05}
+3x3 @14 C512   N=64  igemm_relu+pool           4.830 ms err=2.7e-06 {'conv+relu': 0.004819519996643066, 'pool': 1.0944000445306302e-05}
+wrote conv_fusion.jsonl (48 rows)
+[fusion] 5.5 s
+=== done 11:29:35

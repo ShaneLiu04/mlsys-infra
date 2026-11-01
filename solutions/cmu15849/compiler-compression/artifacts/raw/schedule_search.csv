@@ -1,0 +1,4 @@
+method,space_size,configs_within_5pct,evals_median,evals_mean,evals_p90,runs
+grid,3072,8,434.0,434.0,434.0,1
+random,3072,8,244.0,295.5,649.3,200
+evolutionary,3072,8,147.5,218.965,495.9,200

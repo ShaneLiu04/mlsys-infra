@@ -1,0 +1,58 @@
+{"part": "env", "gpu": "NVIDIA GeForce RTX 5090", "cc": "12.0", "sms": 170, "vram_gb": 31.4, "torch": "2.8.0+cu128", "triton": "3.4.0", "cuda": "12.8", "cudnn": 91002}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 32, "impl": "dense_cublas", "time_s": 1.3435733583238391e-05, "tflops": 79.91687371201938, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 32, "impl": "cusparselt", "time_s": 0.0004450437601874856, "tflops": 2.4126657197657595, "speedup": 0.03018969095888067, "rel_err": 0.00032826222013682127, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 32, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 128, "impl": "dense_cublas", "time_s": 2.6188341629697873e-05, "tflops": 164.0030268709134, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 128, "impl": "cusparselt", "time_s": 0.00044510078430175785, "tflops": 9.649426483796555, "speedup": 0.058836880439966564, "rel_err": 3.8581303670071065e-05, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 128, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 512, "impl": "dense_cublas", "time_s": 9.436609631492977e-05, "tflops": 182.05552475822776, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 512, "impl": "cusparselt", "time_s": 0.0004509033512424778, "tflops": 38.101001326914854, "speedup": 0.20928231306088355, "rel_err": 3.8684040191583335e-05, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 512, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 2048, "impl": "dense_cublas", "time_s": 0.0003468328649347479, "tflops": 198.13427066356206, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 2048, "impl": "cusparselt", "time_s": 0.0004569269048756567, "tflops": 150.3949012472807, "speedup": 0.7590554664955248, "rel_err": 3.965453652199358e-05, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 2048, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 8192, "impl": "dense_cublas", "time_s": 0.0012447573343912762, "tflops": 220.82850958128603, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 8192, "impl": "cusparselt", "time_s": 0.0008066410700480143, "tflops": 340.76854892553166, "speedup": 1.5431365704168565, "rel_err": 3.9245533116627485e-05, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 4096, "M": 8192, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 32, "impl": "dense_cublas", "time_s": 8.466631452613903e-05, "tflops": 50.728171174546816, "ok": true}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 32, "impl": "cusparselt", "time_s": 0.00045463681221008295, "tflops": 9.44702932241954, "speedup": 0.18622846248318228, "rel_err": 4.055926910950802e-05, "ok": true}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 32, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 128, "impl": "dense_cublas", "time_s": 0.00010406106855811142, "tflops": 165.09410697052516, "ok": true}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 128, "impl": "cusparselt", "time_s": 0.0004506711457905016, "tflops": 38.1206326264034, "speedup": 0.23090244301214952, "rel_err": 3.970486068283208e-05, "ok": true}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 128, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 512, "impl": "dense_cublas", "time_s": 0.00035583093031397404, "tflops": 193.12395545649753, "ok": true}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 512, "impl": "cusparselt", "time_s": 0.0004560066091603246, "tflops": 150.69842268851707, "speedup": 0.7803196777546476, "rel_err": 3.9143284084275365e-05, "ok": true}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 512, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 2048, "impl": "dense_cublas", "time_s": 0.0012464319864908854, "tflops": 220.53181394828562, "ok": true}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 2048, "impl": "cusparselt", "time_s": 0.0008012160062789918, "tflops": 343.0759056107582, "speedup": 1.5556753443800582, "rel_err": 3.9227157685672864e-05, "ok": true}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 2048, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 8192, "impl": "dense_cublas", "time_s": 0.004936431884765625, "tflops": 222.73408272262694, "ok": true}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 8192, "impl": "cusparselt", "time_s": 0.0031525119781494137, "tflops": 348.77318005352504, "speedup": 1.5658725229216757, "rel_err": 3.912997999577783e-05, "ok": true}
+{"part": "sparse24", "N": 16384, "K": 4096, "M": 8192, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 32, "impl": "dense_cublas", "time_s": 8.740322058799706e-05, "tflops": 49.1396915022811, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 32, "impl": "cusparselt", "time_s": 0.0004543858696432674, "tflops": 9.452246610071578, "speedup": 0.19235461845813168, "rel_err": 0.00032911761081777513, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 32, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 128, "impl": "dense_cublas", "time_s": 0.00010014601381952891, "tflops": 171.54820774953154, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 128, "impl": "cusparselt", "time_s": 0.000452053659102496, "tflops": 38.00404849749206, "speedup": 0.22153567790681766, "rel_err": 0.00035823561483994126, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 128, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 512, "impl": "dense_cublas", "time_s": 0.00033810792402787644, "tflops": 203.24716415204216, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 512, "impl": "cusparselt", "time_s": 0.0004591940773857964, "tflops": 149.6523586001408, "speedup": 0.7363072406175913, "rel_err": 0.00033047530450858176, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 512, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 2048, "impl": "dense_cublas", "time_s": 0.0013138795216878255, "tflops": 209.21089217593445, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 2048, "impl": "cusparselt", "time_s": 0.0008489714350019183, "tflops": 323.77756849189973, "speedup": 1.547613344240324, "rel_err": 0.00033071116195060313, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 2048, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 8192, "impl": "dense_cublas", "time_s": 0.00494760799407959, "tflops": 222.2309506112243, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 8192, "impl": "cusparselt", "time_s": 0.0031282239913940427, "tflops": 351.4811058290044, "speedup": 1.5816028544281984, "rel_err": 0.0003306561557110399, "ok": true}
+{"part": "sparse24", "N": 4096, "K": 16384, "M": 8192, "impl": "cutlass", "ok": false, "error": "RuntimeError: sparse_semi_structured_mad_op : Supported only on GPUs with compute capability 8.x"}
+{"part": "csr", "N": 4096, "K": 4096, "M": 1, "sparsity": 0.5, "dense_s": 1.4725594789821161e-05, "csr_s": 5.180545331697563e-05, "speedup": 0.2842479670956932, "rel_err": 0.0005796584882773459, "ok": true}
+{"part": "csr", "N": 4096, "K": 4096, "M": 1, "sparsity": 0.9, "dense_s": 1.4470880681818183e-05, "csr_s": 1.590631261918297e-05, "speedup": 0.90975709004778, "rel_err": 0.00040423261816613376, "ok": true}
+{"part": "csr", "N": 4096, "K": 4096, "M": 1, "sparsity": 0.95, "dense_s": 1.4517947643055019e-05, "csr_s": 1.607389585666747e-05, "speedup": 0.903200305172623, "rel_err": 0.0003229742869734764, "ok": true}
+{"part": "csr", "N": 4096, "K": 4096, "M": 1, "sparsity": 0.99, "dense_s": 1.4547423751646224e-05, "csr_s": 1.6071204146648424e-05, "speedup": 0.9051856736372814, "rel_err": 0.0001382951159030199, "ok": true}
+{"part": "csr", "N": 4096, "K": 4096, "M": 32, "sparsity": 0.5, "dense_s": 1.8386319063711856e-05, "csr_s": 0.0003520770249543367, "speedup": 0.05222243361689535, "rel_err": 0.001441253931261599, "ok": true}
+{"part": "csr", "N": 4096, "K": 4096, "M": 32, "sparsity": 0.9, "dense_s": 1.8390249882348522e-05, "csr_s": 7.588647660754977e-05, "speedup": 0.2423389608329624, "rel_err": 0.0007655297522433102, "ok": true}
+{"part": "csr", "N": 4096, "K": 4096, "M": 32, "sparsity": 0.95, "dense_s": 1.8382734890225565e-05, "csr_s": 4.2196069838683726e-05, "speedup": 0.43565040442162184, "rel_err": 0.0006292018806561828, "ok": true}
+{"part": "csr", "N": 4096, "K": 4096, "M": 32, "sparsity": 0.99, "dense_s": 1.8375923839240028e-05, "csr_s": 1.5840389594276928e-05, "speedup": 1.1600676694138368, "rel_err": 0.0004704448801930994, "ok": true}
+{"part": "csr", "N": 4096, "K": 4096, "M": 512, "sparsity": 0.5, "dense_s": 9.805414232157046e-05, "csr_s": 0.0018150778683749113, "speedup": 0.05402200314929794, "rel_err": 0.0014179383870214224, "ok": true}
+{"part": "csr", "N": 4096, "K": 4096, "M": 512, "sparsity": 0.9, "dense_s": 9.75709206717355e-05, "csr_s": 0.00035298035361550073, "speedup": 0.2764202587264074, "rel_err": 0.0007234810036607087, "ok": true}
+{"part": "csr", "N": 4096, "K": 4096, "M": 512, "sparsity": 0.95, "dense_s": 9.75333010212759e-05, "csr_s": 0.0001808065210731284, "speedup": 0.5394346423037912, "rel_err": 0.0005762361106462777, "ok": true}
+{"part": "csr", "N": 4096, "K": 4096, "M": 512, "sparsity": 0.99, "dense_s": 9.730799631638961e-05, "csr_s": 4.4658689020657605e-05, "speedup": 2.1789263959669354, "rel_err": 0.0003941991599276662, "ok": true}

@@ -1,0 +1,20 @@
+{"kind": "simd", "tag": "", "pattern": "random", "n": 20000000, "mean_iters": 5.3548689, "scalar_s": 0.885632601, "avx2_s": 0.2169888, "avx512_s": 0.121756299, "avx2_speedup": 4.08146688, "avx512_speedup": 7.27381339, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "random", "isa": "avx512", "threads": 1, "wall_s": 0.7752763, "speedup_vs_scalar": 1.14234448, "speedup_vs_simd1": 0.157048912, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "random", "isa": "avx512", "threads": 2, "wall_s": 0.1673638, "speedup_vs_scalar": 5.29166164, "speedup_vs_simd1": 0.727494831, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "random", "isa": "avx512", "threads": 4, "wall_s": 0.0926468996, "speedup_vs_scalar": 9.55922545, "speedup_vs_simd1": 1.31419724, "correct": 1}
+{"kind": "simd", "tag": "", "pattern": "all_slow", "n": 20000000, "mean_iters": 20, "scalar_s": 1.9062933, "avx2_s": 0.3088863, "avx512_s": 0.1502437, "avx2_speedup": 6.17150486, "avx512_speedup": 12.6880083, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "all_slow", "isa": "avx512", "threads": 1, "wall_s": 0.1765389, "speedup_vs_scalar": 10.7981488, "speedup_vs_simd1": 0.851051524, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "all_slow", "isa": "avx512", "threads": 2, "wall_s": 0.0815439001, "speedup_vs_scalar": 23.3775095, "speedup_vs_simd1": 1.84248852, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "all_slow", "isa": "avx512", "threads": 4, "wall_s": 0.0410468001, "speedup_vs_scalar": 46.4419466, "speedup_vs_simd1": 3.66030237, "correct": 1}
+{"kind": "simd", "tag": "", "pattern": "all_one", "n": 20000000, "mean_iters": 0, "scalar_s": 0.0183346001, "avx2_s": 0.0122035993, "avx512_s": 0.0124466, "avx2_speedup": 1.50239283, "avx512_speedup": 1.47306093, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "all_one", "isa": "avx512", "threads": 1, "wall_s": 0.0143416002, "speedup_vs_scalar": 1.27842081, "speedup_vs_simd1": 0.867866891, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "all_one", "isa": "avx512", "threads": 2, "wall_s": 0.00747510046, "speedup_vs_scalar": 2.45275635, "speedup_vs_simd1": 1.66507461, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "all_one", "isa": "avx512", "threads": 4, "wall_s": 0.00483180024, "speedup_vs_scalar": 3.79456915, "speedup_vs_simd1": 2.5759757, "correct": 1}
+{"kind": "simd", "tag": "", "pattern": "one_slow_8", "n": 20000000, "mean_iters": 2.50007275, "scalar_s": 0.2600888, "avx2_s": 0.3088482, "avx512_s": 0.1498347, "avx2_speedup": 0.842125031, "avx512_speedup": 1.73583823, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "one_slow_8", "isa": "avx512", "threads": 1, "wall_s": 0.1819363, "speedup_vs_scalar": 1.42955969, "speedup_vs_simd1": 0.823555825, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "one_slow_8", "isa": "avx512", "threads": 2, "wall_s": 0.0809402997, "speedup_vs_scalar": 3.21334121, "speedup_vs_simd1": 1.8511755, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "one_slow_8", "isa": "avx512", "threads": 4, "wall_s": 0.0405873004, "speedup_vs_scalar": 6.40813254, "speedup_vs_simd1": 3.69166459, "correct": 1}
+{"kind": "simd", "tag": "", "pattern": "one_slow_16", "n": 20000000, "mean_iters": 1.25003637, "scalar_s": 0.138924399, "avx2_s": 0.1595603, "avx512_s": 0.1509291, "avx2_speedup": 0.870670205, "avx512_speedup": 0.920461326, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "one_slow_16", "isa": "avx512", "threads": 1, "wall_s": 0.1720121, "speedup_vs_scalar": 0.80764318, "speedup_vs_simd1": 0.87743304, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "one_slow_16", "isa": "avx512", "threads": 2, "wall_s": 0.079961, "speedup_vs_scalar": 1.73740198, "speedup_vs_simd1": 1.88753392, "correct": 1}
+{"kind": "tasks", "tag": "", "pattern": "one_slow_16", "isa": "avx512", "threads": 4, "wall_s": 0.0403102003, "speedup_vs_scalar": 3.44638326, "speedup_vs_simd1": 3.74419127, "correct": 1}

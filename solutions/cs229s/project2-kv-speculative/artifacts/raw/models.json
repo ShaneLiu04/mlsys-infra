@@ -1,0 +1,18 @@
+{
+  "target": {
+    "params": 796928,
+    "layers": 4,
+    "d_model": 128,
+    "steps": 300,
+    "train_s": 43.9,
+    "val_loss": 0.2956629730761051
+  },
+  "draft": {
+    "params": 29712,
+    "layers": 1,
+    "d_model": 48,
+    "steps": 400,
+    "train_s": 8.0,
+    "val_loss": 0.5600676387548447
+  }
+}

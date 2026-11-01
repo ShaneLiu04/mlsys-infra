@@ -1,0 +1,7 @@
+tile,tk,intensity_flop_per_byte,hbm_gb,dma_count,sbuf_kib,psum_kib,fits_default,compute_ms,dma_ms,bound
+128,128,63.02,2.181,66560,128,64,True,5.992,71.88,memory
+256,128,124.12,1.1073,16640,256,256,True,4.494,19.341,memory
+512,128,240.94,0.5704,4160,512,1024,True,3.745,5.551,memory
+1024,128,455.11,0.302,1040,1024,4096,False,3.745,1.777,compute
+2048,128,819.2,0.1678,260,2048,16384,False,3.745,0.669,compute
+4096,128,1365.33,0.1007,65,4096,65536,False,3.745,0.311,compute

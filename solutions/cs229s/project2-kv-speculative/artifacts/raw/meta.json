@@ -1,0 +1,23 @@
+{
+  "machine": "Intel64 Family 6 Model 106 Stepping 6, GenuineIntel",
+  "cpu_count": 8,
+  "python": "3.12.10",
+  "torch": "2.6.0+cpu",
+  "train_threads": 8,
+  "decode_threads": 1,
+  "target_cfg": {
+    "vocab_size": 28,
+    "block_size": 1024,
+    "n_layer": 4,
+    "n_head": 4,
+    "n_embd": 128
+  },
+  "draft_cfg": {
+    "vocab_size": 28,
+    "block_size": 1024,
+    "n_layer": 1,
+    "n_head": 2,
+    "n_embd": 48
+  },
+  "elapsed_s": 172.4
+}

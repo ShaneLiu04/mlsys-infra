@@ -1,0 +1,7 @@
+work,launches,tasks_per_launch,threads,mode,wall_s
+sleep_2ms,48,9,8,sync_run_each,0.2591
+sleep_2ms,48,9,8,async_independent,0.1515
+sleep_2ms,48,9,8,async_chain,0.2524
+numpy_ufunc,48,9,8,sync_run_each,0.1231
+numpy_ufunc,48,9,8,async_independent,0.0748
+numpy_ufunc,48,9,8,async_chain,0.1179

@@ -1,0 +1,6 @@
+# GPU environment used for the RTX 5090 measurements (sm_120 needs CUDA >= 12.8).
+# pip install -r requirements-gpu.txt --extra-index-url https://download.pytorch.org/whl/cu128
+# C++/CUDA labs additionally need g++ >= 11 and nvcc 12.8 on PATH.
+-r requirements.txt
+torch>=2.8
+triton>=3.4

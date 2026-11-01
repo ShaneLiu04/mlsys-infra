@@ -1,0 +1,113 @@
+\section{专用加速器：systolic array、TPU 与 Trainium}
+\label{sec:accel}
+
+通用处理器把大部分能耗花在取指、译码、调度与数据搬运上。Horowitz 在 45~nm 工艺下的测量表明，
+一次 DRAM 访问的能耗比一次 32 位浮点乘法高两个数量级以上，而 8 位整数乘法又比 FP32 乘法便宜一个数量级以上~\cite{horowitz2014energy}。
+因此专用加速器只有两条路~\cite{dally2020domain,sze2017efficient}：把控制开销摊到大量运算上（宽 SIMD、矩阵单元），
+以及把数据留在离运算最近的地方反复使用。两条路都可以用同一个量刻画：\emph{每从 DRAM 取一个字能做多少次运算}，
+它正是 roofline 中的算术强度。
+
+\subsection{Systolic array 与数据流}
+
+Kung 的 systolic 架构~\cite{kung1982systolic} 让数据像心跳一样在规则排列的处理单元（PE）之间逐拍流动，每个 PE 只与邻居通信。
+$P\times P$ 阵列计算矩阵乘时，$A$ 的一个元素从左侧进入、向右流经 $P$ 个 PE、被复用 $P$ 次；只有阵列边界需要读存储，
+片上带宽需求从 $O(P^2)$ 降到 $O(P)$。按常驻在 PE 中的操作数，可以区分三种数据流~\cite{chen2016eyeriss,sze2017efficient}：
+weight-stationary（权重常驻，激活横向流、部分和纵向流，代表为 TPU v1）、output-stationary（每个 PE 累加一个输出）、
+row-stationary（Eyeriss，把卷积的一行权重与输入同时留在 PE 中）。
+
+阵列有填充与排空开销。对 weight-stationary 阵列，一个 $P\times P$ 权重块处理 $M$ 行输入需要 $M+2P-2$ 个周期；
+若权重加载不与计算重叠，还要再加 $P$ 个周期，利用率约为 $M/(M+3P-2)$。\lab{CS149 A4}用寄存器级仿真按周期精确校验了这个数：
+$P=16$ 时 $n=16$ 的矩阵利用率只有 0.258，$n=64$ 时串行加载权重为 0.582、权重双缓冲后为 0.957；
+$n=128$ 时 $P=4$ 的阵列利用率 0.928，而 $P=128$ 只有 0.251——矩阵只有一个块时，双缓冲也救不回来（图~\ref{fig:labkvsys} 中）。
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{fig_lab_kv_systolic}
+\caption{本文配套实验（CPU 测量与寄存器级仿真）。左：本地训练的 0.8M 参数 nanoGPT（4 层、宽 128）在 CPU、batch 1 下有无 KV cache 的生成吞吐，加速比从 $T=64$ 的 1.8 倍增长到 $T=1024$ 的 12.8 倍，
+因为无 cache 时每步重算整个前缀，总代价 $O(T^2)$。中：$16\times16$ weight-stationary systolic 阵列的 PE 利用率随矩阵尺寸的变化，权重双缓冲在 $n\ge64$ 时把利用率推到 0.95 以上。
+右：激活重计算的「峰值存储--重算代价」前沿，星号为 $\sqrt{n}$ 均匀分段，菱形为同一预算下的动态规划解。}
+\label{fig:labkvsys}
+\end{figure*}
+
+\begin{qa}{Systolic array 为什么适合矩阵乘？缺点是什么？}
+\ans 矩阵乘的每个操作数被 $O(n)$ 次运算复用，systolic 阵列让这种复用发生在相邻 PE 的寄存器之间，从 SRAM 读一次的数被用 $P$ 次，
+控制逻辑极少，能效高。缺点：矩阵小于阵列或形状不匹配时填充/排空开销 $3P-2$ 无法摊薄，利用率低；对非 GEMM 运算（softmax、归约、gather）不友好，
+需要额外的向量/标量单元。
+\wrong 「TPU 快是因为频率高」——TPU v1 只有 700~MHz。
+\end{qa}
+
+\begin{qa}{weight-stationary 和 output-stationary 怎么选？}
+\ans 看哪个操作数复用最多、哪个最大。推理时同一权重乘以 batch 内每个样本，权重驻留可以把权重读取摊到 batch 上，适合 batch（$M$）大的场景；
+output-stationary 让部分和不出 PE，适合收缩维 $K$ 很长、输出较小的场景，省掉部分和的往返。
+\wrong 「两者只是实现细节，性能一样」。
+\end{qa}
+
+\subsection{TPU：从推理 ASIC 到光互联超级计算机}
+
+TPU v1~\cite{jouppi2017tpu} 是推理芯片：$256\times256=65536$ 个 8 位 MAC，700~MHz，峰值约 92~TOPS；
+片上 28~MiB 软件管理存储（24~MiB unified buffer 与 4~MiB 累加器），权重来自 8~GiB DDR3（34~GB/s）。
+论文最重要的观察不是峰值，而是 roofline：线上负载以 MLP 和 LSTM 为主，其权重复用由 batch 决定，而 P99 时延约束
+（MLP0 为 7~ms）限制了 batch，于是大多数应用落在 roofline 的斜线段，受权重带宽限制；只有 CNN 接近计算屋顶。
+
+\begin{est}{TPU v1 的拐点与所需 batch}
+峰值 $65536\times2\times700\,\text{MHz}\approx92$~TOPS，权重带宽 34~GB/s，拐点 $92\times10^{12}/34\times10^{9}\approx2700$~ops/B。
+INT8 的 MLP 每个权重字节在 batch $B$ 下做 $2B$ 次运算，故需要 $B\ge1350$ 才受算力限制。线上 batch 远小于此，
+这与今天 LLM decode 受 HBM 带宽限制是同一个现象，只是拐点从 2700 换成了 H100 的 295。
+\end{est}
+
+TPU v4~\cite{jouppi2023tpuv4} 把 4096 颗芯片用光路交换机（OCS）组成可重构的 3D torus，并加入面向 embedding 的 SparseCore；
+每芯片 BF16 峰值 275~TFLOP/s，32~GiB HBM2（约 1.2~TB/s）。XLA 与 GSPMD~\cite{xu2021gspmd} 是它的主要编程接口：
+程序员给张量加 sharding 注解，编译器插入集合通信。
+
+\subsection{AWS Trainium 与 NKI}
+
+Trainium（Trn1）的 NeuronCore-v2 包含 Tensor Engine（$128\times128$ systolic array）、Vector Engine、Scalar Engine 与 GpSimd Engine；
+片上存储分两级：SBUF（24~MiB，128 个 partition）存放输入输出 tile，PSUM（2~MiB）是矩阵乘的累加缓冲~\cite{awsneuron}。
+NKI（Neuron Kernel Interface）是 Python 嵌入的 kernel 语言：tile 的第 0 维是 partition 维（最大 128），对应阵列的一边；
+\texttt{nc\_matmul} 沿 partition 维收缩，结果写入 PSUM；HBM 与 SBUF 之间全部是显式 DMA。CS149 Fall 2024 的作业 4 就是在这套硬件上
+手工分块卷积与矩阵乘，体会 tile 形状对利用率的影响。与 GPU 的 shared memory 不同，这里没有 L1/L2 兜底，
+所有复用都要显式写出——写错就是 DRAM 带宽墙。
+
+\lab{CS149 A4}的 im2col 测量给出了这种「显式化」的代价：膨胀倍数约为 $K_HK_W/\text{stride}^2$（ResNet conv1 $7\times7$、stride 2 为 12.25 倍），
+在 numpy 中 im2col+GEMM 仍快于逐 tap 直接卷积，但 $3\times3$ 层 73\% 的时间花在拷贝 patch 矩阵上；$1\times1$ 卷积没有膨胀，直接卷积反而更快。
+GPU 上的 implicit GEMM 或 Winograd 正是为了避开显式膨胀。
+
+\begin{table*}[!t]
+\centering
+\caption{代表性 ML 加速器对比（数字取自论文与官方文档；拐点 = 峰值 / 片外带宽）}
+\label{tab:accel}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}l L{2.6cm} L{2.8cm} L{3.0cm} Y Y@{}}
+\toprule
+加速器 & 计算单元 & 片上存储 & 片外存储与峰值 & 编程模型 & 面试要点 \\
+\midrule
+NVIDIA H100 SXM~\cite{nvidiah100} & 132 SM，第四代 tensor core & 每 SM 256~KB 寄存器、228~KB shared；50~MB L2 & 80~GB HBM3，3.35~TB/s；989 TF/s BF16 稠密，拐点 295 & CUDA/Triton，SIMT + 异步 TMA/wgmma & 通用性最好；硬件 cache 兜底；拐点右移使更多算子访存受限 \\
+Google TPU v1~\cite{jouppi2017tpu} & $256\times256$ INT8 systolic，700~MHz & 28~MiB 软件管理 & 8~GiB DDR3，34~GB/s；92~TOPS，拐点约 2700 & CISC 式大指令，主机经 PCIe 下发 & 推理负载多受权重带宽限制；P99 约束限制 batch \\
+Google TPU v4~\cite{jouppi2023tpuv4} & MXU systolic 阵列 + SparseCore & 软件管理 SRAM & 32~GiB HBM2，约 1.2~TB/s；275 TF/s BF16 & XLA/GSPMD，sharding 注解 & 4096 芯片 OCS 可重构 3D torus；SparseCore 服务 embedding \\
+AWS Trainium~\cite{awsneuron} & $128\times128$ Tensor Engine + Vector/Scalar/GpSimd & SBUF 24~MiB（128 partition），PSUM 2~MiB & HBM（见官方文档） & NKI：显式 tile、DMA、partition 维 & 无 cache 兜底；PSUM 容量限制输出 tile，进而限制强度 \\
+MIT Eyeriss~\cite{chen2016eyeriss} & 168 个 PE 的空间阵列 & 全局缓冲 + PE 本地存储 & DRAM & 配置化数据流 & row-stationary 数据流最小化总能耗 \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+表~\ref{tab:accel} 汇总了这些加速器。面试中常见的追问是「为什么 GPU 仍然是主流」：GPU 用大量线程与寄存器文件做通用调度，
+tensor core 只是嵌在 SM 里的小矩阵单元，面积效率不如大阵列，但对 softmax、归约、gather 与动态形状的容忍度高得多；
+而 ASIC 把大部分面积给阵列与 SRAM，对编译器与形状的要求更苛刻。这是一个通用性与能效之间的取舍，而不是谁先进谁落后。
+
+\begin{keypts}
+\begin{itemize}
+\item 专用化的本质是提高「每次取数的复用次数」；能耗上 DRAM 访问 $\gg$ SRAM 访问 $\gg$ 乘加。
+\item systolic 阵列利用率 $\approx M/(M+3P-2)$（串行加载权重）；大阵列需要大矩阵和权重双缓冲。
+\item TPU v1 的教训：拐点约 2700，P99 约束下的线上推理多受权重带宽限制——与今天 LLM decode 同构。
+\item Trainium/NKI：SBUF/PSUM 两级软件管理存储，partition 维 128，显式 DMA；tile 形状由 PSUM 容量约束。
+\end{itemize}
+\end{keypts}
+
+\begin{research}
+\begin{itemize}
+\item 对 LLM decode 这类低强度负载，专用加速器应如何设计？一个方向是提高片上 SRAM 容量把权重留在片上（以面积换带宽），
+另一个是近存计算。可以用本文的 roofline 计算器估算：要让 8B 模型 batch=1 的 decode 达到 1000~token/s，需要多大的有效带宽？
+\item 设计一个跨加速器的「可移植性」实验：同一个 attention kernel 在 GPU（Triton）、Trainium（NKI）上的 tile 选择为何不同？
+把差异归因到片上容量、partition 约束与异步引擎数量。
+\end{itemize}
+\end{research}

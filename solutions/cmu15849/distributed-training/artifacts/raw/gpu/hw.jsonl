@@ -1,0 +1,73 @@
+{"kind": "env", "gpu": "NVIDIA GeForce RTX 5090", "sms": 170, "vram_bytes": 33670758400, "torch": "2.8.0+cu128", "cuda": "12.8", "python": "3.12.3"}
+{"kind": "gemm", "n": 2048, "dtype": "bf16", "time_s": 0.00010708800330758094, "tflops": 160.4275796856118}
+{"kind": "gemm", "n": 4096, "dtype": "bf16", "time_s": 0.0007547520101070404, "tflops": 182.09816155707637}
+{"kind": "gemm", "n": 8192, "dtype": "bf16", "time_s": 0.004685728073120118, "tflops": 234.65118133580907}
+{"kind": "gemm", "n": 16384, "dtype": "bf16", "time_s": 0.03859984016418457, "tflops": 227.8790011770459}
+{"kind": "d2d_copy", "bytes": 4096, "time_s": 1.1376000009477137e-05, "gbps": 0.7201125169809595}
+{"kind": "reduce_add", "bytes": 4096, "time_s": 9.824000298976899e-06, "gbps": 1.25081429418113}
+{"kind": "h2d_pinned", "bytes": 4096, "time_s": 1.0127999819815159e-05, "gbps": 0.40442338792169863}
+{"kind": "d2h_pinned", "bytes": 4096, "time_s": 9.696000255644322e-06, "gbps": 0.42244223308632856}
+{"kind": "d2d_copy", "bytes": 16384, "time_s": 1.080000028014183e-05, "gbps": 3.034073995373052}
+{"kind": "reduce_add", "bytes": 16384, "time_s": 9.824000298976899e-06, "gbps": 5.00325717672452}
+{"kind": "h2d_pinned", "bytes": 16384, "time_s": 1.0208000428974628e-05, "gbps": 1.605015606533016}
+{"kind": "d2h_pinned", "bytes": 16384, "time_s": 9.920000098645687e-06, "gbps": 1.6516128868019668}
+{"kind": "d2d_copy", "bytes": 65536, "time_s": 1.1071999557316302e-05, "gbps": 11.838150762333484}
+{"kind": "reduce_add", "bytes": 65536, "time_s": 9.808000177145004e-06, "gbps": 20.04567663631816}
+{"kind": "h2d_pinned", "bytes": 65536, "time_s": 9.903999976813793e-06, "gbps": 6.617124409675487}
+{"kind": "d2h_pinned", "bytes": 65536, "time_s": 9.74399968981743e-06, "gbps": 6.725780181262293}
+{"kind": "d2d_copy", "bytes": 262144, "time_s": 1.0848000179976224e-05, "gbps": 48.33038267898969}
+{"kind": "reduce_add", "bytes": 262144, "time_s": 9.728000033646821e-06, "gbps": 80.84210498354442}
+{"kind": "h2d_pinned", "bytes": 262144, "time_s": 9.871999733150005e-06, "gbps": 26.554295693477886}
+{"kind": "d2h_pinned", "bytes": 262144, "time_s": 9.55200009047985e-06, "gbps": 27.443885837194443}
+{"kind": "d2d_copy", "bytes": 1048576, "time_s": 1.065600011497736e-05, "gbps": 196.80480268129725}
+{"kind": "reduce_add", "bytes": 1048576, "time_s": 9.55200009047985e-06, "gbps": 329.3266300463333}
+{"kind": "h2d_pinned", "bytes": 1048576, "time_s": 2.329600043594837e-05, "gbps": 45.010988168678445}
+{"kind": "d2h_pinned", "bytes": 1048576, "time_s": 2.214400004595518e-05, "gbps": 47.35260105779907}
+{"kind": "d2d_copy", "bytes": 4194304, "time_s": 1.0816000401973725e-05, "gbps": 775.5739356730452}
+{"kind": "reduce_add", "bytes": 4194304, "time_s": 1.0160000063478947e-05, "gbps": 1238.475582813275}
+{"kind": "h2d_pinned", "bytes": 4194304, "time_s": 7.911999896168708e-05, "gbps": 53.01193193937025}
+{"kind": "d2h_pinned", "bytes": 4194304, "time_s": 7.710399851202965e-05, "gbps": 54.39800893523844}
+{"kind": "d2d_copy", "bytes": 16777216, "time_s": 1.1024000123143196e-05, "gbps": 3043.7619398749475}
+{"kind": "reduce_add", "bytes": 16777216, "time_s": 1.2959999963641166e-05, "gbps": 3883.6148257101627}
+{"kind": "h2d_pinned", "bytes": 16777216, "time_s": 0.00030206400156021116, "gbps": 55.54192460320617}
+{"kind": "d2h_pinned", "bytes": 16777216, "time_s": 0.0002969760000705719, "gbps": 56.493507879468865}
+{"kind": "d2d_copy", "bytes": 67108864, "time_s": 6.947200000286102e-05, "gbps": 1931.968677948995}
+{"kind": "reduce_add", "bytes": 67108864, "time_s": 9.035200253129004e-05, "gbps": 2228.247148482161}
+{"kind": "h2d_pinned", "bytes": 67108864, "time_s": 0.001193120002746582, "gbps": 56.24653332901492}
+{"kind": "d2h_pinned", "bytes": 67108864, "time_s": 0.001187439978122711, "gbps": 56.51558414438436}
+{"kind": "d2d_copy", "bytes": 268435456, "time_s": 0.0003544320017099381, "gbps": 1514.7359984704972}
+{"kind": "reduce_add", "bytes": 268435456, "time_s": 0.0005151199996471405, "gbps": 1563.3374137126077}
+{"kind": "h2d_pinned", "bytes": 268435456, "time_s": 0.004762655973434449, "gbps": 56.3625543178643}
+{"kind": "d2h_pinned", "bytes": 268435456, "time_s": 0.004881439924240113, "gbps": 54.991039563349126}
+{"kind": "d2d_copy", "bytes": 1073741824, "time_s": 0.001415008008480072, "gbps": 1517.6476989036375}
+{"kind": "reduce_add", "bytes": 1073741824, "time_s": 0.0020497920513153074, "gbps": 1571.4889078299475}
+{"kind": "h2d_pinned", "bytes": 1073741824, "time_s": 0.01901334476470947, "gbps": 56.473063381933954}
+{"kind": "d2h_pinned", "bytes": 1073741824, "time_s": 0.019695904731750487, "gbps": 54.51599399082646}
+{"kind": "ring_1gpu", "P": 2, "bytes": 4096, "time_s": 3.1616000458598136e-05, "steps": 2, "launches": 4, "max_err": 0.0, "model_bus_bytes": 4096.0}
+{"kind": "ring_1gpu", "P": 2, "bytes": 16384, "time_s": 3.067200072109699e-05, "steps": 2, "launches": 4, "max_err": 0.0, "model_bus_bytes": 16384.0}
+{"kind": "ring_1gpu", "P": 2, "bytes": 65536, "time_s": 3.1055999919772145e-05, "steps": 2, "launches": 4, "max_err": 0.0, "model_bus_bytes": 65536.0}
+{"kind": "ring_1gpu", "P": 2, "bytes": 262144, "time_s": 3.134400071576237e-05, "steps": 2, "launches": 4, "max_err": 0.0, "model_bus_bytes": 262144.0}
+{"kind": "ring_1gpu", "P": 2, "bytes": 1048576, "time_s": 3.123200125992298e-05, "steps": 2, "launches": 4, "max_err": 0.0, "model_bus_bytes": 1048576.0}
+{"kind": "ring_1gpu", "P": 2, "bytes": 4194304, "time_s": 3.1135999131947755e-05, "steps": 2, "launches": 4, "max_err": 0.0, "model_bus_bytes": 4194304.0}
+{"kind": "ring_1gpu", "P": 2, "bytes": 16777216, "time_s": 2.87200016900897e-05, "steps": 2, "launches": 4, "max_err": 0.0, "model_bus_bytes": 16777216.0}
+{"kind": "ring_1gpu", "P": 2, "bytes": 67108864, "time_s": 0.00016721601039171216, "steps": 2, "launches": 4, "max_err": 0.0, "model_bus_bytes": 67108864.0}
+{"kind": "ring_1gpu", "P": 2, "bytes": 268435456, "time_s": 0.0008645280301570891, "steps": 2, "launches": 4, "max_err": 0.0, "model_bus_bytes": 268435456.0}
+{"kind": "ring_1gpu", "P": 4, "bytes": 4096, "time_s": 0.0001653759963810444, "steps": 6, "launches": 24, "max_err": 4.76837158203125e-07, "model_bus_bytes": 6144.0}
+{"kind": "ring_1gpu", "P": 4, "bytes": 16384, "time_s": 0.00016523199900984762, "steps": 6, "launches": 24, "max_err": 4.76837158203125e-07, "model_bus_bytes": 24576.0}
+{"kind": "ring_1gpu", "P": 4, "bytes": 65536, "time_s": 0.00016468799859285354, "steps": 6, "launches": 24, "max_err": 9.5367431640625e-07, "model_bus_bytes": 98304.0}
+{"kind": "ring_1gpu", "P": 4, "bytes": 262144, "time_s": 0.00016575999557971952, "steps": 6, "launches": 24, "max_err": 9.5367431640625e-07, "model_bus_bytes": 393216.0}
+{"kind": "ring_1gpu", "P": 4, "bytes": 1048576, "time_s": 0.00016609600093215704, "steps": 6, "launches": 24, "max_err": 9.5367431640625e-07, "model_bus_bytes": 1572864.0}
+{"kind": "ring_1gpu", "P": 4, "bytes": 4194304, "time_s": 0.00016488000191748143, "steps": 6, "launches": 24, "max_err": 9.5367431640625e-07, "model_bus_bytes": 6291456.0}
+{"kind": "ring_1gpu", "P": 4, "bytes": 16777216, "time_s": 0.0001280959993600845, "steps": 6, "launches": 24, "max_err": 9.5367431640625e-07, "model_bus_bytes": 25165824.0}
+{"kind": "ring_1gpu", "P": 4, "bytes": 67108864, "time_s": 0.0005712960064411163, "steps": 6, "launches": 24, "max_err": 9.5367431640625e-07, "model_bus_bytes": 100663296.0}
+{"kind": "ring_1gpu", "P": 4, "bytes": 268435456, "time_s": 0.0023772640228271486, "steps": 6, "launches": 24, "max_err": 1.9073486328125e-06, "model_bus_bytes": 402653184.0}
+{"kind": "ring_1gpu", "P": 8, "bytes": 4096, "time_s": 0.0007429919950664044, "steps": 14, "launches": 112, "max_err": 9.5367431640625e-07, "model_bus_bytes": 7168.0}
+{"kind": "ring_1gpu", "P": 8, "bytes": 16384, "time_s": 0.0007427520062774418, "steps": 14, "launches": 112, "max_err": 9.5367431640625e-07, "model_bus_bytes": 28672.0}
+{"kind": "ring_1gpu", "P": 8, "bytes": 65536, "time_s": 0.0007459040004760027, "steps": 14, "launches": 112, "max_err": 1.430511474609375e-06, "model_bus_bytes": 114688.0}
+{"kind": "ring_1gpu", "P": 8, "bytes": 262144, "time_s": 0.0007501439973711967, "steps": 14, "launches": 112, "max_err": 1.9073486328125e-06, "model_bus_bytes": 458752.0}
+{"kind": "ring_1gpu", "P": 8, "bytes": 1048576, "time_s": 0.0007531999945640564, "steps": 14, "launches": 112, "max_err": 1.9073486328125e-06, "model_bus_bytes": 1835008.0}
+{"kind": "ring_1gpu", "P": 8, "bytes": 4194304, "time_s": 0.0007514720186591148, "steps": 14, "launches": 112, "max_err": 1.9073486328125e-06, "model_bus_bytes": 7340032.0}
+{"kind": "ring_1gpu", "P": 8, "bytes": 16777216, "time_s": 0.0006166880130767823, "steps": 14, "launches": 112, "max_err": 1.9073486328125e-06, "model_bus_bytes": 29360128.0}
+{"kind": "ring_1gpu", "P": 8, "bytes": 67108864, "time_s": 0.0012463359832763673, "steps": 14, "launches": 112, "max_err": 2.86102294921875e-06, "model_bus_bytes": 117440512.0}
+{"kind": "ring_1gpu", "P": 8, "bytes": 268435456, "time_s": 0.005725327730178833, "steps": 14, "launches": 112, "max_err": 2.86102294921875e-06, "model_bus_bytes": 469762048.0}
+{"kind": "done", "cmd": "hw", "wall_s": 2.6041367053985596}

@@ -1,0 +1,95 @@
+% !TEX program = xelatex
+% Build: latexmk -xelatex -interaction=nonstopmode -halt-on-error survey.tex
+% Figures: python make_figures.py   (numbers from tools/mlsys_calc.py and solutions/*/*/artifacts/raw)
+\documentclass[journal,10pt]{IEEEtran}
+
+\usepackage[fontset=windows,scheme=plain]{ctex}
+\setmainfont{texgyretermes}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,
+  ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+\setsansfont{texgyreheros}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,
+  ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+\setmonofont{texgyrecursor}[Extension=.otf,UprightFont=*-regular,BoldFont=*-bold,
+  ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs,tabularx,multirow,array}
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+\usepackage{cite}
+\usepackage{siunitx}
+\usepackage{xurl}
+\usepackage[hidelinks,unicode]{hyperref}
+
+\graphicspath{{figures/}}
+\setlength{\emergencystretch}{3em}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@dblfptop}{0pt}
+\makeatother
+\linespread{1.06}
+\renewcommand{\arraystretch}{1.12}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% ---------------------------------------------------------------- boxes
+\definecolor{qaframe}{HTML}{1F4E79}
+\definecolor{qaback}{HTML}{F3F7FB}
+\definecolor{estframe}{HTML}{2E7D4F}
+\definecolor{estback}{HTML}{F2FAF5}
+\definecolor{keyframe}{HTML}{8A5A00}
+\definecolor{keyback}{HTML}{FFF9EC}
+\definecolor{resframe}{HTML}{6A3D8F}
+\definecolor{resback}{HTML}{F7F2FB}
+\tcbset{surveybox/.style={breakable,enhanced,boxrule=0.5pt,arc=1pt,left=3pt,right=3pt,
+  top=2pt,bottom=2pt,fonttitle=\bfseries\small,fontupper=\small,before skip=6pt,after skip=6pt}}
+\newtcolorbox[auto counter]{qa}[1]{surveybox,colback=qaback,colframe=qaframe,
+  title={面试追问~\thetcbcounter：#1}}
+\newtcolorbox[auto counter]{est}[1]{surveybox,colback=estback,colframe=estframe,
+  title={白板估算~\thetcbcounter：#1}}
+\newtcolorbox{keypts}{surveybox,colback=keyback,colframe=keyframe,title={面试要点}}
+\newtcolorbox{research}{surveybox,colback=resback,colframe=resframe,title={研究视角}}
+\newcommand{\ans}{\textbf{答：}}
+\newcommand{\wrong}{\par\smallskip\noindent\textbf{常见错答：}}
+\newcommand{\lab}[1]{\textbf{本文配套实验}（#1）}
+
+\hyphenation{Flash-Attention Paged-Attention Tensor-RT Megatron}
+
+\begin{document}
+
+\title{面向面试能力构建的机器学习系统知识综述：\\从并行计算、算子与编译到大模型训练与推理}
+
+\author{ShaneLiu04%
+\thanks{作者 GitHub：\url{https://github.com/ShaneLiu04}。本文全部代码、白板计算器与原始实验数据见
+\url{https://gitee.com/liu-xingyan04/mlsys-infra}。本文基于 Stanford CS149（Fall 2024）、
+Stanford CS229S（Fall 2023）与 CMU 15-849（Spring 2022）的公开课程材料整理，作者与上述大学无任何隶属关系，
+内容不代表课程方观点。}}
+
+\markboth{机器学习系统知识综述（面试能力版）}{ShaneLiu04：机器学习系统知识综述}
+
+\maketitle
+
+\input{sections/s00_abstract}
+\input{sections/s01_intro}
+\input{sections/s02_perf_models}
+\input{sections/s03_hardware}
+\input{sections/s04_kernels}
+\input{sections/s05_accelerators}
+\input{sections/s06_compilers}
+\input{sections/s07_training}
+\input{sections/s08_inference}
+\input{sections/s09_efficiency}
+\input{sections/s10_cluster}
+\input{sections/s11_interview}
+\input{sections/s12_open}
+\input{sections/s13_conclusion}
+
+\appendices
+\input{sections/s14_appendix}
+
+\clearpage
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

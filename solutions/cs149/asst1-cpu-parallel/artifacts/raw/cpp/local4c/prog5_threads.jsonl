@@ -1,0 +1,16 @@
+{"kind": "bw", "tag": "", "kernel": "scalar", "threads": 1, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0625453992, "visible_gbs": 12.8755493, "real_gbs": 17.167399, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "simd", "threads": 1, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0669839, "visible_gbs": 12.022387, "real_gbs": 16.0298493, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "stream", "threads": 1, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0522194998, "visible_gbs": 15.4215642, "real_gbs": 15.4215642, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "read", "threads": 1, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0433614999, "visible_gbs": 12.3812809, "real_gbs": 12.3812809, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "scalar", "threads": 2, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0313369995, "visible_gbs": 25.6982602, "real_gbs": 34.264347, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "simd", "threads": 2, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0337063, "visible_gbs": 23.891865, "real_gbs": 31.85582, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "stream", "threads": 2, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0250353999, "visible_gbs": 32.1667067, "real_gbs": 32.1667067, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "read", "threads": 2, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0213382002, "visible_gbs": 25.1600841, "real_gbs": 25.1600841, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "scalar", "threads": 3, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0214935998, "visible_gbs": 37.4672636, "real_gbs": 49.9563515, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "simd", "threads": 3, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0240936, "visible_gbs": 33.4240781, "real_gbs": 44.5654375, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "stream", "threads": 3, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.01899795, "visible_gbs": 42.3891192, "real_gbs": 42.3891192, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "read", "threads": 3, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0154092503, "visible_gbs": 34.8408198, "real_gbs": 34.8408198, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "scalar", "threads": 4, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0174711496, "visible_gbs": 46.0934963, "real_gbs": 61.4579951, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "simd", "threads": 4, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0181019995, "visible_gbs": 44.48715, "real_gbs": 59.3162, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "stream", "threads": 4, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0124562001, "visible_gbs": 64.6510463, "real_gbs": 64.6510463, "correct": 1}
+{"kind": "bw", "tag": "", "kernel": "read", "threads": 4, "n": 67108864, "bytes_ws": 805306368, "time_s": 0.0114421668, "visible_gbs": 46.9203887, "real_gbs": 46.9203887, "correct": 1}

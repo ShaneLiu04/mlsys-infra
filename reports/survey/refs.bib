@@ -1,0 +1,733 @@
+% ---------------- Courses ----------------
+@misc{cs149,
+  author       = {Kayvon Fatahalian and Kunle Olukotun},
+  title        = {{CS149}: Parallel Computing},
+  howpublished = {Stanford University, course materials},
+  year         = {2024},
+  note         = {Fall 2024},
+  url          = {https://gfxcourses.stanford.edu/cs149/fall24}
+}
+@misc{cs229s,
+  author       = {Azalia Mirhoseini and Simran Arora},
+  title        = {{CS229S}: Systems for Machine Learning},
+  howpublished = {Stanford University, course materials},
+  year         = {2023},
+  note         = {Fall 2023},
+  url          = {https://cs229s.stanford.edu/fall2023/}
+}
+@misc{cmu15849,
+  author       = {Zhihao Jia},
+  title        = {15-849: Machine Learning Systems},
+  howpublished = {Carnegie Mellon University, course materials},
+  year         = {2022},
+  note         = {Spring 2022},
+  url          = {https://www.cs.cmu.edu/~zhihaoj2/15-849/}
+}
+
+% ---------------- Performance models & theory ----------------
+@article{williams2009roofline,
+  author  = {Samuel Williams and Andrew Waterman and David Patterson},
+  title   = {Roofline: An Insightful Visual Performance Model for Multicore Architectures},
+  journal = {Communications of the ACM},
+  volume  = {52}, number = {4}, pages = {65--76}, year = {2009}
+}
+@inproceedings{amdahl1967validity,
+  author    = {Gene M. Amdahl},
+  title     = {Validity of the Single Processor Approach to Achieving Large Scale Computing Capabilities},
+  booktitle = {Proc. AFIPS Spring Joint Computer Conference},
+  pages     = {483--485}, year = {1967}
+}
+@article{gustafson1988reevaluating,
+  author  = {John L. Gustafson},
+  title   = {Reevaluating {Amdahl's} Law},
+  journal = {Communications of the ACM},
+  volume  = {31}, number = {5}, pages = {532--533}, year = {1988}
+}
+@article{brent1974parallel,
+  author  = {Richard P. Brent},
+  title   = {The Parallel Evaluation of General Arithmetic Expressions},
+  journal = {Journal of the ACM},
+  volume  = {21}, number = {2}, pages = {201--206}, year = {1974}
+}
+@article{blumofe1999scheduling,
+  author  = {Robert D. Blumofe and Charles E. Leiserson},
+  title   = {Scheduling Multithreaded Computations by Work Stealing},
+  journal = {Journal of the ACM},
+  volume  = {46}, number = {5}, pages = {720--748}, year = {1999}
+}
+@techreport{blelloch1990prefix,
+  author      = {Guy E. Blelloch},
+  title       = {Prefix Sums and Their Applications},
+  institution = {Carnegie Mellon University},
+  number      = {CMU-CS-90-190}, year = {1990}
+}
+@article{hillis1986data,
+  author  = {W. Daniel Hillis and Guy L. Steele, Jr.},
+  title   = {Data Parallel Algorithms},
+  journal = {Communications of the ACM},
+  volume  = {29}, number = {12}, pages = {1170--1183}, year = {1986}
+}
+@article{little1961proof,
+  author  = {John D. C. Little},
+  title   = {A Proof for the Queuing Formula: {$L = \lambda W$}},
+  journal = {Operations Research},
+  volume  = {9}, number = {3}, pages = {383--387}, year = {1961}
+}
+@inproceedings{hong1981io,
+  author    = {Jia-Wei Hong and H. T. Kung},
+  title     = {{I/O} Complexity: The Red-Blue Pebble Game},
+  booktitle = {Proc. ACM Symposium on Theory of Computing (STOC)},
+  pages     = {326--333}, year = {1981}
+}
+@article{gholami2024memorywall,
+  author  = {Amir Gholami and Zhewei Yao and Sehoon Kim and Coleman Hooper and Michael W. Mahoney and Kurt Keutzer},
+  title   = {{AI} and Memory Wall},
+  journal = {IEEE Micro},
+  volume  = {44}, number = {3}, pages = {33--39}, year = {2024}
+}
+
+% ---------------- Hardware ----------------
+@misc{nvidiaa100,
+  author       = {{NVIDIA}},
+  title        = {{NVIDIA A100} Tensor Core {GPU} Architecture},
+  howpublished = {Whitepaper}, year = {2020}
+}
+@misc{nvidiah100,
+  author       = {{NVIDIA}},
+  title        = {{NVIDIA H100} Tensor Core {GPU} Architecture},
+  howpublished = {Whitepaper}, year = {2022}
+}
+@misc{nvidiavolta2017,
+  author       = {{NVIDIA}},
+  title        = {{NVIDIA Tesla V100 GPU} Architecture},
+  howpublished = {Whitepaper}, year = {2017}
+}
+@article{hennessy2019golden,
+  author  = {John L. Hennessy and David A. Patterson},
+  title   = {A New Golden Age for Computer Architecture},
+  journal = {Communications of the ACM},
+  volume  = {62}, number = {2}, pages = {48--60}, year = {2019}
+}
+@article{lindholm2008tesla,
+  author  = {Erik Lindholm and John Nickolls and Stuart Oberman and John Montrym},
+  title   = {{NVIDIA Tesla}: A Unified Graphics and Computing Architecture},
+  journal = {IEEE Micro},
+  volume  = {28}, number = {2}, pages = {39--55}, year = {2008}
+}
+@article{nickolls2008cuda,
+  author  = {John Nickolls and Ian Buck and Michael Garland and Kevin Skadron},
+  title   = {Scalable Parallel Programming with {CUDA}},
+  journal = {ACM Queue},
+  volume  = {6}, number = {2}, pages = {40--53}, year = {2008}
+}
+@inproceedings{papamarcos1984low,
+  author    = {Mark S. Papamarcos and Janak H. Patel},
+  title     = {A Low-Overhead Coherence Solution for Multiprocessors with Private Cache Memories},
+  booktitle = {Proc. International Symposium on Computer Architecture (ISCA)},
+  pages     = {348--354}, year = {1984}
+}
+@article{lamport1979make,
+  author  = {Leslie Lamport},
+  title   = {How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs},
+  journal = {IEEE Transactions on Computers},
+  volume  = {C-28}, number = {9}, pages = {690--691}, year = {1979}
+}
+@article{adve1996shared,
+  author  = {Sarita V. Adve and Kourosh Gharachorloo},
+  title   = {Shared Memory Consistency Models: A Tutorial},
+  journal = {IEEE Computer},
+  volume  = {29}, number = {12}, pages = {66--76}, year = {1996}
+}
+@misc{volkov2010better,
+  author       = {Vasily Volkov},
+  title        = {Better Performance at Lower Occupancy},
+  howpublished = {GPU Technology Conference (GTC)}, year = {2010}
+}
+@misc{cutlass,
+  author       = {{NVIDIA}},
+  title        = {{CUTLASS}: {CUDA} Templates for Linear Algebra Subroutines},
+  howpublished = {\url{https://github.com/NVIDIA/cutlass}}, year = {2017}
+}
+@misc{mishra2021accelerating,
+  author       = {Asit Mishra and Jorge Albericio Latorre and Jeff Pool and Darko Stosic and Dusan Stosic and Ganesh Venkatesh and Chong Yu and Paulius Micikevicius},
+  title        = {Accelerating Sparse Deep Neural Networks},
+  howpublished = {arXiv:2104.08378}, year = {2021}
+}
+
+% ---------------- Kernels ----------------
+@inproceedings{dao2022flashattention,
+  author    = {Tri Dao and Daniel Y. Fu and Stefano Ermon and Atri Rudra and Christopher R{\'e}},
+  title     = {{FlashAttention}: Fast and Memory-Efficient Exact Attention with {IO}-Awareness},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2022}
+}
+@inproceedings{dao2024flashattention2,
+  author    = {Tri Dao},
+  title     = {{FlashAttention-2}: Faster Attention with Better Parallelism and Work Partitioning},
+  booktitle = {Proc. International Conference on Learning Representations (ICLR)}, year = {2024}
+}
+@inproceedings{shah2024flashattention3,
+  author    = {Jay Shah and Ganesh Bikshandi and Ying Zhang and Vijay Thakkar and Pradeep Ramani and Tri Dao},
+  title     = {{FlashAttention-3}: Fast and Accurate Attention with Asynchrony and Low-precision},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2024}
+}
+@misc{milakov2018online,
+  author       = {Maxim Milakov and Natalia Gimelshein},
+  title        = {Online Normalizer Calculation for Softmax},
+  howpublished = {arXiv:1805.02867}, year = {2018}
+}
+@misc{rabe2021selfattention,
+  author       = {Markus N. Rabe and Charles Staats},
+  title        = {Self-attention Does Not Need {$O(n^2)$} Memory},
+  howpublished = {arXiv:2112.05682}, year = {2021}
+}
+@misc{dao2023flashdecoding,
+  author       = {Tri Dao and Daniel Haziza and Francisco Massa and Grigory Sizov},
+  title        = {{Flash-Decoding} for Long-Context Inference},
+  howpublished = {Stanford CRFM blog}, year = {2023}
+}
+@inproceedings{ivanov2021data,
+  author    = {Andrei Ivanov and Nikoli Dryden and Tal Ben-Nun and Shigang Li and Torsten Hoefler},
+  title     = {Data Movement Is All You Need: A Case Study on Optimizing Transformers},
+  booktitle = {Proc. Machine Learning and Systems (MLSys)}, year = {2021}
+}
+@inproceedings{tillet2019triton,
+  author    = {Philippe Tillet and H. T. Kung and David Cox},
+  title     = {Triton: An Intermediate Language and Compiler for Tiled Neural Network Computations},
+  booktitle = {Proc. ACM SIGPLAN International Workshop on Machine Learning and Programming Languages (MAPL)},
+  pages     = {10--19}, year = {2019}
+}
+@article{chowdhery2022palm,
+  author  = {Aakanksha Chowdhery and Sharan Narang and Jacob Devlin and others},
+  title   = {{PaLM}: Scaling Language Modeling with Pathways},
+  journal = {Journal of Machine Learning Research},
+  volume  = {24}, number = {240}, pages = {1--113}, year = {2023}
+}
+@inproceedings{jiang2024megascale,
+  author    = {Ziheng Jiang and Haibin Lin and Yinmin Zhong and Qi Huang and Yangrui Chen and others},
+  title     = {{MegaScale}: Scaling Large Language Model Training to More Than 10,000 {GPUs}},
+  booktitle = {Proc. USENIX Symposium on Networked Systems Design and Implementation (NSDI)}, year = {2024}
+}
+
+% ---------------- Accelerators ----------------
+@inproceedings{horowitz2014energy,
+  author    = {Mark Horowitz},
+  title     = {Computing's Energy Problem (and What We Can Do About It)},
+  booktitle = {Proc. IEEE International Solid-State Circuits Conference (ISSCC)},
+  pages     = {10--14}, year = {2014}
+}
+@article{dally2020domain,
+  author  = {William J. Dally and Yatish Turakhia and Song Han},
+  title   = {Domain-Specific Hardware Accelerators},
+  journal = {Communications of the ACM},
+  volume  = {63}, number = {7}, pages = {48--57}, year = {2020}
+}
+@article{sze2017efficient,
+  author  = {Vivienne Sze and Yu-Hsin Chen and Tien-Ju Yang and Joel S. Emer},
+  title   = {Efficient Processing of Deep Neural Networks: A Tutorial and Survey},
+  journal = {Proceedings of the IEEE},
+  volume  = {105}, number = {12}, pages = {2295--2329}, year = {2017}
+}
+@article{kung1982systolic,
+  author  = {H. T. Kung},
+  title   = {Why Systolic Architectures?},
+  journal = {IEEE Computer},
+  volume  = {15}, number = {1}, pages = {37--46}, year = {1982}
+}
+@inproceedings{chen2016eyeriss,
+  author    = {Yu-Hsin Chen and Joel Emer and Vivienne Sze},
+  title     = {Eyeriss: A Spatial Architecture for Energy-Efficient Dataflow for Convolutional Neural Networks},
+  booktitle = {Proc. International Symposium on Computer Architecture (ISCA)},
+  pages     = {367--379}, year = {2016}
+}
+@inproceedings{jouppi2017tpu,
+  author    = {Norman P. Jouppi and Cliff Young and Nishant Patil and David Patterson and others},
+  title     = {In-Datacenter Performance Analysis of a Tensor Processing Unit},
+  booktitle = {Proc. International Symposium on Computer Architecture (ISCA)},
+  pages     = {1--12}, year = {2017}
+}
+@inproceedings{jouppi2023tpuv4,
+  author    = {Norman P. Jouppi and George Kurian and Sheng Li and Peter Ma and Rahul Nagarajan and Lifeng Nai and Nishant Patil and Suvinay Subramanian and Andy Swing and Brian Towles and Cliff Young and Xiang Zhou and Zongwei Zhou and David Patterson},
+  title     = {{TPU v4}: An Optically Reconfigurable Supercomputer for Machine Learning with Hardware Support for Embeddings},
+  booktitle = {Proc. International Symposium on Computer Architecture (ISCA)}, year = {2023}
+}
+@misc{awsneuron,
+  author       = {{Amazon Web Services}},
+  title        = {{AWS Neuron} Documentation: {Trainium} Architecture and the Neuron Kernel Interface ({NKI})},
+  howpublished = {\url{https://awsdocs-neuron.readthedocs-hosted.com/}}, year = {2024}
+}
+
+% ---------------- Compilers & frameworks ----------------
+@inproceedings{dean2012large,
+  author    = {Jeffrey Dean and Greg S. Corrado and Rajat Monga and Kai Chen and Matthieu Devin and Quoc V. Le and others},
+  title     = {Large Scale Distributed Deep Networks},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2012}
+}
+@inproceedings{abadi2016tensorflow,
+  author    = {Mart{\'i}n Abadi and Paul Barham and Jianmin Chen and others},
+  title     = {{TensorFlow}: A System for Large-Scale Machine Learning},
+  booktitle = {Proc. USENIX Symposium on Operating Systems Design and Implementation (OSDI)},
+  pages     = {265--283}, year = {2016}
+}
+@inproceedings{paszke2019pytorch,
+  author    = {Adam Paszke and Sam Gross and Francisco Massa and others},
+  title     = {{PyTorch}: An Imperative Style, High-Performance Deep Learning Library},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2019}
+}
+@misc{jax2018github,
+  author       = {James Bradbury and Roy Frostig and Peter Hawkins and Matthew James Johnson and Chris Leary and Dougal Maclaurin and George Necula and Adam Paszke and Jake VanderPlas and Skye Wanderman-Milne and Qiao Zhang},
+  title        = {{JAX}: Composable Transformations of {Python+NumPy} Programs},
+  howpublished = {\url{https://github.com/jax-ml/jax}}, year = {2018}
+}
+@misc{xla,
+  author       = {{OpenXLA}},
+  title        = {{XLA}: An Optimizing Compiler for Machine Learning},
+  howpublished = {\url{https://openxla.org/xla}}, year = {2017}
+}
+@article{baydin2018automatic,
+  author  = {At{\i}l{\i}m G{\"u}ne{\c{s}} Baydin and Barak A. Pearlmutter and Alexey Andreyevich Radul and Jeffrey Mark Siskind},
+  title   = {Automatic Differentiation in Machine Learning: A Survey},
+  journal = {Journal of Machine Learning Research},
+  volume  = {18}, number = {153}, pages = {1--43}, year = {2018}
+}
+@inproceedings{chen2018tvm,
+  author    = {Tianqi Chen and Thierry Moreau and Ziheng Jiang and Lianmin Zheng and Eddie Yan and Haichen Shen and Meghan Cowan and Leyuan Wang and Yuwei Hu and Luis Ceze and Carlos Guestrin and Arvind Krishnamurthy},
+  title     = {{TVM}: An Automated End-to-End Optimizing Compiler for Deep Learning},
+  booktitle = {Proc. USENIX Symposium on Operating Systems Design and Implementation (OSDI)},
+  pages     = {578--594}, year = {2018}
+}
+@inproceedings{ragan2013halide,
+  author    = {Jonathan Ragan-Kelley and Connelly Barnes and Andrew Adams and Sylvain Paris and Fr{\'e}do Durand and Saman Amarasinghe},
+  title     = {Halide: A Language and Compiler for Optimizing Parallelism, Locality, and Recomputation in Image Processing Pipelines},
+  booktitle = {Proc. ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI)},
+  pages     = {519--530}, year = {2013}
+}
+@inproceedings{zheng2020ansor,
+  author    = {Lianmin Zheng and Chengfan Jia and Minmin Sun and Zhao Wu and Cody Hao Yu and Ameer Haj-Ali and Yida Wang and Jun Yang and Danyang Zhuo and Koushik Sen and Joseph E. Gonzalez and Ion Stoica},
+  title     = {Ansor: Generating High-Performance Tensor Programs for Deep Learning},
+  booktitle = {Proc. USENIX Symposium on Operating Systems Design and Implementation (OSDI)},
+  pages     = {863--879}, year = {2020}
+}
+@inproceedings{jia2019taso,
+  author    = {Zhihao Jia and Oded Padon and James Thomas and Todd Warszawski and Matei Zaharia and Alex Aiken},
+  title     = {{TASO}: Optimizing Deep Learning Computation with Automatic Generation of Graph Substitutions},
+  booktitle = {Proc. ACM Symposium on Operating Systems Principles (SOSP)},
+  pages     = {47--62}, year = {2019}
+}
+@inproceedings{ansel2024pytorch2,
+  author    = {Jason Ansel and Edward Yang and Horace He and others},
+  title     = {{PyTorch 2}: Faster Machine Learning Through Dynamic {Python} Bytecode Transformation and Graph Compilation},
+  booktitle = {Proc. ACM International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS)}, year = {2024}
+}
+@inproceedings{zheng2022alpa,
+  author    = {Lianmin Zheng and Zhuohan Li and Hao Zhang and Yonghao Zhuang and Zhifeng Chen and Yanping Huang and Yida Wang and Yuanzhong Xu and Danyang Zhuo and Eric P. Xing and Joseph E. Gonzalez and Ion Stoica},
+  title     = {Alpa: Automating Inter- and Intra-Operator Parallelism for Distributed Deep Learning},
+  booktitle = {Proc. USENIX Symposium on Operating Systems Design and Implementation (OSDI)},
+  pages     = {559--578}, year = {2022}
+}
+@misc{xu2021gspmd,
+  author       = {Yuanzhong Xu and HyoukJoong Lee and Dehao Chen and Blake Hechtman and Yanping Huang and Rahul Joshi and Maxim Krikun and Dmitry Lepikhin and Andy Ly and Marcello Maggioni and Ruoming Pang and Noam Shazeer and Shibo Wang and Tao Wang and Yonghui Wu and Zhifeng Chen},
+  title        = {{GSPMD}: General and Scalable Parallelization for {ML} Computation Graphs},
+  howpublished = {arXiv:2105.04663}, year = {2021}
+}
+
+% ---------------- Distributed training ----------------
+@inproceedings{li2014scaling,
+  author    = {Mu Li and David G. Andersen and Jun Woo Park and Alexander J. Smola and Amr Ahmed and Vanja Josifovski and James Long and Eugene J. Shekita and Bor-Yiing Su},
+  title     = {Scaling Distributed Machine Learning with the Parameter Server},
+  booktitle = {Proc. USENIX Symposium on Operating Systems Design and Implementation (OSDI)},
+  pages     = {583--598}, year = {2014}
+}
+@misc{sergeev2018horovod,
+  author       = {Alexander Sergeev and Mike Del Balso},
+  title        = {Horovod: Fast and Easy Distributed Deep Learning in {TensorFlow}},
+  howpublished = {arXiv:1802.05799}, year = {2018}
+}
+@article{li2020pytorch,
+  author  = {Shen Li and Yanli Zhao and Rohan Varma and Omkar Salpekar and Pieter Noordhuis and Teng Li and Adam Paszke and Jeff Smith and Brian Vaughan and Pritam Damania and Soumith Chintala},
+  title   = {{PyTorch} Distributed: Experiences on Accelerating Data Parallel Training},
+  journal = {Proceedings of the VLDB Endowment},
+  volume  = {13}, number = {12}, pages = {3005--3018}, year = {2020}
+}
+@article{thakur2005optimization,
+  author  = {Rajeev Thakur and Rolf Rabenseifner and William Gropp},
+  title   = {Optimization of Collective Communication Operations in {MPICH}},
+  journal = {International Journal of High Performance Computing Applications},
+  volume  = {19}, number = {1}, pages = {49--66}, year = {2005}
+}
+@article{patarasuk2009bandwidth,
+  author  = {Pitch Patarasuk and Xin Yuan},
+  title   = {Bandwidth Optimal All-Reduce Algorithms for Clusters of Workstations},
+  journal = {Journal of Parallel and Distributed Computing},
+  volume  = {69}, number = {2}, pages = {117--124}, year = {2009}
+}
+@inproceedings{rajbhandari2020zero,
+  author    = {Samyam Rajbhandari and Jeff Rasley and Olatunji Ruwase and Yuxiong He},
+  title     = {{ZeRO}: Memory Optimizations Toward Training Trillion Parameter Models},
+  booktitle = {Proc. International Conference for High Performance Computing, Networking, Storage and Analysis (SC)}, year = {2020}
+}
+@article{zhao2023pytorch,
+  author  = {Yanli Zhao and Andrew Gu and Rohan Varma and Liang Luo and Chien-Chin Huang and Min Xu and Less Wright and Hamid Shojanazeri and Myle Ott and Sam Shleifer and Alban Desmaison and Can Balioglu and Pritam Damania and Bernard Nguyen and Geeta Chauhan and Yuchen Hao and Ajit Mathews and Shen Li},
+  title   = {{PyTorch FSDP}: Experiences on Scaling Fully Sharded Data Parallel},
+  journal = {Proceedings of the VLDB Endowment},
+  volume  = {16}, number = {12}, pages = {3848--3860}, year = {2023}
+}
+@inproceedings{korthikanti2023reducing,
+  author    = {Vijay Anand Korthikanti and Jared Casper and Sangkug Lym and Lawrence McAfee and Michael Andersch and Mohammad Shoeybi and Bryan Catanzaro},
+  title     = {Reducing Activation Recomputation in Large Transformer Models},
+  booktitle = {Proc. Machine Learning and Systems (MLSys)}, year = {2023}
+}
+@misc{shoeybi2019megatron,
+  author       = {Mohammad Shoeybi and Mostofa Patwary and Raul Puri and Patrick LeGresley and Jared Casper and Bryan Catanzaro},
+  title        = {{Megatron-LM}: Training Multi-Billion Parameter Language Models Using Model Parallelism},
+  howpublished = {arXiv:1909.08053}, year = {2019}
+}
+@inproceedings{narayanan2021efficient,
+  author    = {Deepak Narayanan and Mohammad Shoeybi and Jared Casper and Patrick LeGresley and Mostofa Patwary and Vijay Korthikanti and Dmitri Vainbrand and Prethvi Kashinkunti and Julie Bernauer and Bryan Catanzaro and Amar Phanishayee and Matei Zaharia},
+  title     = {Efficient Large-Scale Language Model Training on {GPU} Clusters Using {Megatron-LM}},
+  booktitle = {Proc. International Conference for High Performance Computing, Networking, Storage and Analysis (SC)}, year = {2021}
+}
+@inproceedings{liu2023ring,
+  author    = {Hao Liu and Matei Zaharia and Pieter Abbeel},
+  title     = {Ring Attention with Blockwise Transformers for Near-Infinite Context},
+  booktitle = {Proc. International Conference on Learning Representations (ICLR)}, year = {2024}
+}
+@misc{jacobs2023deepspeed,
+  author       = {Sam Ade Jacobs and Masahiro Tanaka and Chengming Zhang and Minjia Zhang and Shuaiwen Leon Song and Samyam Rajbhandari and Yuxiong He},
+  title        = {{DeepSpeed Ulysses}: System Optimizations for Enabling Training of Extreme Long Sequence Transformer Models},
+  howpublished = {arXiv:2309.14509}, year = {2023}
+}
+@inproceedings{huang2019gpipe,
+  author    = {Yanping Huang and Youlong Cheng and Ankur Bapna and Orhan Firat and Mia Xu Chen and Dehao Chen and HyoukJoong Lee and Jiquan Ngiam and Quoc V. Le and Yonghui Wu and Zhifeng Chen},
+  title     = {{GPipe}: Efficient Training of Giant Neural Networks Using Pipeline Parallelism},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2019}
+}
+@inproceedings{narayanan2019pipedream,
+  author    = {Deepak Narayanan and Aaron Harlap and Amar Phanishayee and Vivek Seshadri and Nikhil R. Devanur and Gregory R. Ganger and Phillip B. Gibbons and Matei Zaharia},
+  title     = {{PipeDream}: Generalized Pipeline Parallelism for {DNN} Training},
+  booktitle = {Proc. ACM Symposium on Operating Systems Principles (SOSP)},
+  pages     = {1--15}, year = {2019}
+}
+@inproceedings{qi2024zerobubble,
+  author    = {Penghui Qi and Xinyi Wan and Guangxing Huang and Min Lin},
+  title     = {Zero Bubble (Almost) Pipeline Parallelism},
+  booktitle = {Proc. International Conference on Learning Representations (ICLR)}, year = {2024}
+}
+@inproceedings{lepikhin2021gshard,
+  author    = {Dmitry Lepikhin and HyoukJoong Lee and Yuanzhong Xu and Dehao Chen and Orhan Firat and Yanping Huang and Maxim Krikun and Noam Shazeer and Zhifeng Chen},
+  title     = {{GShard}: Scaling Giant Models with Conditional Computation and Automatic Sharding},
+  booktitle = {Proc. International Conference on Learning Representations (ICLR)}, year = {2021}
+}
+@article{fedus2022switch,
+  author  = {William Fedus and Barret Zoph and Noam Shazeer},
+  title   = {Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity},
+  journal = {Journal of Machine Learning Research},
+  volume  = {23}, number = {120}, pages = {1--39}, year = {2022}
+}
+@misc{chen2016training,
+  author       = {Tianqi Chen and Bing Xu and Chiyuan Zhang and Carlos Guestrin},
+  title        = {Training Deep Nets with Sublinear Memory Cost},
+  howpublished = {arXiv:1604.06174}, year = {2016}
+}
+@inproceedings{jain2020checkmate,
+  author    = {Paras Jain and Ajay Jain and Aniruddha Nrusimha and Amir Gholami and Pieter Abbeel and Kurt Keutzer and Ion Stoica and Joseph E. Gonzalez},
+  title     = {Checkmate: Breaking the Memory Wall with Optimal Tensor Rematerialization},
+  booktitle = {Proc. Machine Learning and Systems (MLSys)}, year = {2020}
+}
+@inproceedings{micikevicius2018mixed,
+  author    = {Paulius Micikevicius and Sharan Narang and Jonah Alben and Gregory Diamos and Erich Elsen and David Garcia and Boris Ginsburg and Michael Houston and Oleksii Kuchaiev and Ganesh Venkatesh and Hao Wu},
+  title     = {Mixed Precision Training},
+  booktitle = {Proc. International Conference on Learning Representations (ICLR)}, year = {2018}
+}
+@misc{kalamkar2019study,
+  author       = {Dhiraj Kalamkar and Dheevatsa Mudigere and Naveen Mellempudi and others},
+  title        = {A Study of {BFLOAT16} for Deep Learning Training},
+  howpublished = {arXiv:1905.12322}, year = {2019}
+}
+@inproceedings{ren2021zero,
+  author    = {Jie Ren and Samyam Rajbhandari and Reza Yazdani Aminabadi and Olatunji Ruwase and Shuangyan Yang and Minjia Zhang and Dong Li and Yuxiong He},
+  title     = {{ZeRO-Offload}: Democratizing Billion-Scale Model Training},
+  booktitle = {Proc. USENIX Annual Technical Conference (ATC)},
+  pages     = {551--564}, year = {2021}
+}
+@inproceedings{rajbhandari2021zero,
+  author    = {Samyam Rajbhandari and Olatunji Ruwase and Jeff Rasley and Shaden Smith and Yuxiong He},
+  title     = {{ZeRO-Infinity}: Breaking the {GPU} Memory Wall for Extreme Scale Deep Learning},
+  booktitle = {Proc. International Conference for High Performance Computing, Networking, Storage and Analysis (SC)}, year = {2021}
+}
+@misc{micikevicius2022fp8,
+  author       = {Paulius Micikevicius and Dusan Stosic and Neil Burgess and Marius Cornea and Pradeep Dubey and Richard Grisenthwaite and Sangwon Ha and Alexander Heinecke and Patrick Judd and John Kamalu and Naveen Mellempudi and Stuart Oberman and Mohammad Shoeybi and Michael Siu and Hao Wu},
+  title        = {{FP8} Formats for Deep Learning},
+  howpublished = {arXiv:2209.05433}, year = {2022}
+}
+
+% ---------------- LLM models & reports ----------------
+@inproceedings{vaswani2017attention,
+  author    = {Ashish Vaswani and Noam Shazeer and Niki Parmar and Jakob Uszkoreit and Llion Jones and Aidan N. Gomez and {\L}ukasz Kaiser and Illia Polosukhin},
+  title     = {Attention Is All You Need},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2017}
+}
+@inproceedings{brown2020gpt3,
+  author    = {Tom B. Brown and Benjamin Mann and Nick Ryder and Melanie Subbiah and others},
+  title     = {Language Models are Few-Shot Learners},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2020}
+}
+@misc{touvron2023llama,
+  author       = {Hugo Touvron and Louis Martin and Kevin Stone and others},
+  title        = {{Llama 2}: Open Foundation and Fine-Tuned Chat Models},
+  howpublished = {arXiv:2307.09288}, year = {2023}
+}
+@misc{dubey2024llama3,
+  author       = {Abhimanyu Dubey and Abhinav Jauhri and Abhinav Pandey and Abhishek Kadian and others},
+  title        = {The {Llama 3} Herd of Models},
+  howpublished = {arXiv:2407.21783}, year = {2024}
+}
+@misc{deepseekai2024v2,
+  author       = {{DeepSeek-AI}},
+  title        = {{DeepSeek-V2}: A Strong, Economical, and Efficient Mixture-of-Experts Language Model},
+  howpublished = {arXiv:2405.04434}, year = {2024}
+}
+@misc{deepseekai2024v3,
+  author       = {{DeepSeek-AI}},
+  title        = {{DeepSeek-V3} Technical Report},
+  howpublished = {arXiv:2412.19437}, year = {2024}
+}
+@misc{geminiteam2023gemini,
+  author       = {{Gemini Team}},
+  title        = {Gemini: A Family of Highly Capable Multimodal Models},
+  howpublished = {arXiv:2312.11805}, year = {2023}
+}
+
+% ---------------- Inference ----------------
+@inproceedings{pope2023efficiently,
+  author    = {Reiner Pope and Sholto Douglas and Aakanksha Chowdhery and Jacob Devlin and James Bradbury and Anselm Levskaya and Jonathan Heek and Kefan Xiao and Shivani Agrawal and Jeff Dean},
+  title     = {Efficiently Scaling Transformer Inference},
+  booktitle = {Proc. Machine Learning and Systems (MLSys)}, year = {2023}
+}
+@misc{shazeer2019fast,
+  author       = {Noam Shazeer},
+  title        = {Fast Transformer Decoding: One Write-Head is All You Need},
+  howpublished = {arXiv:1911.02150}, year = {2019}
+}
+@inproceedings{ainslie2023gqa,
+  author    = {Joshua Ainslie and James Lee-Thorp and Michiel de Jong and Yury Zemlyanskiy and Federico Lebr{\'o}n and Sumit Sanghai},
+  title     = {{GQA}: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints},
+  booktitle = {Proc. Conference on Empirical Methods in Natural Language Processing (EMNLP)}, year = {2023}
+}
+@inproceedings{kwon2023vllm,
+  author    = {Woosuk Kwon and Zhuohan Li and Siyuan Zhuang and Ying Sheng and Lianmin Zheng and Cody Hao Yu and Joseph E. Gonzalez and Hao Zhang and Ion Stoica},
+  title     = {Efficient Memory Management for Large Language Model Serving with {PagedAttention}},
+  booktitle = {Proc. ACM Symposium on Operating Systems Principles (SOSP)}, year = {2023}
+}
+@inproceedings{yu2022orca,
+  author    = {Gyeong-In Yu and Joo Seong Jeong and Geon-Woo Kim and Soojeong Kim and Byung-Gon Chun},
+  title     = {Orca: A Distributed Serving System for {Transformer}-Based Generative Models},
+  booktitle = {Proc. USENIX Symposium on Operating Systems Design and Implementation (OSDI)},
+  pages     = {521--538}, year = {2022}
+}
+@misc{agrawal2023sarathi,
+  author       = {Amey Agrawal and Ashish Panwar and Jayashree Mohan and Nipun Kwatra and Bhargav S. Gulavani and Ramachandran Ramjee},
+  title        = {{SARATHI}: Efficient {LLM} Inference by Piggybacking Decodes with Chunked Prefills},
+  howpublished = {arXiv:2308.16369}, year = {2023}
+}
+@inproceedings{agrawal2024sarathi,
+  author    = {Amey Agrawal and Nitin Kedia and Ashish Panwar and Jayashree Mohan and Nipun Kwatra and Bhargav S. Gulavani and Alexey Tumanov and Ramachandran Ramjee},
+  title     = {Taming Throughput-Latency Tradeoff in {LLM} Inference with {Sarathi-Serve}},
+  booktitle = {Proc. USENIX Symposium on Operating Systems Design and Implementation (OSDI)}, year = {2024}
+}
+@inproceedings{zhong2024distserve,
+  author    = {Yinmin Zhong and Shengyu Liu and Junda Chen and Jianbo Hu and Yibo Zhu and Xuanzhe Liu and Xin Jin and Hao Zhang},
+  title     = {{DistServe}: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving},
+  booktitle = {Proc. USENIX Symposium on Operating Systems Design and Implementation (OSDI)}, year = {2024}
+}
+@inproceedings{patel2024splitwise,
+  author    = {Pratyush Patel and Esha Choukse and Chaojie Zhang and Aashaka Shah and {\'I}{\~n}igo Goiri and Saeed Maleki and Ricardo Bianchini},
+  title     = {Splitwise: Efficient Generative {LLM} Inference Using Phase Splitting},
+  booktitle = {Proc. International Symposium on Computer Architecture (ISCA)}, year = {2024}
+}
+@inproceedings{zheng2024sglang,
+  author    = {Lianmin Zheng and Liangsheng Yin and Zhiqiang Xie and Chuyue Sun and Jeff Huang and Cody Hao Yu and Shiyi Cao and Christos Kozyrakis and Ion Stoica and Joseph E. Gonzalez and Clark Barrett and Ying Sheng},
+  title     = {{SGLang}: Efficient Execution of Structured Language Model Programs},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2024}
+}
+@inproceedings{leviathan2023fast,
+  author    = {Yaniv Leviathan and Matan Kalman and Yossi Matias},
+  title     = {Fast Inference from Transformers via Speculative Decoding},
+  booktitle = {Proc. International Conference on Machine Learning (ICML)}, year = {2023}
+}
+@misc{chen2023accelerating,
+  author       = {Charlie Chen and Sebastian Borgeaud and Geoffrey Irving and Jean-Baptiste Lespiau and Laurent Sifre and John Jumper},
+  title        = {Accelerating Large Language Model Decoding with Speculative Sampling},
+  howpublished = {arXiv:2302.01318}, year = {2023}
+}
+@inproceedings{cai2024medusa,
+  author    = {Tianle Cai and Yuhong Li and Zhengyang Geng and Hongwu Peng and Jason D. Lee and Deming Chen and Tri Dao},
+  title     = {Medusa: Simple {LLM} Inference Acceleration Framework with Multiple Decoding Heads},
+  booktitle = {Proc. International Conference on Machine Learning (ICML)}, year = {2024}
+}
+@inproceedings{li2024eagle,
+  author    = {Yuhui Li and Fangyun Wei and Chao Zhang and Hongyang Zhang},
+  title     = {{EAGLE}: Speculative Sampling Requires Rethinking Feature Uncertainty},
+  booktitle = {Proc. International Conference on Machine Learning (ICML)}, year = {2024}
+}
+@inproceedings{dettmers2022llmint8,
+  author    = {Tim Dettmers and Mike Lewis and Younes Belkada and Luke Zettlemoyer},
+  title     = {{LLM.int8()}: 8-bit Matrix Multiplication for Transformers at Scale},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2022}
+}
+@inproceedings{xiao2023smoothquant,
+  author    = {Guangxuan Xiao and Ji Lin and Mickael Seznec and Hao Wu and Julien Demouth and Song Han},
+  title     = {{SmoothQuant}: Accurate and Efficient Post-Training Quantization for Large Language Models},
+  booktitle = {Proc. International Conference on Machine Learning (ICML)}, year = {2023}
+}
+@inproceedings{frantar2023gptq,
+  author    = {Elias Frantar and Saleh Ashkboos and Torsten Hoefler and Dan Alistarh},
+  title     = {{GPTQ}: Accurate Post-Training Quantization for Generative Pre-trained Transformers},
+  booktitle = {Proc. International Conference on Learning Representations (ICLR)}, year = {2023}
+}
+@inproceedings{lin2024awq,
+  author    = {Ji Lin and Jiaming Tang and Haotian Tang and Shang Yang and Wei-Ming Chen and Wei-Chen Wang and Guangxuan Xiao and Xingyu Dang and Chuang Gan and Song Han},
+  title     = {{AWQ}: Activation-aware Weight Quantization for On-Device {LLM} Compression and Acceleration},
+  booktitle = {Proc. Machine Learning and Systems (MLSys)}, year = {2024}
+}
+@inproceedings{dettmers2023qlora,
+  author    = {Tim Dettmers and Artidoro Pagnoni and Ari Holtzman and Luke Zettlemoyer},
+  title     = {{QLoRA}: Efficient Finetuning of Quantized {LLMs}},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2023}
+}
+@inproceedings{sheng2024slora,
+  author    = {Ying Sheng and Shiyi Cao and Dacheng Li and Coleman Hooper and Nicholas Lee and Shuo Yang and Christopher Chou and Banghua Zhu and Lianmin Zheng and Kurt Keutzer and Joseph E. Gonzalez and Ion Stoica},
+  title     = {{S-LoRA}: Serving Thousands of Concurrent {LoRA} Adapters},
+  booktitle = {Proc. Machine Learning and Systems (MLSys)}, year = {2024}
+}
+@inproceedings{chen2024punica,
+  author    = {Lequn Chen and Zihao Ye and Yongji Wu and Danyang Zhuo and Luis Ceze and Arvind Krishnamurthy},
+  title     = {Punica: Multi-Tenant {LoRA} Serving},
+  booktitle = {Proc. Machine Learning and Systems (MLSys)}, year = {2024}
+}
+
+% ---------------- Model efficiency & architectures ----------------
+@inproceedings{hu2022lora,
+  author    = {Edward J. Hu and Yelong Shen and Phillip Wallis and Zeyuan Allen-Zhu and Yuanzhi Li and Shean Wang and Lu Wang and Weizhu Chen},
+  title     = {{LoRA}: Low-Rank Adaptation of Large Language Models},
+  booktitle = {Proc. International Conference on Learning Representations (ICLR)}, year = {2022}
+}
+@inproceedings{han2016deep,
+  author    = {Song Han and Huizi Mao and William J. Dally},
+  title     = {Deep Compression: Compressing Deep Neural Networks with Pruning, Trained Quantization and {Huffman} Coding},
+  booktitle = {Proc. International Conference on Learning Representations (ICLR)}, year = {2016}
+}
+@inproceedings{frantar2023sparsegpt,
+  author    = {Elias Frantar and Dan Alistarh},
+  title     = {{SparseGPT}: Massive Language Models Can Be Accurately Pruned in One-Shot},
+  booktitle = {Proc. International Conference on Machine Learning (ICML)}, year = {2023}
+}
+@misc{hinton2015distilling,
+  author       = {Geoffrey Hinton and Oriol Vinyals and Jeff Dean},
+  title        = {Distilling the Knowledge in a Neural Network},
+  howpublished = {arXiv:1503.02531}, year = {2015}
+}
+@inproceedings{shazeer2017outrageously,
+  author    = {Noam Shazeer and Azalia Mirhoseini and Krzysztof Maziarz and Andy Davis and Quoc Le and Geoffrey Hinton and Jeff Dean},
+  title     = {Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer},
+  booktitle = {Proc. International Conference on Learning Representations (ICLR)}, year = {2017}
+}
+@inproceedings{rajbhandari2022deepspeed,
+  author    = {Samyam Rajbhandari and Conglong Li and Zhewei Yao and Minjia Zhang and Reza Yazdani Aminabadi and Ammar Ahmad Awan and Jeff Rasley and Yuxiong He},
+  title     = {{DeepSpeed-MoE}: Advancing Mixture-of-Experts Inference and Training to Power Next-Generation {AI} Scale},
+  booktitle = {Proc. International Conference on Machine Learning (ICML)}, year = {2022}
+}
+@inproceedings{gale2023megablocks,
+  author    = {Trevor Gale and Deepak Narayanan and Cliff Young and Matei Zaharia},
+  title     = {{MegaBlocks}: Efficient Sparse Training with Mixture-of-Experts},
+  booktitle = {Proc. Machine Learning and Systems (MLSys)}, year = {2023}
+}
+@inproceedings{katharopoulos2020transformers,
+  author    = {Angelos Katharopoulos and Apoorv Vyas and Nikolaos Pappas and Fran{\c{c}}ois Fleuret},
+  title     = {Transformers are {RNNs}: Fast Autoregressive Transformers with Linear Attention},
+  booktitle = {Proc. International Conference on Machine Learning (ICML)}, year = {2020}
+}
+@inproceedings{gu2022efficiently,
+  author    = {Albert Gu and Karan Goel and Christopher R{\'e}},
+  title     = {Efficiently Modeling Long Sequences with Structured State Spaces},
+  booktitle = {Proc. International Conference on Learning Representations (ICLR)}, year = {2022}
+}
+@inproceedings{poli2023hyena,
+  author    = {Michael Poli and Stefano Massaroli and Eric Nguyen and Daniel Y. Fu and Tri Dao and Stephen Baccus and Yoshua Bengio and Stefano Ermon and Christopher R{\'e}},
+  title     = {Hyena Hierarchy: Towards Larger Convolutional Language Models},
+  booktitle = {Proc. International Conference on Machine Learning (ICML)}, year = {2023}
+}
+@misc{gu2023mamba,
+  author       = {Albert Gu and Tri Dao},
+  title        = {Mamba: Linear-Time Sequence Modeling with Selective State Spaces},
+  howpublished = {arXiv:2312.00752}, year = {2023}
+}
+@misc{kaplan2020scaling,
+  author       = {Jared Kaplan and Sam McCandlish and Tom Henighan and Tom B. Brown and Benjamin Chess and Rewon Child and Scott Gray and Alec Radford and Jeffrey Wu and Dario Amodei},
+  title        = {Scaling Laws for Neural Language Models},
+  howpublished = {arXiv:2001.08361}, year = {2020}
+}
+@inproceedings{hoffmann2022training,
+  author    = {Jordan Hoffmann and Sebastian Borgeaud and Arthur Mensch and others},
+  title     = {Training Compute-Optimal Large Language Models},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2022}
+}
+
+% ---------------- Clusters, reliability, data ----------------
+@inproceedings{jeon2019analysis,
+  author    = {Myeongjae Jeon and Shivaram Venkataraman and Amar Phanishayee and Junjie Qian and Wencong Xiao and Fan Yang},
+  title     = {Analysis of Large-Scale Multi-Tenant {GPU} Clusters for {DNN} Training Workloads},
+  booktitle = {Proc. USENIX Annual Technical Conference (ATC)},
+  pages     = {947--960}, year = {2019}
+}
+@inproceedings{xiao2018gandiva,
+  author    = {Wencong Xiao and Romil Bhardwaj and Ramachandran Ramjee and Muthian Sivathanu and Nipun Kwatra and Zhenhua Han and Pratyush Patel and Xuan Peng and Hanyu Zhao and Quanlu Zhang and Fan Yang and Lidong Zhou},
+  title     = {Gandiva: Introspective Cluster Scheduling for Deep Learning},
+  booktitle = {Proc. USENIX Symposium on Operating Systems Design and Implementation (OSDI)},
+  pages     = {595--610}, year = {2018}
+}
+@inproceedings{gu2019tiresias,
+  author    = {Juncheng Gu and Mosharaf Chowdhury and Kang G. Shin and Yibo Zhu and Myeongjae Jeon and Junjie Qian and Hongqiang Liu and Chuanxiong Guo},
+  title     = {Tiresias: A {GPU} Cluster Manager for Distributed Deep Learning},
+  booktitle = {Proc. USENIX Symposium on Networked Systems Design and Implementation (NSDI)},
+  pages     = {485--500}, year = {2019}
+}
+@inproceedings{qiao2021pollux,
+  author    = {Aurick Qiao and Sang Keun Choe and Suhas Jayaram Subramanya and Willie Neiswanger and Qirong Ho and Hao Zhang and Gregory R. Ganger and Eric P. Xing},
+  title     = {Pollux: Co-adaptive Cluster Scheduling for Goodput-Optimized Deep Learning},
+  booktitle = {Proc. USENIX Symposium on Operating Systems Design and Implementation (OSDI)}, year = {2021}
+}
+@article{young1974first,
+  author  = {John W. Young},
+  title   = {A First Order Approximation to the Optimum Checkpoint Interval},
+  journal = {Communications of the ACM},
+  volume  = {17}, number = {9}, pages = {530--531}, year = {1974}
+}
+@inproceedings{mohan2021checkfreq,
+  author    = {Jayashree Mohan and Amar Phanishayee and Vijay Chidambaram},
+  title     = {{CheckFreq}: Frequent, Fine-Grained {DNN} Checkpointing},
+  booktitle = {Proc. USENIX Conference on File and Storage Technologies (FAST)},
+  pages     = {203--216}, year = {2021}
+}
+@article{mohan2021analyzing,
+  author  = {Jayashree Mohan and Amar Phanishayee and Ashish Raniwala and Vijay Chidambaram},
+  title   = {Analyzing and Mitigating Data Stalls in {DNN} Training},
+  journal = {Proceedings of the VLDB Endowment},
+  volume  = {14}, number = {5}, pages = {771--784}, year = {2021}
+}
+@article{murray2021tfdata,
+  author  = {Derek G. Murray and Ji{\v{r}}{\'i} {\v{S}}im{\v{s}}a and Ana Klimovic and Ihor Indyk},
+  title   = {tf.data: A Machine Learning Data Processing Framework},
+  journal = {Proceedings of the VLDB Endowment},
+  volume  = {14}, number = {12}, pages = {2945--2958}, year = {2021}
+}
+@inproceedings{zaharia2012resilient,
+  author    = {Matei Zaharia and Mosharaf Chowdhury and Tathagata Das and Ankur Dave and Justin Ma and Murphy McCauley and Michael J. Franklin and Scott Shenker and Ion Stoica},
+  title     = {Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing},
+  booktitle = {Proc. USENIX Symposium on Networked Systems Design and Implementation (NSDI)},
+  pages     = {15--28}, year = {2012}
+}
+@inproceedings{mirhoseini2017device,
+  author    = {Azalia Mirhoseini and Hieu Pham and Quoc V. Le and Benoit Steiner and Rasmus Larsen and Yuefeng Zhou and Naveen Kumar and Mohammad Norouzi and Samy Bengio and Jeff Dean},
+  title     = {Device Placement Optimization with Reinforcement Learning},
+  booktitle = {Proc. International Conference on Machine Learning (ICML)}, year = {2017}
+}

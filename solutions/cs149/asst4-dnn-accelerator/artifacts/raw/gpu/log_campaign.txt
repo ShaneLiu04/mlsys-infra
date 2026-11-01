@@ -1,0 +1,221 @@
+=== meta 11:25:39
+{'gpu': 'NVIDIA GeForce RTX 5090', 'sm_count': 170, 'cc': '12.0', 'total_mem_gb': 33.6707584, 'l2_mb': 96.0, 'nvidia_smi': 'NVIDIA GeForce RTX 5090, 595.71.05, 3090 MHz, 14001 MHz, 575.00 W', 'nvcc': 'Build cuda_12.8.r12.8/compiler.35583870_0', 'torch': '2.8.0+cu128', 'cuda': '12.8', 'cudnn': 91002, 'python': '3.12.3', 'host': 'autodl-container-1qjylxm03k-6b978123', 'time': '2026-10-28 11:25:40'}
+[meta] 0.2 s
+=== micro 11:25:40
+{'kernel': 'torch_copy', 'mib_per_array': 4, 'blocks': 0, 's': 9.920000098645687e-06, 'bytes': 8388608, 'gbps': 845.625798042607}
+{'kernel': 'torch_copy', 'mib_per_array': 16, 'blocks': 0, 's': 1.1615999974310397e-05, 'bytes': 33554432, 'gbps': 2888.6391248457294}
+{'kernel': 'torch_copy', 'mib_per_array': 32, 'blocks': 0, 's': 1.740800030529499e-05, 'bytes': 67108864, 'gbps': 3855.0587559208334}
+{'kernel': 'torch_copy', 'mib_per_array': 64, 'blocks': 0, 's': 7.619199901819228e-05, 'bytes': 134217728, 'gbps': 1761.5724712505964}
+{'kernel': 'torch_copy', 'mib_per_array': 128, 'blocks': 0, 's': 0.00017849600315093995, 'bytes': 268435456, 'gbps': 1503.8737633413862}
+{'kernel': 'torch_copy', 'mib_per_array': 256, 'blocks': 0, 's': 0.0003531840145587921, 'bytes': 536870912, 'gbps': 1520.0883671665463}
+{'kernel': 'torch_copy', 'mib_per_array': 512, 'blocks': 0, 's': 0.0007092480063438416, 'bytes': 1073741824, 'gbps': 1513.915886115939}
+{'kernel': 'torch_copy', 'mib_per_array': 1024, 'blocks': 0, 's': 0.001411136031150818, 'bytes': 2147483648, 'gbps': 1521.8119306674294}
+wrote micro_bw.jsonl (40 rows)
+wrote micro_fma.jsonl (65 rows)
+{'chains': 16, 'threads': 1024, 'blocks': 340, 'iters': 4096, 's': 0.00038358399271965025, 'flops': 45634027520.0, 'tflops': 118.96749704399815, 'warps_per_sm': 64}
+{'dtype': 'bf16', 'n': 4096, 's': 0.0007596799731254578, 'tflops': 180.91691019121097}
+{'dtype': 'bf16', 'n': 8192, 's': 0.0048295679092407225, 'tflops': 227.66252560032}
+{'dtype': 'bf16', 'n': 16384, 's': 0.03791439819335937, 'tflops': 231.99875090589248}
+{'dtype': 'fp16', 'n': 4096, 's': 0.0006541439890861511, 'tflops': 210.10504684756677}
+{'dtype': 'fp16', 'n': 8192, 's': 0.005104288101196289, 'tflops': 215.40939813297527}
+{'dtype': 'fp16', 'n': 16384, 's': 0.04040787124633789, 'tflops': 217.68266307780758}
+{'dtype': 'tf32', 'n': 4096, 's': 0.0013486080169677734, 'tflops': 101.91171322043554}
+{'dtype': 'tf32', 'n': 8192, 's': 0.00964572811126709, 'tflops': 113.98948996827623}
+{'dtype': 'tf32', 'n': 16384, 's': 0.07474537658691406, 'tflops': 117.68076399989619}
+wrote micro_tensor.jsonl (9 rows)
+[micro] 3.9 s
+=== ladder 11:25:45
+naive      256x256x256     337.1 GFLOP/s err=6.19e-07
+coalesced  256x256x256    1710.6 GFLOP/s err=6.19e-07
+smem8      256x256x256    2681.8 GFLOP/s err=6.19e-07
+smem16     256x256x256    2945.4 GFLOP/s err=6.19e-07
+smem32     256x256x256    2171.0 GFLOP/s err=6.19e-07
+reg1d      256x256x256    1479.0 GFLOP/s err=6.19e-07
+reg2d      256x256x256     414.0 GFLOP/s err=6.19e-07
+vec4       256x256x256    1053.8 GFLOP/s err=6.19e-07
+vec4_db    256x256x256    1123.9 GFLOP/s err=6.19e-07
+cublas/wmma fp16 256: 2175 GFLOP/s
+cublas/wmma bf16 256: 2158 GFLOP/s
+naive      512x512x512     710.0 GFLOP/s err=9.45e-07
+coalesced  512x512x512    4436.1 GFLOP/s err=9.45e-07
+smem8      512x512x512    5419.0 GFLOP/s err=9.45e-07
+smem16     512x512x512    7067.1 GFLOP/s err=9.45e-07
+smem32     512x512x512    6359.8 GFLOP/s err=9.45e-07
+reg1d      512x512x512    7025.6 GFLOP/s err=9.45e-07
+reg2d      512x512x512    1832.0 GFLOP/s err=9.45e-07
+vec4       512x512x512    4766.3 GFLOP/s err=9.45e-07
+vec4_db    512x512x512    5329.5 GFLOP/s err=9.45e-07
+cublas/wmma fp16 512: 12354 GFLOP/s
+cublas/wmma bf16 512: 10434 GFLOP/s
+naive      1024x1024x1024     823.9 GFLOP/s err=1.27e-06
+coalesced  1024x1024x1024    5594.3 GFLOP/s err=1.27e-06
+smem8      1024x1024x1024    7015.4 GFLOP/s err=1.27e-06
+smem16     1024x1024x1024    9399.0 GFLOP/s err=1.27e-06
+smem32     1024x1024x1024    8227.2 GFLOP/s err=1.27e-06
+reg1d      1024x1024x1024   18877.3 GFLOP/s err=1.27e-06
+reg2d      1024x1024x1024    7723.4 GFLOP/s err=1.27e-06
+vec4       1024x1024x1024   20719.0 GFLOP/s err=1.27e-06
+vec4_db    1024x1024x1024   23014.0 GFLOP/s err=1.27e-06
+cublas/wmma fp16 1024: 59231 GFLOP/s
+cublas/wmma bf16 1024: 50840 GFLOP/s
+naive      2048x2048x2048     920.2 GFLOP/s err=1.91e-06
+coalesced  2048x2048x2048    6330.8 GFLOP/s err=1.91e-06
+smem8      2048x2048x2048    7578.6 GFLOP/s err=1.91e-06
+smem16     2048x2048x2048    9907.4 GFLOP/s err=1.91e-06
+smem32     2048x2048x2048    9356.4 GFLOP/s err=1.91e-06
+reg1d      2048x2048x2048   23334.1 GFLOP/s err=1.91e-06
+reg2d      2048x2048x2048   26418.2 GFLOP/s err=1.91e-06
+vec4       2048x2048x2048   48340.6 GFLOP/s err=1.91e-06
+vec4_db    2048x2048x2048   46402.0 GFLOP/s err=1.91e-06
+cublas/wmma fp16 2048: 148184 GFLOP/s
+cublas/wmma bf16 2048: 134050 GFLOP/s
+naive      4096x4096x4096     949.2 GFLOP/s err=2.85e-06
+coalesced  4096x4096x4096    6458.2 GFLOP/s err=2.85e-06
+smem8      4096x4096x4096    7289.3 GFLOP/s err=2.85e-06
+smem16     4096x4096x4096    9956.6 GFLOP/s err=2.85e-06
+smem32     4096x4096x4096    9192.4 GFLOP/s err=2.85e-06
+reg1d      4096x4096x4096   26256.4 GFLOP/s err=2.85e-06
+reg2d      4096x4096x4096   21611.5 GFLOP/s err=2.85e-06
+vec4       4096x4096x4096   49982.7 GFLOP/s err=2.85e-06
+vec4_db    4096x4096x4096   46683.9 GFLOP/s err=2.85e-06
+cublas/wmma fp16 4096: 179999 GFLOP/s
+cublas/wmma bf16 4096: 166659 GFLOP/s
+coalesced  8192x8192x8192    3659.1 GFLOP/s err=4.25e-06
+smem8      8192x8192x8192    3196.9 GFLOP/s err=4.25e-06
+smem16     8192x8192x8192    9222.1 GFLOP/s err=4.25e-06
+smem32     8192x8192x8192    8281.1 GFLOP/s err=4.25e-06
+reg1d      8192x8192x8192   24876.2 GFLOP/s err=4.25e-06
+reg2d      8192x8192x8192   21910.9 GFLOP/s err=4.25e-06
+vec4       8192x8192x8192   50299.9 GFLOP/s err=4.25e-06
+vec4_db    8192x8192x8192   45249.2 GFLOP/s err=4.25e-06
+cublas/wmma fp16 8192: 189225 GFLOP/s
+cublas/wmma bf16 8192: 182787 GFLOP/s
+wrote gemm_ladder.jsonl (95 rows)
+[ladder] 16.6 s
+=== tiles 11:26:03
+{'M': 2048, 'BM': 32, 'BN': 32, 'threads': 16, 's': 0.0012015999555587769, 'gflops': 14297.494856356656, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 2164260864, 'model_intensity': 7.937984496124031, 'tiling_py_bytes': 2164260864, 'smem_bytes': 2048}
+{'M': 2048, 'BM': 32, 'BN': 64, 'threads': 32, 's': 0.0005888320207595825, 'gflops': 29176.180265873252, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 1627389952, 'model_intensity': 10.556701030927835, 'tiling_py_bytes': 1627389952, 'smem_bytes': 3072}
+{'M': 2048, 'BM': 32, 'BN': 128, 'threads': 64, 's': 0.0006299840211868286, 'gflops': 27270.325287988726, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 1358954496, 'model_intensity': 12.641975308641975, 'tiling_py_bytes': 1358954496, 'smem_bytes': 5120}
+{'M': 2048, 'BM': 32, 'BN': 256, 'threads': 128, 's': 0.0005564799904823303, 'gflops': 30872.393397486423, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 1224736768, 'model_intensity': 14.027397260273972, 'tiling_py_bytes': 1224736768, 'smem_bytes': 9216}
+{'M': 2048, 'BM': 64, 'BN': 32, 'threads': 32, 's': 0.0006070719957351684, 'gflops': 28299.558050268915, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 1627389952, 'model_intensity': 10.556701030927835, 'tiling_py_bytes': 1627389952, 'smem_bytes': 3072}
+{'M': 2048, 'BM': 64, 'BN': 64, 'threads': 64, 's': 0.0005113599896430969, 'gflops': 33596.428214868094, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 1090519040, 'model_intensity': 15.753846153846155, 'tiling_py_bytes': 1090519040, 'smem_bytes': 4096}
+{'M': 2048, 'BM': 64, 'BN': 128, 'threads': 128, 's': 0.0005501120090484619, 'gflops': 31229.76575937019, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 822083584, 'model_intensity': 20.897959183673468, 'tiling_py_bytes': 822083584, 'smem_bytes': 6144}
+{'M': 2048, 'BM': 64, 'BN': 256, 'threads': 256, 's': 0.0005131520032882691, 'gflops': 33479.10380143057, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 687865856, 'model_intensity': 24.975609756097562, 'tiling_py_bytes': 687865856, 'smem_bytes': 10240}
+{'M': 2048, 'BM': 128, 'BN': 32, 'threads': 64, 's': 0.0006566399931907654, 'gflops': 26163.300076376778, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 1358954496, 'model_intensity': 12.641975308641975, 'tiling_py_bytes': 1358954496, 'smem_bytes': 5120}
+{'M': 2048, 'BM': 128, 'BN': 64, 'threads': 128, 's': 0.0005725119709968566, 'gflops': 30007.87765902335, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 822083584, 'model_intensity': 20.897959183673468, 'tiling_py_bytes': 822083584, 'smem_bytes': 6144}
+{'M': 2048, 'BM': 128, 'BN': 128, 'threads': 256, 's': 0.0006507840156555175, 'gflops': 26398.72641416242, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 553648128, 'model_intensity': 31.03030303030303, 'tiling_py_bytes': 553648128, 'smem_bytes': 8192}
+{'M': 2048, 'BM': 128, 'BN': 256, 'threads': 512, 's': 0.0005988479852676392, 'gflops': 28688.197349986767, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 419430400, 'model_intensity': 40.96, 'tiling_py_bytes': 419430400, 'smem_bytes': 12288}
+{'M': 2048, 'BM': 256, 'BN': 32, 'threads': 128, 's': 0.0006074879765510559, 'gflops': 28280.17976839107, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 1224736768, 'model_intensity': 14.027397260273972, 'tiling_py_bytes': 1224736768, 'smem_bytes': 9216}
+{'M': 2048, 'BM': 256, 'BN': 64, 'threads': 256, 's': 0.0005705919861793518, 'gflops': 30108.85115831249, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 687865856, 'model_intensity': 24.975609756097562, 'tiling_py_bytes': 687865856, 'smem_bytes': 10240}
+{'M': 2048, 'BM': 256, 'BN': 128, 'threads': 512, 's': 0.0005970879793167114, 'gflops': 28772.7600941826, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 419430400, 'model_intensity': 40.96, 'tiling_py_bytes': 419430400, 'smem_bytes': 12288}
+{'M': 2048, 'BM': 256, 'BN': 256, 'threads': 1024, 's': 0.006458144187927246, 'gflops': 2660.1866858463427, 'max_rel_err': 2.1056234628512465e-06, 'model_bytes': 285212672, 'model_intensity': 60.23529411764706, 'tiling_py_bytes': 285212672, 'smem_bytes': 16384}
+{'M': 4096, 'BM': 32, 'BN': 32, 'threads': 16, 's': 0.00905235195159912, 'gflops': 15182.678955353815, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 17246978048, 'model_intensity': 7.968871595330739, 'tiling_py_bytes': 17246978048, 'smem_bytes': 2048}
+{'M': 4096, 'BM': 32, 'BN': 64, 'threads': 32, 's': 0.004935391902923584, 'gflops': 27847.627133842223, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 12952010752, 'model_intensity': 10.61139896373057, 'tiling_py_bytes': 12952010752, 'smem_bytes': 3072}
+{'M': 4096, 'BM': 32, 'BN': 128, 'threads': 64, 's': 0.0059901118278503414, 'gflops': 22944.305118477634, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 10804527104, 'model_intensity': 12.720496894409937, 'tiling_py_bytes': 10804527104, 'smem_bytes': 5120}
+{'M': 4096, 'BM': 32, 'BN': 256, 'threads': 128, 's': 0.004869664192199707, 'gflops': 28223.49715451664, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 9730785280, 'model_intensity': 14.124137931034483, 'tiling_py_bytes': 9730785280, 'smem_bytes': 9216}
+{'M': 4096, 'BM': 64, 'BN': 32, 'threads': 32, 's': 0.005699039936065674, 'gflops': 24116.159039741848, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 12952010752, 'model_intensity': 10.61139896373057, 'tiling_py_bytes': 12952010752, 'smem_bytes': 3072}
+{'M': 4096, 'BM': 64, 'BN': 64, 'threads': 64, 's': 0.004120351791381836, 'gflops': 33356.12113496438, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 8657043456, 'model_intensity': 15.875968992248062, 'tiling_py_bytes': 8657043456, 'smem_bytes': 4096}
+{'M': 4096, 'BM': 64, 'BN': 128, 'threads': 128, 's': 0.005074143886566162, 'gflops': 27086.136409310497, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 6509559808, 'model_intensity': 21.11340206185567, 'tiling_py_bytes': 6509559808, 'smem_bytes': 6144}
+{'M': 4096, 'BM': 64, 'BN': 256, 'threads': 256, 's': 0.004415296077728272, 'gflops': 31127.913293351365, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 5435817984, 'model_intensity': 25.28395061728395, 'tiling_py_bytes': 5435817984, 'smem_bytes': 10240}
+{'M': 4096, 'BM': 128, 'BN': 32, 'threads': 64, 's': 0.0063277120590209965, 'gflops': 21720.165549578454, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 10804527104, 'model_intensity': 12.720496894409937, 'tiling_py_bytes': 10804527104, 'smem_bytes': 5120}
+{'M': 4096, 'BM': 128, 'BN': 64, 'threads': 128, 's': 0.00490342378616333, 'gflops': 28029.181132544676, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 6509559808, 'model_intensity': 21.11340206185567, 'tiling_py_bytes': 6509559808, 'smem_bytes': 6144}
+{'M': 4096, 'BM': 128, 'BN': 128, 'threads': 256, 's': 0.006434400081634522, 'gflops': 21360.026067432005, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 4362076160, 'model_intensity': 31.50769230769231, 'tiling_py_bytes': 4362076160, 'smem_bytes': 8192}
+{'M': 4096, 'BM': 128, 'BN': 256, 'threads': 512, 's': 0.00577891206741333, 'gflops': 23782.842145497183, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 3288334336, 'model_intensity': 41.795918367346935, 'tiling_py_bytes': 3288334336, 'smem_bytes': 12288}
+{'M': 4096, 'BM': 256, 'BN': 32, 'threads': 128, 's': 0.005767263889312744, 'gflops': 23830.87649703123, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 9730785280, 'model_intensity': 14.124137931034483, 'tiling_py_bytes': 9730785280, 'smem_bytes': 9216}
+{'M': 4096, 'BM': 256, 'BN': 64, 'threads': 256, 's': 0.005097792148590088, 'gflops': 26960.48592526706, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 5435817984, 'model_intensity': 25.28395061728395, 'tiling_py_bytes': 5435817984, 'smem_bytes': 10240}
+{'M': 4096, 'BM': 256, 'BN': 128, 'threads': 512, 's': 0.006291200160980224, 'gflops': 21846.221699388087, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 3288334336, 'model_intensity': 41.795918367346935, 'tiling_py_bytes': 3288334336, 'smem_bytes': 12288}
+{'M': 4096, 'BM': 256, 'BN': 256, 'threads': 1024, 's': 0.04451299285888672, 'gflops': 3087.6143041584146, 'max_rel_err': 2.6097496444000357e-06, 'model_bytes': 2214592512, 'model_intensity': 62.06060606060606, 'tiling_py_bytes': 2214592512, 'smem_bytes': 16384}
+wrote gemm_tiles.jsonl (32 rows)
+[tiles] 3.2 s
+=== skinny 11:26:09
+M=1: coalesced=413GB/s, smem32=452GB/s, reg2d=81GB/s, skinny_k8=2033GB/s, skinny_k16=2976GB/s, skinny_k32=3113GB/s, skinny_k64=3150GB/s, skinny_best=3150GB/s, cublas_fp32=2172GB/s, cublas_bf16=682GB/s
+M=2: coalesced=415GB/s, smem32=452GB/s, reg2d=80GB/s, skinny_k8=2036GB/s, skinny_k16=2944GB/s, skinny_k32=2948GB/s, skinny_k64=2952GB/s, skinny_best=2952GB/s, cublas_fp32=1922GB/s, cublas_bf16=1487GB/s
+M=4: coalesced=407GB/s, smem32=452GB/s, reg2d=80GB/s, skinny_k8=2034GB/s, skinny_k16=2955GB/s, skinny_k32=2955GB/s, skinny_k64=2951GB/s, skinny_best=2955GB/s, cublas_fp32=1917GB/s, cublas_bf16=1469GB/s
+M=8: coalesced=391GB/s, smem32=450GB/s, reg2d=80GB/s, skinny_k8=1919GB/s, skinny_k16=2713GB/s, skinny_k32=2710GB/s, skinny_k64=2713GB/s, skinny_best=2713GB/s, cublas_fp32=1914GB/s, cublas_bf16=1298GB/s
+M=16: coalesced=360GB/s, smem32=449GB/s, reg2d=80GB/s, skinny_k8=1097GB/s, skinny_k16=1642GB/s, skinny_k32=1643GB/s, skinny_k64=1643GB/s, skinny_best=1643GB/s, cublas_fp32=1822GB/s, cublas_bf16=1258GB/s
+M=32: coalesced=301GB/s, smem32=448GB/s, reg2d=80GB/s, skinny_k8=605GB/s, skinny_k16=948GB/s, skinny_k32=948GB/s, skinny_k64=948GB/s, skinny_best=948GB/s, cublas_fp32=1739GB/s, cublas_bf16=1102GB/s
+M=64: coalesced=156GB/s, smem32=232GB/s, reg2d=75GB/s, skinny_k8=322GB/s, skinny_k16=511GB/s, skinny_k32=511GB/s, skinny_k64=511GB/s, skinny_best=511GB/s, cublas_fp32=1104GB/s, cublas_bf16=882GB/s
+M=128: coalesced=83GB/s, smem32=122GB/s, reg2d=67GB/s, skinny_k8=170GB/s, skinny_k16=272GB/s, skinny_k32=272GB/s, skinny_k64=272GB/s, skinny_best=272GB/s, cublas_fp32=849GB/s, cublas_bf16=1058GB/s
+wrote gemm_skinny.jsonl (80 rows)
+[skinny] 2.1 s
+=== conv 11:26:33
+conv1 7x7/2 @224       direct              0.470 ms    4017.9 GFLOP/s err=4.9e-07
+conv1 7x7/2 @224       im2col+cublas       0.130 ms   14523.0 GFLOP/s err=4.9e-07
+conv1 7x7/2 @224       implicit_gemm       0.220 ms    8582.8 GFLOP/s err=4.9e-07
+conv1 7x7/2 @224       cudnn_fp32          0.075 ms   25152.2 GFLOP/s err=4.9e-07
+conv1 7x7/2 @224       cudnn_tf32          0.066 ms   28437.1 GFLOP/s err=2.8e-04
+conv1 7x7/2 @224       cudnn_fp16_nhwc     0.040 ms   47092.6 GFLOP/s err=3.4e-04
+3x3 @56 C64            direct              0.754 ms    2452.6 GFLOP/s err=9.5e-07
+3x3 @56 C64            im2col+cublas       0.133 ms   13878.2 GFLOP/s err=9.5e-07
+3x3 @56 C64            implicit_gemm       0.314 ms    5887.4 GFLOP/s err=9.5e-07
+3x3 @56 C64            cudnn_fp32          0.068 ms   27381.7 GFLOP/s err=9.5e-07
+3x3 @56 C64            cudnn_tf32          0.042 ms   43790.0 GFLOP/s err=3.0e-04
+3x3 @56 C64            cudnn_fp16_nhwc     0.028 ms   66439.9 GFLOP/s err=3.8e-04
+3x3 @28 C128           direct              0.974 ms    1898.9 GFLOP/s err=1.4e-06
+3x3 @28 C128           im2col+cublas       0.113 ms   16411.9 GFLOP/s err=1.4e-06
+3x3 @28 C128           implicit_gemm       0.522 ms    3546.8 GFLOP/s err=1.4e-06
+3x3 @28 C128           cudnn_fp32          0.081 ms   22783.9 GFLOP/s err=1.4e-06
+3x3 @28 C128           cudnn_tf32          0.046 ms   39919.0 GFLOP/s err=3.2e-04
+3x3 @28 C128           cudnn_fp16_nhwc     0.030 ms   62153.5 GFLOP/s err=4.2e-04
+3x3 @14 C256           direct              1.849 ms    1000.6 GFLOP/s err=1.7e-06
+3x3 @14 C256           im2col+cublas       0.097 ms   19165.4 GFLOP/s err=1.7e-06
+3x3 @14 C256           implicit_gemm       1.014 ms    1824.9 GFLOP/s err=1.7e-06
+3x3 @14 C256           cudnn_fp32          0.051 ms   36081.6 GFLOP/s err=1.1e-05
+3x3 @14 C256           cudnn_tf32          0.044 ms   41765.0 GFLOP/s err=2.8e-04
+3x3 @14 C256           cudnn_fp16_nhwc     0.027 ms   67290.7 GFLOP/s err=3.9e-04
+3x3 @7 C512            direct              3.403 ms     543.5 GFLOP/s err=2.5e-06
+3x3 @7 C512            im2col+cublas       0.172 ms   10748.0 GFLOP/s err=2.5e-06
+3x3 @7 C512            implicit_gemm       2.019 ms     916.3 GFLOP/s err=2.5e-06
+3x3 @7 C512            cudnn_fp32          0.053 ms   34591.7 GFLOP/s err=1.7e-05
+3x3 @7 C512            cudnn_tf32          0.076 ms   24317.5 GFLOP/s err=3.0e-04
+3x3 @7 C512            cudnn_fp16_nhwc     0.036 ms   51289.0 GFLOP/s err=4.2e-04
+3x3/2 @56 C128         direct              0.997 ms    1855.8 GFLOP/s err=1.2e-06
+3x3/2 @56 C128         im2col+cublas       0.113 ms   16365.4 GFLOP/s err=1.2e-06
+3x3/2 @56 C128         implicit_gemm       0.513 ms    3603.9 GFLOP/s err=1.2e-06
+3x3/2 @56 C128         cudnn_fp32          0.085 ms   21738.5 GFLOP/s err=1.2e-06
+3x3/2 @56 C128         cudnn_tf32          0.050 ms   36653.6 GFLOP/s err=2.8e-04
+3x3/2 @56 C128         cudnn_fp16_nhwc     0.026 ms   71626.7 GFLOP/s err=3.6e-04
+1x1 @56 C64->256       direct              0.707 ms    1163.5 GFLOP/s err=3.4e-07
+1x1 @56 C64->256       im2col+cublas       0.047 ms   17369.9 GFLOP/s err=3.4e-07
+1x1 @56 C64->256       implicit_gemm       0.136 ms    6054.7 GFLOP/s err=3.4e-07
+1x1 @56 C64->256       cudnn_fp32          0.050 ms   16280.2 GFLOP/s err=3.4e-07
+1x1 @56 C64->256       cudnn_tf32          0.029 ms   28386.9 GFLOP/s err=3.7e-04
+1x1 @56 C64->256       cudnn_fp16_nhwc     0.018 ms   45070.4 GFLOP/s err=3.5e-04
+1x1 @14 C1024->256     direct              2.237 ms     367.4 GFLOP/s err=1.2e-06
+1x1 @14 C1024->256     im2col+cublas       0.045 ms   18232.9 GFLOP/s err=1.2e-06
+1x1 @14 C1024->256     implicit_gemm       0.534 ms    1540.5 GFLOP/s err=1.2e-06
+1x1 @14 C1024->256     cudnn_fp32          0.109 ms    7576.0 GFLOP/s err=1.2e-06
+1x1 @14 C1024->256     cudnn_tf32          0.025 ms   33148.5 GFLOP/s err=2.8e-04
+1x1 @14 C1024->256     cudnn_fp16_nhwc     0.021 ms   39584.1 GFLOP/s err=4.0e-04
+wrote conv.jsonl (48 rows)
+[conv] 2.1 s
+=== fusion 11:27:06
+3x3 @112 C64   direct_unfused            0.552 ms err=1.0e-06 {'conv': 0.0005254719853401184, 'relu': 1.535999961197376e-05, 'pool': 1.0784000158309936e-05}
+3x3 @112 C64   direct_fused              0.526 ms err=1.0e-06 {'conv+relu+pool': 0.0005255039930343628}
+3x3 @112 C64   cudnn_unfused             0.153 ms err=3.0e-04 {'conv': 0.00012169600278139115, 'relu': 1.4592000283300876e-05, 'pool': 1.6416000202298163e-05}
+3x3 @112 C64   cudnn+fused_relu_pool     0.133 ms err=3.0e-04 {'conv': 0.00012223999947309495, 'relu+pool': 1.1071999557316302e-05}
+3x3 @112 C64   igemm_relu+pool           0.683 ms err=1.0e-06 {'conv+relu': 0.0006728960275650024, 'pool': 1.0528000071644782e-05}
+3x3 @56 C128   direct_unfused            0.627 ms err=1.3e-06 {'conv': 0.0006071360111236572, 'relu': 1.0719999670982361e-05, 'pool': 9.056000038981438e-06}
+3x3 @56 C128   direct_fused              0.609 ms err=1.3e-06 {'conv+relu+pool': 0.0006093440055847168}
+3x3 @56 C128   cudnn_unfused             0.123 ms err=3.0e-04 {'conv': 9.939199686050415e-05, 'relu': 1.0975999757647514e-05, 'pool': 1.2160000391304492e-05}
+3x3 @56 C128   cudnn+fused_relu_pool     0.108 ms err=3.0e-04 {'conv': 9.932799637317657e-05, 'relu+pool': 8.96000023931265e-06}
+3x3 @56 C128   igemm_relu+pool           0.670 ms err=1.3e-06 {'conv+relu': 0.0006612160205841064, 'pool': 9.119999594986438e-06}
+3x3 @28 C256   direct_unfused            1.194 ms err=1.7e-06 {'conv': 0.001174944043159485, 'relu': 9.375999681651592e-06, 'pool': 9.31200012564659e-06}
+3x3 @28 C256   direct_fused              1.176 ms err=1.7e-06 {'conv+relu+pool': 0.0011762559413909912}
+3x3 @28 C256   cudnn_unfused             0.131 ms err=2.6e-04 {'conv': 0.00010761599987745285, 'relu': 1.1008000001311302e-05, 'pool': 1.228800043463707e-05}
+3x3 @28 C256   cudnn+fused_relu_pool     0.117 ms err=2.6e-04 {'conv': 0.00010739199817180633, 'relu+pool': 9.216000325977802e-06}
+3x3 @28 C256   igemm_relu+pool           1.133 ms err=1.7e-06 {'conv+relu': 0.0011234240531921387, 'pool': 9.247999638319015e-06}
+3x3 @14 C512   direct_unfused            2.338 ms err=2.8e-06 {'conv': 0.0023194239139556886, 'relu': 9.375999681651592e-06, 'pool': 9.151999838650227e-06}
+3x3 @14 C512   direct_fused              2.324 ms err=2.8e-06 {'conv+relu+pool': 0.002324064016342163}
+3x3 @14 C512   cudnn_unfused             0.159 ms err=3.1e-04 {'conv': 0.00013625599443912507, 'relu': 1.0688000358641148e-05, 'pool': 1.190400030463934e-05}
+3x3 @14 C512   cudnn+fused_relu_pool     0.144 ms err=3.1e-04 {'conv': 0.00013510400056838988, 'relu+pool': 9.119999594986438e-06}
+3x3 @14 C512   igemm_relu+pool           2.030 ms err=2.8e-06 {'conv+relu': 0.0020204479694366454, 'pool': 9.119999594986438e-06}
+wrote conv_fusion.jsonl (24 rows)
+[fusion] 2.1 s
+=== ncu 11:27:19
+ncu rc=1
+==PROF== Connected to process 77512 (/root/miniconda3/bin/python3.12)
+==ERROR== ERR_NVGPUCTRPERM - The user does not have permission to access NVIDIA GPU Performance Counters on the target device 0. For instructions on enabling permissions and to get more information see https://developer.nvidia.com/ERR_NVGPUCTRPERM
+ok
+==PROF== Disconnected from process 77512
+=== done 11:27:32

@@ -1,0 +1,53 @@
+{"part": "correctness", "N": 1024, "max_abs_err": 1.0, "config": [128, 128, 64, 8, 3, 8]}
+{"part": "cublas", "N": 1024, "ms": 0.042393600940704344, "tflops": 50.65584428658635}
+{"part": "triton", "N": 1024, "BM": 64, "BN": 64, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.0517632007598877, "tflops": 41.48668584003265, "frac_of_cublas": 0.8189911040732235, "error": ""}
+{"part": "triton", "N": 1024, "BM": 128, "BN": 64, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.05288959741592407, "tflops": 40.60313847942871, "frac_of_cublas": 0.8015489436858603, "error": ""}
+{"part": "triton", "N": 1024, "BM": 64, "BN": 128, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.05186560153961182, "tflops": 41.40477665837697, "frac_of_cublas": 0.8173741301029097, "error": ""}
+{"part": "triton", "N": 1024, "BM": 128, "BN": 128, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.05063679814338684, "tflops": 42.40954654990288, "frac_of_cublas": 0.8372093515995924, "error": ""}
+{"part": "triton", "N": 1024, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.050380802154541014, "tflops": 42.62503882754156, "frac_of_cublas": 0.8414633973207442, "error": ""}
+{"part": "triton", "N": 1024, "BM": 128, "BN": 128, "BK": 128, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.05063679814338684, "tflops": 42.40954654990288, "frac_of_cublas": 0.8372093515995924, "error": ""}
+{"part": "triton", "N": 1024, "BM": 128, "BN": 256, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.05124800205230713, "tflops": 41.90375355137035, "frac_of_cublas": 0.8272244622811755, "error": ""}
+{"part": "triton", "N": 1024, "BM": 256, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.0517632007598877, "tflops": 41.48668584003265, "frac_of_cublas": 0.8189911040732235, "error": ""}
+{"part": "triton", "N": 1024, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 4, "group_m": 8, "ms": 0.050440001487731936, "tflops": 42.575011591193416, "frac_of_cublas": 0.8404758067070114, "error": ""}
+{"part": "triton", "N": 1024, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 2, "group_m": 8, "ms": 0.05263360142707825, "tflops": 40.80062146184795, "frac_of_cublas": 0.8054474668513608, "error": ""}
+{"part": "triton", "N": 1024, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 1, "ms": 0.05135359764099121, "tflops": 41.8175891592422, "frac_of_cublas": 0.8255234859507709, "error": ""}
+{"part": "best", "N": 1024, "tflops": 42.62503882754156, "cublas_tflops": 50.65584428658635, "frac_of_cublas": 0.8414633973207442}
+{"part": "cublas", "N": 2048, "ms": 0.1186303973197937, "tflops": 144.8184409067431}
+{"part": "triton", "N": 2048, "BM": 64, "BN": 64, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.09308159947395325, "tflops": 184.5678338263557, "frac_of_cublas": 1.2744774261532723, "error": ""}
+{"part": "triton", "N": 2048, "BM": 128, "BN": 64, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.09937919974327088, "tflops": 172.87188092056735, "frac_of_cublas": 1.193714556227611, "error": ""}
+{"part": "triton", "N": 2048, "BM": 64, "BN": 128, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.10045440196990967, "tflops": 171.02156647297645, "frac_of_cublas": 1.1809377687134959, "error": ""}
+{"part": "triton", "N": 2048, "BM": 128, "BN": 128, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.11504640579223632, "tflops": 149.329907924506, "frac_of_cublas": 1.0311525727629405, "error": ""}
+{"part": "triton", "N": 2048, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.1154047966003418, "tflops": 148.8661623268189, "frac_of_cublas": 1.0279503176165414, "error": ""}
+{"part": "triton", "N": 2048, "BM": 128, "BN": 128, "BK": 128, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.12195839881896972, "tflops": 140.86663444557948, "frac_of_cublas": 0.9727119941602713, "error": ""}
+{"part": "triton", "N": 2048, "BM": 128, "BN": 256, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.12021759748458863, "tflops": 142.9064425131469, "frac_of_cublas": 0.9867972726289228, "error": ""}
+{"part": "triton", "N": 2048, "BM": 256, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.12001279592514039, "tflops": 143.15031202769558, "frac_of_cublas": 0.9884812398987107, "error": ""}
+{"part": "triton", "N": 2048, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 4, "group_m": 8, "ms": 0.11596800088882446, "tflops": 148.1431865025413, "frac_of_cublas": 1.0229580264431877, "error": ""}
+{"part": "triton", "N": 2048, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 2, "group_m": 8, "ms": 0.11391999721527099, "tflops": 150.8064396414595, "frac_of_cublas": 1.0413483165349944, "error": ""}
+{"part": "triton", "N": 2048, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 1, "ms": 0.11535359621047973, "tflops": 148.93223747140732, "frac_of_cublas": 1.0284065795689192, "error": ""}
+{"part": "best", "N": 2048, "tflops": 184.5678338263557, "cublas_tflops": 144.8184409067431, "frac_of_cublas": 1.2744774261532723}
+{"part": "cublas", "N": 4096, "ms": 0.7118336200714112, "tflops": 193.0773562763334}
+{"part": "triton", "N": 4096, "BM": 64, "BN": 64, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.6881279945373535, "tflops": 199.72876349029195, "frac_of_cublas": 1.034449442141931, "error": ""}
+{"part": "triton", "N": 4096, "BM": 128, "BN": 64, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.6866447925567627, "tflops": 200.16019193888863, "frac_of_cublas": 1.0366839271013129, "error": ""}
+{"part": "triton", "N": 4096, "BM": 64, "BN": 128, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.6889984130859375, "tflops": 199.47644415671172, "frac_of_cublas": 1.033142611872207, "error": ""}
+{"part": "triton", "N": 4096, "BM": 128, "BN": 128, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 0.7030272006988525, "tflops": 195.4959258125108, "frac_of_cublas": 1.0125264276599888, "error": ""}
+{"part": "triton", "N": 4096, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.7021535873413086, "tflops": 195.73916013504967, "frac_of_cublas": 1.0137862041932388, "error": ""}
+{"part": "triton", "N": 4096, "BM": 128, "BN": 128, "BK": 128, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.7455743789672852, "tflops": 184.33969480331436, "frac_of_cublas": 0.9547452811581195, "error": ""}
+{"part": "triton", "N": 4096, "BM": 128, "BN": 256, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.7372799873352051, "tflops": 186.41351431327166, "frac_of_cublas": 0.9654861549195628, "error": ""}
+{"part": "triton", "N": 4096, "BM": 256, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 0.7260159969329834, "tflops": 189.30568204089673, "frac_of_cublas": 0.9804654760756168, "error": ""}
+{"part": "triton", "N": 4096, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 4, "group_m": 8, "ms": 0.6504960060119629, "tflops": 211.28331642588506, "frac_of_cublas": 1.0942936059446307, "error": ""}
+{"part": "triton", "N": 4096, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 2, "group_m": 8, "ms": 0.6434815883636474, "tflops": 213.58645834996264, "frac_of_cublas": 1.106222202692047, "error": ""}
+{"part": "triton", "N": 4096, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 1, "ms": 0.6494719982147217, "tflops": 211.61644204799322, "frac_of_cublas": 1.0960189539011844, "error": ""}
+{"part": "best", "N": 4096, "tflops": 213.58645834996264, "cublas_tflops": 193.0773562763334, "frac_of_cublas": 1.106222202692047}
+{"part": "cublas", "N": 8192, "ms": 5.296076965332031, "tflops": 207.60869507247943}
+{"part": "triton", "N": 8192, "BM": 64, "BN": 64, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 5.810380935668945, "tflops": 189.2322792514832, "frac_of_cublas": 0.9114853266883608, "error": ""}
+{"part": "triton", "N": 8192, "BM": 128, "BN": 64, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 5.469798278808594, "tflops": 201.01502317476513, "frac_of_cublas": 0.9682399049066208, "error": ""}
+{"part": "triton", "N": 8192, "BM": 64, "BN": 128, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 5.479987335205078, "tflops": 200.64127168915306, "frac_of_cublas": 0.9664396359656615, "error": ""}
+{"part": "triton", "N": 8192, "BM": 128, "BN": 128, "BK": 64, "warps": 4, "stages": 3, "group_m": 8, "ms": 5.299404907226562, "tflops": 207.47832011791456, "frac_of_cublas": 0.9993720159239027, "error": ""}
+{"part": "triton", "N": 8192, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 5.356281661987305, "tflops": 205.275169821457, "frac_of_cublas": 0.9887599830526956, "error": ""}
+{"part": "triton", "N": 8192, "BM": 128, "BN": 128, "BK": 128, "warps": 8, "stages": 3, "group_m": 8, "ms": 5.563443374633789, "tflops": 197.6314943348147, "frac_of_cublas": 0.9519422790351746, "error": ""}
+{"part": "triton", "N": 8192, "BM": 128, "BN": 256, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 5.39156494140625, "tflops": 203.93181566486354, "frac_of_cublas": 0.9822893766259055, "error": ""}
+{"part": "triton", "N": 8192, "BM": 256, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 8, "ms": 5.349785614013672, "tflops": 205.5244279127463, "frac_of_cublas": 0.9899605979460278, "error": ""}
+{"part": "triton", "N": 8192, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 4, "group_m": 8, "ms": 5.368371200561524, "tflops": 204.8128914149962, "frac_of_cublas": 0.9865333017169287, "error": ""}
+{"part": "triton", "N": 8192, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 2, "group_m": 8, "ms": 5.345075225830078, "tflops": 205.70554787753213, "frac_of_cublas": 0.9908330082500499, "error": ""}
+{"part": "triton", "N": 8192, "BM": 128, "BN": 128, "BK": 64, "warps": 8, "stages": 3, "group_m": 1, "ms": 5.519513702392578, "tflops": 199.20443848148938, "frac_of_cublas": 0.9595187639513075, "error": ""}
+{"part": "best", "N": 8192, "tflops": 207.47832011791456, "cublas_tflops": 207.60869507247943, "frac_of_cublas": 0.9993720159239027}

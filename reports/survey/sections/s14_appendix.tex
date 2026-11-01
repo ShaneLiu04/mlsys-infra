@@ -1,0 +1,120 @@
+\section{公式速查}
+\label{app:formulas}
+
+表~\ref{tab:formulas} 汇总了正文中用到的 22 个公式，编号与配套仓库的公式卡一致。记号：$p$ 为处理器或 GPU 数，$P$ 为峰值算力，$BW$ 为带宽，
+$b$ 为每元素字节数，$N$ 为参数量，$D$ 为训练 token 数，$T$ 为序列长度，$B$ 为 batch，$L$ 为层数。
+
+\begin{table*}[!t]
+\centering
+\caption{公式速查表（F1--F22）}
+\label{tab:formulas}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{@{}l L{3.2cm} L{6.6cm} Y@{}}
+\toprule
+\# & 名称 & 公式 & 白板用例 \\
+\midrule
+F1 & Amdahl / Gustafson & $S=\frac{1}{(1-f)+f/p}$；$S_G=(1-f)+fp$ & $f=0.95,p=8$：5.93；$f=0.99,p=1024$：91.2 \\
+F2 & Roofline & $t=\max(F/P,\ B_{\text{bytes}}/BW)$，拐点 $I^\ast=P/BW$ & H100 BF16：$989/3.35\approx295$ \\
+F3 & GEMM 强度 & $I=\frac{2MNK}{b(MK+KN+MN)}$，方阵 BF16 为 $n/3$ & $4096^3$：1365；GEMV：$\approx1$ \\
+F4 & 分块访存 & $B_{\text{bytes}}\approx bMNK(\frac{1}{T_M}+\frac{1}{T_N})$，方块 $I\approx T/b$ & $T=128$ 的 BF16 tile：$I\approx64$ \\
+F5 & Work--span & $\max(W/p,S)\le T_p\le W/p+S$ & 并行度 $W/S$ \\
+F6 & Scan & Blelloch：$W=O(n)$，$S=O(\log n)$ & 上扫 + 下扫各 $n-1$ 次加法 \\
+F7 & Attention & FLOPs $\approx4T^2d$（每层，QK 与 PV）；Flash 的 HBM $\Theta(T^2d^2/M)$ & 显存从 $O(T^2)$ 降到 $O(T)$ \\
+F8 & Online softmax & $m=\max(m_1,m_2)$，$\ell=\ell_1e^{m_1-m}+\ell_2e^{m_2-m}$ & 块间合并可结合 \\
+F9 & 参数与 FLOPs & $N\approx12Ld^2$（不含词表），$C\approx6ND$ & 8B$\times$15T：$7.2\times10^{23}$ \\
+F10 & 训练显存 & DP：$16N$；ZeRO-1/2/3：$4N+\frac{12N}{p}$，$2N+\frac{14N}{p}$，$\frac{16N}{p}$ & 7B、$p=8$：112/38.5/26.25/14.0~GB \\
+F11 & Ring all-reduce & $t=2(p-1)\alpha+\frac{2(p-1)}{p}\cdot\frac{S}{BW}$ & 14~GB、8 卡、450~GB/s：54.4~ms \\
+F12 & TP 通信 & 每层前向 2 次 all-reduce，每次 $bBTd$ 字节，反向再 2 次 & $B T=8192$、$d=4096$：每次 64~MiB \\
+F13 & 流水线气泡 & $\frac{p-1}{m+p-1}$；交错 $\frac{p-1}{vm+p-1}$ & $p=8,m=32$：0.18；$v=2$：0.099 \\
+F14 & $\sqrt{n}$ 重计算 & 存 $\sqrt{n}$ 个检查点，激活 $O(\sqrt{n})$，多一次前向 & 64 层：存 8 段 \\
+F15 & KV cache & $2\,L\,n_{kv}\,d_h\,b\,T\,B$ & Llama-3-8B：128~KiB/token \\
+F16 & Decode 步时 & $t\approx\frac{2N+\text{KV}}{BW}$（小 batch），临界 $B^\ast\approx I^\ast$ & 8B、H100、$B=1$：4.95~ms \\
+F17 & 推测解码 & $E=\frac{1-\alpha^{\gamma+1}}{1-\alpha}$，$S=\frac{E}{\gamma c+1}$ & $\alpha=0.8,\gamma=4$：3.36；$c=0.05$：2.80 \\
+F18 & Little 定律 & $L=\lambda W$ & 100~req/s$\times$10~s：1000 并发 \\
+F19 & 线性量化 & $q=\mathrm{round}(x/s)+z$，$s=\frac{x_{\max}-x_{\min}}{2^k-1}$ & 离群值放大 $s$ \\
+F20 & LoRA & 可训练参数 $r(d+k)$ & $d=k=4096,r=16$：131K \\
+F21 & MoE all-to-all & 每卡 $n_{\text{tok}}\,k\,d\,b\,\frac{E_p-1}{E_p}$ & 8192 token、top-2、EP=8：117~MB \\
+F22 & MFU & $\frac{6N\cdot\text{tokens/s}}{p\cdot P}$（可加 attention 项） & 与 HFU 区分：后者计入重计算 \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\section{硬件与模型参数}
+\label{app:hw}
+
+表~\ref{tab:hw} 是正文所有白板估算使用的唯一一组硬件参数；算力一律取稠密值（厂商标称的稀疏值是稠密的 2 倍），NVLink 取单向带宽。
+表~\ref{tab:models} 给出常用模型的结构与由结构算出的参数量和每 token KV（BF16、全层）。
+
+\begin{table*}[!t]
+\centering
+\caption{硬件参数（稠密算力、单向带宽）}
+\label{tab:hw}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}L{2.4cm} r r r r r r Y@{}}
+\toprule
+型号 & BF16 & FP8 & HBM & HBM 带宽 & 拐点 & SM & 互连（单向） \\
+ & (TFLOP/s) & (TFLOP/s) & (GB) & (TB/s) & (FLOP/B) & & \\
+\midrule
+A100 SXM~\cite{nvidiaa100} & 312 & --- & 80 & 2.04 & 153 & 108 & NVLink3 300~GB/s \\
+H100 SXM~\cite{nvidiah100} & 989 & 1979 & 80 & 3.35 & 295 & 132 & NVLink4 450~GB/s \\
+H200 SXM & 989 & 1979 & 141 & 4.8 & 206 & 132 & NVLink4 450~GB/s \\
+RTX 4090 & $\approx$165 & --- & 24 & 1.01 & 164 & 128 & PCIe4 x16 $\approx$32~GB/s \\
+TPU v4~\cite{jouppi2023tpuv4} & 275 & --- & 32 & $\approx$1.2 & $\approx$229 & --- & ICI + OCS，4096 芯片/pod \\
+\midrule
+\multicolumn{8}{@{}l}{网络：PCIe 5.0 x16 $\approx$64~GB/s；InfiniBand HDR 25~GB/s/端口；NDR 50~GB/s/端口（节点内 NVLink 约快 9 倍）。}\\
+\multicolumn{8}{@{}l}{H100 存储层次：寄存器 256~KB/SM；共享内存最多 228~KB/SM；L2 50~MB；HBM 延迟约 500 周期。}\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{table}[!t]
+\centering
+\caption{常用模型结构（参数量与 KV 由结构算出）}
+\label{tab:models}
+\footnotesize
+\begin{tabular}{@{}l r r c r r@{}}
+\toprule
+模型 & 层 & $d$ & 头/KV 头 & 参数 & KV/token \\
+\midrule
+GPT-2 124M & 12 & 768 & 12/12 & 0.124B & 36~KiB \\
+Qwen2.5-0.5B & 24 & 896 & 14/2 & 0.49B & 12~KiB \\
+Llama-2-7B & 32 & 4096 & 32/32 & 6.74B & 512~KiB \\
+Llama-3-8B & 32 & 4096 & 32/8 & 8.03B & 128~KiB \\
+Llama-3-70B & 80 & 8192 & 64/8 & 70.6B & 320~KiB \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{两周学习计划}
+\label{app:plan}
+
+表~\ref{tab:plan} 给出一个以面试为目标的两周计划：第一周打底（性能模型、硬件、kernel、编译），第二周攻大模型（训练、推理、效率、集群）并收束到项目故事与模拟面试。
+每天的产出是「能在白板上复述的一个估算」与「能在 90 秒内讲完的一个结论」。
+
+\begin{table*}[!t]
+\centering
+\caption{两周学习计划（每天约 4 小时）}
+\label{tab:plan}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}c L{3.0cm} Y L{4.2cm}@{}}
+\toprule
+天 & 主题（本文章节） & 阅读与动手 & 当天必须能讲出的数 \\
+\midrule
+1 & 性能模型（\S\ref{sec:perf}） & Roofline~\cite{williams2009roofline}、Amdahl；用计算器算三种 GEMM 的强度 & H100 拐点 295；$4096^3$ 强度 1365 \\
+2 & 并行硬件（\S\ref{sec:hw}） & CS149 A1/A2：SIMD 发散、线程池；伪共享实验 & 慢 lane 使 SIMD 利用率降到 0.163 \\
+3 & GPU 编程（\S\ref{sec:hw}） & CUDA 模型~\cite{nickolls2008cuda}、coalescing、bank conflict、occupancy~\cite{volkov2010better} & 每 SM 228~KB 共享内存 \\
+4 & GEMM 与 tiling（\S\ref{sec:kernel}） & CUTLASS 分块；推导 tile 大小 & 方块 tile 强度 $T/b$ \\
+5 & FlashAttention（\S\ref{sec:kernel}） & FA1/2/3~\cite{dao2022flashattention,dao2024flashattention2,shah2024flashattention3}；online softmax 实现 & HBM $\Theta(T^2d^2/M)$；实验中仅少 2 倍 \\
+6 & 加速器与编译（\S\ref{sec:accel}、\S\ref{sec:compiler}） & TPU~\cite{jouppi2017tpu}、TVM~\cite{chen2018tvm}、PyTorch 2~\cite{ansel2024pytorch2}；融合实验 & 融合省 49\% 流量、16\% 时间 \\
+7 & 复习与模拟 & 用第~\ref{sec:interview} 节模板答第 2--6 节的追问框 & 第一周所有估算 \\
+8 & 数据并行与 ZeRO（\S\ref{sec:train}） & ZeRO~\cite{rajbhandari2020zero}、FSDP~\cite{zhao2023pytorch}；ring all-reduce 推导 & $16N$；7B 需 112~GB \\
+9 & 模型/流水线并行（\S\ref{sec:train}） & Megatron~\cite{shoeybi2019megatron,narayanan2021efficient}、GPipe~\cite{huang2019gpipe} & 气泡 0.18（$p=8,m=32$） \\
+10 & 推理基础（\S\ref{sec:infer}） & KV cache、GQA~\cite{ainslie2023gqa}、decode roofline & 8B 在 H100 上 $B=1$ 约 200~tok/s \\
+11 & 推理服务（\S\ref{sec:infer}） & vLLM~\cite{kwon2023vllm}、Sarathi~\cite{agrawal2024sarathi}、DistServe~\cite{zhong2024distserve} & KV 浪费 85.6\% → 1.25\% \\
+12 & 推测解码与量化（\S\ref{sec:infer}） & \cite{leviathan2023fast,dettmers2022llmint8,frantar2023gptq,lin2024awq} & $E=3.36$（$\alpha=0.8,\gamma=4$） \\
+13 & 效率与集群（\S\ref{sec:eff}、\S\ref{sec:cluster}） & LoRA、MoE、Chinchilla~\cite{hoffmann2022training}；Llama~3 可靠性 & $N^\ast=\sqrt{C/120}$；27 分钟 checkpoint \\
+14 & 项目故事与模拟面试 & 准备两个 STAR 故事（表~\ref{tab:star}）；完成一次系统设计 & 每个故事的「不能推出什么」 \\
+\bottomrule
+\end{tabularx}
+\end{table*}

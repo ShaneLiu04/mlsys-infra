@@ -1,0 +1,6 @@
+kernel,input,mean_iters,python_scalar_ns_per_elem,numpy_compacted_ns_per_elem,numpy_masked_ns_per_elem
+sqrt,uniform,5.362,929.91,247.02,448.307
+sqrt,all_fast,0.0,188.01,29.29,10.605
+sqrt,all_slow,22.0,3157.9,480.653,356.447
+sqrt,one_slow_per_gang,1.375,355.3,29.441,353.147
+mandel_view1,"800x600, 16384-pt blocks (scalar: 160x120)",69.434,10104.82,649.485,1532.422

@@ -1,0 +1,9 @@
+{
+  "machine": "Intel64 Family 6 Model 106 Stepping 6, GenuineIntel",
+  "cpu_count": 8,
+  "python": "3.12.10",
+  "numpy": "2.5.3",
+  "torch": "2.6.0+cpu",
+  "sram_bytes_model": 102400,
+  "elapsed_s": 68.2
+}

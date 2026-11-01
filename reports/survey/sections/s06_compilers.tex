@@ -1,0 +1,129 @@
+\section{编译器与框架}
+\label{sec:compiler}
+
+框架决定「用户怎么写」，编译器决定「硬件怎么跑」。本节从计算图与自动微分出发，讨论图级优化（融合、代数替换）、
+算子级优化（调度空间与搜索）以及 PyTorch 2 带来的「Python 字节码级捕获」路线，并专门讨论动态形状这一面试高频难点。
+
+\subsection{从 define-and-run 到 define-by-run}
+
+DistBelief~\cite{dean2012large} 与 TensorFlow~\cite{abadi2016tensorflow} 采用先构图后执行的静态图（define-and-run），
+图可以整体优化与分布式放置；PyTorch~\cite{paszke2019pytorch} 采用即时执行（define-by-run），以 Python 控制流表达模型，易用性更好但
+牺牲了全局优化机会。JAX~\cite{jax2018github} 通过函数变换（\texttt{jit}、\texttt{grad}、\texttt{vmap}、\texttt{pmap}）
+在 tracing 时得到纯函数的中间表示，交给 XLA 编译~\cite{xla}。PyTorch 2~\cite{ansel2024pytorch2} 则试图兼得两者：
+保留 eager 语义，在运行时捕获图并编译。
+
+\subsection{自动微分}
+
+深度学习使用反向模式自动微分~\cite{baydin2018automatic}：对标量损失 $\mathcal{L}$ 和 $n$ 个参数，一次反传即可得到全部梯度，
+代价是前向的常数倍（对 GEMM 主导的网络约为 2 倍：对输入和对权重各一次同样大小的 GEMM），而前向模式需要 $n$ 次。
+这一常数倍正是训练 FLOPs $C\approx6ND$ 的来源：前向 $2ND$，反向 $4ND$。代价是必须保存前向的中间激活，
+这就是训练显存中「激活」一项的来历（第~\ref{sec:train} 节）。\lab{15-849 编译与压缩}实现了基于 numpy 的反向模式自动微分
+（迭代拓扑序、广播求和、softmax-交叉熵），两层 MLP 的梯度与 \texttt{torch} 最大差 $\le5.6\times10^{-17}$，与中心差分最大差 $\le2.3\times10^{-10}$，
+并测试了 5000 层链式乘法反向不爆栈（迭代而非递归拓扑序）。
+
+\begin{qa}{为什么深度学习用反向模式而不是前向模式自动微分？代价是什么？}
+\ans 输出是标量、输入是 $n$ 维参数，反向模式一次反传得到全部梯度（代价约 2--3 倍前向），前向模式要 $n$ 次（或 $n$ 维的对偶数）。
+代价是需要保存前向激活，显存随层数与序列长度线性增长；这引出重计算与 offload。若输出维度远大于输入（如求雅可比矩阵的列），前向模式反而更好。
+\wrong 「反向模式更精确」——两者都是精确导数，差别只在复杂度。
+\end{qa}
+
+\subsection{图级优化：融合与代数替换}
+
+图级编译器在算子图上做常量折叠、公共子表达式消除、布局变换与融合。XLA 的 HLO 融合把逐元素与归约算子合并为一个 kernel，
+TVM~\cite{chen2018tvm} 的 Relay 层按算子类别（injective、reduction、complex-out-fusable）制定融合规则。
+TASO~\cite{jia2019taso} 进一步自动生成并验证图替换规则（例如把共享输入的两个矩阵乘合并为一个更宽的矩阵乘），
+再用代价驱动的回溯搜索选择替换序列。融合并非总是有益：\lab{15-849 编译与压缩}显示 MLP 块的流量下降 49\% 只带来 16\% 的时间下降
+（第~\ref{sec:kernel} 节）；融合后寄存器压力增加还可能降低 occupancy。
+
+\subsection{算子级优化：调度空间与搜索}
+
+Halide~\cite{ragan2013halide} 提出了影响深远的「算法与调度分离」：算法说明算什么（纯函数定义），调度说明按什么顺序、在哪里、用几个核算
+（\texttt{split}、\texttt{reorder}、\texttt{tile}、\texttt{vectorize}、\texttt{compute\_at}），改调度不改结果。TVM 把这一思想推广到张量程序，
+并用学习的代价模型指导搜索~\cite{chen2018tvm}；Ansor~\cite{zheng2020ansor} 不再需要人写调度模板，而是自动生成层次化的 sketch，
+再随机注解、进化搜索并用代价模型筛选。
+
+\lab{15-849 编译与压缩}在 $2048^3$ GEMM 上构造了一个（循环序，$t_m,t_n,t_k$）的调度空间，以单个 H100 SM 的算力与带宽份额
+（7.49~TFLOP/s、25.4~GB/s、228~KB）作为解析代价模型。3072 个调度中只有 8 个在最优的 5\% 以内；最优调度 5.99~ms，
+仅达峰值的 38\%，因为 C 块的强度 $t_mt_n/(t_m+t_n)=128$ 低于拐点 295。达到 5\% 以内所需的评估次数：随机搜索中位数 244、P90 649；
+进化搜索中位数 147.5、P90 496，约快 1.65 倍；按枚举顺序的网格搜索为 434，但这个数只取决于枚举顺序。
+这个实验还给出了一个方法论教训：第一版代价模型误用了整颗 CPU 的参数，1080 个调度都在 5\% 以内，搜索问题被模型弄得过于简单。
+\emph{代价模型决定了搜索问题的难度}，这是 Ansor 依赖学习型代价模型与真实测量的原因。
+
+\begin{qa}{TVM/Ansor 和 Triton 的定位有什么不同？}
+\ans TVM 把算法和调度分离，靠搜索（Ansor 自动生成 sketch、进化搜索、学习的代价模型）为每个算子和硬件找调度，目标是「不用人写 kernel」。
+Triton 让人写 block 级程序，编译器负责 block 内的线程映射、合并访存和 shared memory，目标是「降低手写 kernel 的门槛」。
+前者是自动调优框架，后者是编程语言与编译器。
+\wrong 「Triton 是 TVM 的前端」；「Ansor 比 Triton 快」——两者解决的问题不同，不可直接比较。
+\end{qa}
+
+\subsection{PyTorch 2：TorchDynamo、AOTAutograd 与 TorchInductor}
+
+PyTorch 2~\cite{ansel2024pytorch2} 的 \texttt{torch.compile} 由三部分组成：TorchDynamo 通过 CPython 的帧求值钩子（PEP~523）
+在字节码层面捕获 FX 图，并为图生成 guard（张量形状、dtype、Python 对象的条件）；AOTAutograd 在编译期追踪出联合的前向--反向图，
+使反向也能被优化，并做激活的重计算/保存划分；TorchInductor 把图降为 GPU 上的 Triton kernel 或 CPU 上的 C++/OpenMP 代码。
+遇到无法追踪的 Python（数据相关控制流、\texttt{.item()}、打印、不支持的第三方库），Dynamo 会 \textbf{graph break}：
+断点前后成为独立的图，中间回到 Python 解释执行，融合机会被切断。
+
+\begin{qa}{\texttt{torch.compile} 什么时候会 graph break？代价是什么？怎么排查？}
+\ans 数据相关的控制流（\texttt{if x.sum()>0}）、把张量转成 Python 标量（\texttt{.item()}、\texttt{.tolist()}）、打印与日志、
+不支持的 C 扩展或第三方库都会切图。代价是每个断点都有一次 Python 往返，图被切碎后跨断点的融合消失，还可能触发更多重编译。
+排查用 \texttt{torch.\_dynamo.explain} 或 \texttt{TORCH\_LOGS=graph\_breaks}，修法是把控制流改写为 \texttt{torch.where}/\texttt{torch.cond}，
+或把不可追踪的部分移出编译区域。
+\wrong 「compile 之后整个模型都是一张图」。
+\end{qa}
+
+\subsection{动态形状}
+
+LLM 的序列长度与 batch 在每一步都变，而编译器偏好静态形状。三种主流策略：（1）\textbf{padding 与分桶}：把长度向上取整到若干桶，
+用少量静态形状覆盖全部输入（XLA/TPU 的传统做法），代价是浪费的计算；（2）\textbf{符号形状}：PyTorch 2 把尺寸表示为符号（SymInt），
+在 guard 中记录形状间的约束，只有约束被违反时才重编译~\cite{ansel2024pytorch2}；（3）\textbf{运行时专用化}：推理引擎为常见 batch
+预先捕获 CUDA Graph，其余走 eager 路径。面试中要能说清楚三者在「编译次数、浪费的计算、kernel 质量」三方面的取舍。
+
+\begin{qa}{动态形状为什么让编译器难做？你会怎么处理变长 batch？}
+\ans 形状决定了分块、循环边界、内存规划与 kernel 选择；形状一变，静态编译的产物可能失效（重编译）或次优。处理方法：
+训练时按长度分桶并打包（packing）减少 padding；推理时对 decode 的 batch 维做分桶并预捕获 CUDA Graph，prefill 用 varlen attention
+（按 cu\_seqlens 拼接）避免 padding；编译器侧用符号形状并标记真正动态的维度（\texttt{mark\_dynamic}），避免每个新长度都重编译。
+\wrong 「把所有输入 pad 到最大长度就行」——这会把 $T^2$ 的 attention 计算浪费在 padding 上。
+\end{qa}
+
+\begin{table*}[!t]
+\centering
+\caption{ML 编译器与编程系统对比}
+\label{tab:compilers}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}l L{2.6cm} L{3.2cm} Y Y@{}}
+\toprule
+系统 & 输入/抽象 & 核心思想 & 优化手段 & 典型局限 \\
+\midrule
+Halide~\cite{ragan2013halide} & 图像流水线 DSL & 算法与调度分离 & 手写或自动调度（tile、vectorize、compute\_at） & 领域限于规则 stencil/张量 \\
+TVM~\cite{chen2018tvm} & Relay 图 + 张量表达式 & 端到端张量编译，调度原语 & 图级融合 + 模板化调度 + 学习的代价模型 & 依赖调度模板；调优耗时 \\
+Ansor~\cite{zheng2020ansor} & 张量表达式 & 无模板的层次化搜索空间 & sketch 生成、随机注解、进化搜索、代价模型 & 搜索时间长；对新硬件需要测量 \\
+TASO~\cite{jia2019taso} & 算子图 & 自动生成并形式验证图替换 & 代价驱动的回溯搜索替换序列 & 主要是图级，不生成 kernel \\
+XLA~\cite{xla} & HLO（JAX/TF） & 整图编译，静态形状 & 融合、布局、buffer 复用；GSPMD 自动分片 & 动态形状需 padding/分桶 \\
+PyTorch 2~\cite{ansel2024pytorch2} & Python 字节码 & 保留 eager 语义的图捕获 & Dynamo guard、AOTAutograd、Inductor→Triton & graph break；重编译 \\
+Triton~\cite{tillet2019triton} & block 级 Python kernel & 以 tile 为单位编程 & 编译器负责线程映射、合并访存、shared memory & 需人写算法；跨 block 协作受限 \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+表~\ref{tab:compilers} 总结了这些系统。可以看到一条清晰的演化线：从「人写调度」（Halide、TVM 模板），到「搜索调度」（Ansor），
+到「人写 tile 级算法、编译器做 tile 内映射」（Triton），再到「框架自动捕获并把融合后的子图交给 Triton」（PyTorch 2）。
+GSPMD~\cite{xu2021gspmd} 与 Alpa~\cite{zheng2022alpa} 把同样的编译思想用到了分布式并行上（第~\ref{sec:train} 节）。
+
+\begin{keypts}
+\begin{itemize}
+\item 反向模式 AD：一次反传得到全部梯度，代价约 2 倍前向（$6ND$ 的来源），需要保存激活。
+\item 图级：融合、CSE、代数替换（TASO）；算子级：算法与调度分离（Halide/TVM），搜索（Ansor）。
+\item \texttt{torch.compile}=Dynamo（字节码捕获 + guard）+ AOTAutograd（联合前反向）+ Inductor（Triton）；graph break 切断融合。
+\item 动态形状三策略：分桶 padding、符号形状、运行时专用化（CUDA Graph）。
+\end{itemize}
+\end{keypts}
+
+\begin{research}
+\begin{itemize}
+\item 代价模型的可迁移性：在一类 GPU 上训练的代价模型能否迁移到新架构？可以用本文的解析模型作为「先验」，
+只用少量真实测量做校准，衡量达到 5\% 以内所需的测量次数。
+\item 融合决策应该基于 roofline 而不是简单的「能融就融」。一个可做的研究是把每个候选融合组的收益估计为
+$\Delta t=\max(F/P,B/\mathrm{BW})$ 的变化，并与 Inductor 的启发式做对比。
+\end{itemize}
+\end{research}

@@ -18,6 +18,8 @@ import pytest
 LAB = Path(__file__).resolve().parents[1]
 BIN = LAB / "cpp" / "bin"
 EXE = ".exe" if os.name == "nt" else ""
+MAX_THREADS = int(os.environ.get("MLSYS_MAX_THREADS", os.cpu_count() or 1))
+THREADS = sorted({1, min(3, MAX_THREADS), min(8, MAX_THREADS)})
 SYSTEMS = ["serial", "spawn", "spinning", "sleeping", "async_spinning", "async_sleeping"]
 TESTS = [
     "super_super_light", "super_super_light_async", "super_light", "super_light_async",
@@ -48,7 +50,7 @@ def run(name: str, *args: str, timeout: int = 120) -> list[dict]:
 
 
 @pytest.mark.parametrize("system", SYSTEMS)
-@pytest.mark.parametrize("threads", ["1", "3", "8"])
+@pytest.mark.parametrize("threads", [str(t) for t in THREADS])
 def test_every_official_test_correct(system, threads):
     rows = run("tasksys_bench", "--mode", "tests", "--systems", system, "--threads", threads,
                "--scale", "0.05", "--reps", "2")
@@ -58,7 +60,8 @@ def test_every_official_test_correct(system, threads):
 
 
 def test_async_systems_respect_dependencies_in_every_dag_shape():
-    rows = run("tasksys_bench", "--mode", "dag", "--systems", "async_sleeping,async_spinning", "--threads", "4",
+    rows = run("tasksys_bench", "--mode", "dag", "--systems", "async_sleeping,async_spinning",
+               "--threads", str(min(4, MAX_THREADS)),
                "--launches", "32", "--tasks", "5", "--work", "100", "--reps", "3")
     assert {r["shape"] for r in rows} == {"indep_sync", "indep", "chain", "fanin", "tree", "random"}
     span = {r["shape"]: r["span_launches"] for r in rows}
@@ -67,9 +70,11 @@ def test_async_systems_respect_dependencies_in_every_dag_shape():
 
 def test_many_launches_stress_no_deadlock():
     # thousands of tiny launches catch lost-wakeup / generation races in the pools
+    stress_threads = sorted({1, 2, min(7, MAX_THREADS)})
     rows = run("tasksys_bench", "--mode", "overhead", "--systems", "spinning,sleeping,async_spinning,async_sleeping",
-               "--threads", "1,2,7", "--tasks", "0,1,3,64", "--launches", "3000", "--reps", "1")
-    assert len(rows) == 4 * 3 * 4
+               "--threads", ",".join(str(t) for t in stress_threads),
+               "--tasks", "0,1,3,64", "--launches", "3000", "--reps", "1")
+    assert len(rows) == 4 * len(stress_threads) * 4
 
 
 def test_idle_spinning_burns_cpu_sleeping_does_not():

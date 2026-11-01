@@ -234,7 +234,9 @@ python notes/check_notes.py
 ./scripts/check-repo.ps1
 ```
 
-当前 11 套测试、430 通过；14 个 GPU 测试在无 CUDA 时跳过，RTX 5090 上全部通过。
+本机完整矩阵 11 套测试、430 通过；14 个 GPU 测试在无 CUDA 时跳过，RTX 5090 上全部通过。
+GitHub CI 在 2 核 runner 上设置 `MLSYS_MAX_THREADS=2`，并跳过纯 `spinning` 的 Python 压力用例；
+完整的 1/3/8 线程矩阵在本机与 GPU 服务器上跑。
 `check-repo.ps1` 检查 Markdown 链接、实验目录、报告（PDF、图、参考文献引用）和密钥。
 
 白板估算可以用计算器复核：

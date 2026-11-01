@@ -1,3 +1,4 @@
+import os
 import random
 import threading
 import time
@@ -9,8 +10,17 @@ import pytest
 from tasksys import make_system
 from tasksys.workloads import CountingRunnable, NoopRunnable, NumpyRunnable, SleepRunnable
 
-ALL = ["serial", "spawn", "spinning", "spinning_yield", "sleeping"]
+MAX_THREADS = int(os.environ.get("MLSYS_MAX_THREADS", os.cpu_count() or 1))
 TIMEOUT_S = 30.0
+
+
+def nthreads(n: int) -> int:
+    return max(1, min(n, MAX_THREADS))
+
+
+ALL = ["serial", "spawn", "spinning", "spinning_yield", "sleeping"]
+if MAX_THREADS < 4:
+    ALL = [name for name in ALL if name != "spinning"]
 
 
 def with_timeout(fn: Callable[[], None], timeout: float = TIMEOUT_S) -> None:
@@ -50,7 +60,7 @@ class LoggingRunnable:
 @pytest.mark.parametrize("name", ALL)
 @pytest.mark.parametrize("n", [0, 1, 7, 100, 1000])
 def test_run_executes_each_task_once(name, n):
-    sys_ = make_system(name, 4)
+    sys_ = make_system(name, nthreads(4))
     r = CountingRunnable(n)
     try:
         with_timeout(lambda: sys_.run(r, n))
@@ -61,7 +71,7 @@ def test_run_executes_each_task_once(name, n):
 
 @pytest.mark.parametrize("name", ALL)
 def test_many_runs_reuse_pool(name):
-    sys_ = make_system(name, 8)
+    sys_ = make_system(name, nthreads(8))
 
     def body() -> None:
         for k in range(200):
@@ -91,7 +101,7 @@ def test_random_dag_respects_dependencies(name, seed):
     sizes = [rng.choice([0, 1, 3, 16]) for _ in dag]
     log: list = []
     lock = threading.Lock()
-    sys_ = make_system(name, 6)
+    sys_ = make_system(name, nthreads(6))
 
     def body() -> None:
         ids = []
@@ -115,7 +125,7 @@ def test_random_dag_respects_dependencies(name, seed):
 
 
 def test_sleeping_is_actually_async_and_sync_waits():
-    sys_ = make_system("sleeping", 4)
+    sys_ = make_system("sleeping", nthreads(4))
     r = CountingRunnable(8)
     try:
         slow = SleepRunnable(0.05)
@@ -132,7 +142,7 @@ def test_sleeping_is_actually_async_and_sync_waits():
 
 
 def test_sleeping_independent_launches_overlap():
-    sys_ = make_system("sleeping", 8)
+    sys_ = make_system("sleeping", nthreads(8))
     try:
         t0 = time.perf_counter()
         for _ in range(8):
@@ -146,7 +156,7 @@ def test_sleeping_independent_launches_overlap():
 def test_sleeping_chain_is_serialized():
     log: list = []
     lock = threading.Lock()
-    sys_ = make_system("sleeping", 8)
+    sys_ = make_system("sleeping", nthreads(8))
     try:
         prev: list[int] = []
         for i in range(20):
@@ -159,7 +169,7 @@ def test_sleeping_chain_is_serialized():
 
 
 def test_sync_with_nothing_pending_returns():
-    sys_ = make_system("sleeping", 2)
+    sys_ = make_system("sleeping", nthreads(2))
     try:
         with_timeout(sys_.sync, 5)
         with_timeout(sys_.sync, 5)
@@ -169,7 +179,7 @@ def test_sync_with_nothing_pending_returns():
 
 @pytest.mark.parametrize("name", ["spawn", "spinning_yield", "sleeping"])
 def test_stress_many_tiny_tasks(name):
-    sys_ = make_system(name, 8)
+    sys_ = make_system(name, nthreads(8))
     r = CountingRunnable(20_000)
     try:
         with_timeout(lambda: sys_.run(r, 20_000), 60)
@@ -179,7 +189,7 @@ def test_stress_many_tiny_tasks(name):
 
 
 def test_stress_async_many_launches():
-    sys_ = make_system("sleeping", 8)
+    sys_ = make_system("sleeping", nthreads(8))
     runs = [CountingRunnable(10) for _ in range(500)]
     rng = random.Random(3)
 
@@ -200,7 +210,7 @@ def test_stress_async_many_launches():
 @pytest.mark.parametrize("name", ALL)
 def test_numpy_tasks_produce_same_result(name):
     r = NumpyRunnable(16, elems=1000, reps=1)
-    sys_ = make_system(name, 4)
+    sys_ = make_system(name, nthreads(4))
     try:
         with_timeout(lambda: sys_.run(r, 16))
     finally:
@@ -217,7 +227,7 @@ class Boom:
 
 @pytest.mark.parametrize("name", ALL)
 def test_task_exception_propagates_and_system_survives(name):
-    sys_ = make_system(name, 4)
+    sys_ = make_system(name, nthreads(4))
     try:
         with pytest.raises(ValueError):
             sys_.run_async_with_deps(Boom(), 8, [])
@@ -231,7 +241,7 @@ def test_task_exception_propagates_and_system_survives(name):
 
 @pytest.mark.parametrize("name", ["spawn", "sleeping"])
 def test_noop_run_is_fast_enough(name):
-    sys_ = make_system(name, 8)
+    sys_ = make_system(name, nthreads(8))
     try:
         t0 = time.perf_counter()
         for _ in range(50):

@@ -1,0 +1,8 @@
+{
+  "peak_bf16_flops": 228650308021035.06,
+  "peak_copy_bw": 1278629390540.9485,
+  "ridge": 178.82453642356853,
+  "spec_bf16_flops": null,
+  "spec_bw": null,
+  "device": null
+}

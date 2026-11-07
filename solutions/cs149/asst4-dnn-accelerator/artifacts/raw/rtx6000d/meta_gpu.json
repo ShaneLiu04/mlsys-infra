@@ -1,0 +1,15 @@
+{
+  "gpu": "NVIDIA RTX 6000D",
+  "sm_count": 156,
+  "cc": "12.0",
+  "total_mem_gb": 89.173131264,
+  "l2_mb": 112.0,
+  "nvidia_smi": "NVIDIA RTX 6000D, 595.71.05, 2430 MHz, 12481 MHz, 600.00 W",
+  "nvcc": "Build cuda_12.8.r12.8/compiler.35583870_0",
+  "torch": "2.8.0+cu128",
+  "cuda": "12.8",
+  "cudnn": 91002,
+  "python": "3.12.3",
+  "host": "autodl-container-tjudth3qst-4b0da440",
+  "time": "2026-11-04 10:59:15"
+}

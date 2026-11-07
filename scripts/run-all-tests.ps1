@@ -17,6 +17,7 @@ param(
 )
 
 $root = Split-Path -Parent $PSScriptRoot
+$env:PYTHONPATH = if ($env:PYTHONPATH) { "$root;$($env:PYTHONPATH)" } else { $root }
 $suites = [ordered]@{
     "tools mlsys_calc"              = "tools/tests"
     "cs149 asst1 cpu-parallel"      = "solutions/cs149/asst1-cpu-parallel/tests"

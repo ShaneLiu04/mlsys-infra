@@ -1,0 +1,14 @@
+{"kind": "env", "gpu": "NVIDIA RTX 6000D", "sms": 156, "vram_bytes": 89173131264, "torch": "2.8.0+cu128", "cuda": "12.8", "triton": "3.4.0", "python": "3.12.3"}
+{"kind": "model", "params": 494032768, "weight_bytes": 988065536, "kv_bytes_per_token": 12288, "layers": 24, "d": 896, "H": 14, "Hk": 2, "D": 64, "ff": 4864, "calc_params": 494005120}
+{"kind": "verify_logits", "max_abs_err": 0.5, "mean_abs_err": 0.046428289264440536, "logit_scale": 1.9764169454574585, "argmax_agree": 0.9479166865348816}
+{"kind": "verify_greedy", "tokens": 32, "agree_frac": 1.0, "first_mismatch": [-1, -1]}
+{"kind": "verify_logits_fp32", "max_abs_err": 0.00013625621795654297, "mean_abs_err": 6.5930516939261e-06, "logit_scale": 1.9811911582946777, "argmax_agree": 1.0}
+{"kind": "verify_paged", "block": 8, "H": 14, "Hk": 2, "D": 64, "triton_max_err": 0.001852869987487793, "gather_max_err": 0.001852869987487793, "bf16_eps": 0.00390625}
+{"kind": "verify_paged", "block": 8, "H": 32, "Hk": 8, "D": 128, "triton_max_err": 0.001866459846496582, "gather_max_err": 0.001866459846496582, "bf16_eps": 0.00390625}
+{"kind": "verify_paged", "block": 16, "H": 14, "Hk": 2, "D": 64, "triton_max_err": 0.0018336772918701172, "gather_max_err": 0.002072572708129883, "bf16_eps": 0.00390625}
+{"kind": "verify_paged", "block": 16, "H": 32, "Hk": 8, "D": 128, "triton_max_err": 0.0019143223762512207, "gather_max_err": 0.0023822784423828125, "bf16_eps": 0.00390625}
+{"kind": "verify_paged", "block": 32, "H": 14, "Hk": 2, "D": 64, "triton_max_err": 0.001889050006866455, "gather_max_err": 0.0021741390228271484, "bf16_eps": 0.00390625}
+{"kind": "verify_paged", "block": 32, "H": 32, "Hk": 8, "D": 128, "triton_max_err": 0.001888275146484375, "gather_max_err": 0.002829432487487793, "bf16_eps": 0.00390625}
+{"kind": "verify_paged", "block": 64, "H": 14, "Hk": 2, "D": 64, "triton_max_err": 0.0018180012702941895, "gather_max_err": 0.0018180012702941895, "bf16_eps": 0.00390625}
+{"kind": "verify_paged", "block": 64, "H": 32, "Hk": 8, "D": 128, "triton_max_err": 0.0018454194068908691, "gather_max_err": 0.002165555953979492, "bf16_eps": 0.00390625}
+{"kind": "done", "cmd": "verify", "wall_s": 7.327076435089111}

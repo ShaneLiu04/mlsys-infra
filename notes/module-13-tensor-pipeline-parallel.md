@@ -290,6 +290,7 @@ DP 梯度 all-reduce（d=2）：每卡参数 70.6e9/32 = 2.2e9 → bf16 梯度 4
 - [M18 MoE 与集群](module-18-architectures-moe-clusters.md)：expert parallelism 与 all-to-all
 - [M10 ML 编译器](module-10-ml-compilers.md)：device placement 与图级优化
 - [M16 推理服务](module-16-llm-serving.md)：推理侧的张量并行
+- [edge-deploy M07 DMA 与双缓冲](https://gitee.com/liu-xingyan04/edge-deploy/blob/main/notes/module-07-dma-double-buffering.md)：k 级流水 Σs_i + (n − 1)·max s_i 与流水线气泡同形
 
 ## 本讲小结
 

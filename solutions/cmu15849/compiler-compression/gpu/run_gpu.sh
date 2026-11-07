@@ -14,7 +14,15 @@ export PYTHONUNBUFFERED=1 TOKENIZERS_PARALLELISM=false
 export TORCHINDUCTOR_CACHE_DIR=/tmp/c1_inductor_$$ TRITON_CACHE_DIR=/tmp/c1_triton_$$
 export TORCHINDUCTOR_FORCE_DISABLE_CACHES=1
 
-run() { echo "=== $* $(date +%T)"; flock "$LOCK" taskset -c "$CORES" "$PY" "$@" || echo "FAILED: $*"; }
+# MLSYS_LOCK_HELD means the campaign runner already holds $LOCK. A second flock blocks.
+run() {
+  echo "=== $* $(date +%T)"
+  if [ -n "${MLSYS_LOCK_HELD:-}" ]; then
+    taskset -c "$CORES" "$PY" "$@" || echo "FAILED: $*"
+  else
+    flock "$LOCK" taskset -c "$CORES" "$PY" "$@" || echo "FAILED: $*"
+  fi
+}
 
 steps=${*:-"chains mlp triton dynamic matmul qspeed quant_gpt2 quant_gpt2m prune_ppl prune_speed lora"}
 for s in $steps; do
@@ -30,7 +38,7 @@ for s in $steps; do
     prune_ppl)   run prune_bench.py --part ppl --model gpt2 ;;
     prune_speed) run prune_bench.py --part speed ;;
     lora)        run lora_ft.py ;;
-    test)        flock "$LOCK" taskset -c "$CORES" "$PY" -m pytest -q ../tests ;;
+    test)        run -m pytest -q ../tests ;;
     *) echo "unknown step $s" ;;
   esac
 done

@@ -644,6 +644,52 @@ LoRA 每步比全量快 19\%（103.8 vs 128.4 ms）：省掉 354.8M 参数的权
 \label{fig:lora-cost}
 \end{figure}
 
+\subsection{Q3 扩展：换到 7B——Qwen2.5-7B 上的同一套量化（RTX 6000D）}\label{sec:qwen7b}
+
+GPT-2 的激活离群远弱于 6.7B 以上的模型，所以把同一份 \texttt{gpu/quant\_llm.py} 原样跑在 Qwen2.5-7B 上（bf16 载入，wikitext-2 test 29.9 万 token，
+校准 128 × 1024 token，HF ctx 1024 协议）。原始结果在 \nolinkurl{artifacts/raw/rtx6000d/quant_ppl_Qwen2.5-7B.jsonl}。
+
+\begin{figure}[H]
+\centering\includegraphics[width=\linewidth]{gpu_quant_scale.pdf}
+\caption{三个规模上各方法相对 fp16 的困惑度增量，以及 Qwen2.5-7B 各层 Linear 输入的通道最大值（第 26 层 \texttt{down\_proj} 有 |x| = 6368 的离群）。}
+\label{fig:qwen7b}
+\end{figure}
+
+\begin{table}[H]
+\centering\small
+\caption{相对 fp16 的困惑度增量（Qwen2.5-7B fp16 为 7.639）}\label{tab:qwen7b}
+\begin{tabular}{lrrr}
+\toprule
+方法 & GPT-2 124M & GPT-2 355M & Qwen2.5-7B \\
+\midrule
+W8 逐张量 / 逐通道 & +14.6\% / +0.06\% & +7.8\% / −0.005\% & +5.0\% / +0.11\% \\
+W4 g128：RTN / AWQ / GPTQ & +11.1 / +8.0 / +4.1\% & +6.1 / +5.9 / +3.7\% & +5.9 / +3.8 / +2.9\% \\
+W3 g128：RTN / AWQ / GPTQ & +120 / +78 / +24\% & +49 / +36 / +17\% & +75 / +23 / +15\% \\
+W4 逐通道：RTN / GPTQ & +28 / +8.8\% & +18 / +6.8\% & +34 / +9.1\% \\
+W8A8 逐张量 / 逐 token & +67 / +0.71\% & +10 / +0.31\% & \textbf{+109} / +2.5\% \\
+SmoothQuant α=0.5 / 0.8（逐张量） & +1260 / +1.8\% & +22 / +1.2\% & +58 / +32\% \\
+SmoothQuant α=0.5 / 0.8（逐 token） & +0.64 / +0.65\% & +0.87 / +0.23\% & +1.5 / +1.3\% \\
+LLM.int8（阈值 6） & +0.32\% & +0.23\% & \textbf{+0.27\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{findingbox}[：权重量化随规模变容易，激活量化随规模变难]
+W4 g128 GPTQ 从 +4.1\% 降到 +2.9\%，W3 GPTQ 从 +24\% 降到 +15\%；W8A8 逐张量却从 GPT-2 355M 的 +10\% 涨到 7B 的 +109\%。
+Qwen 第 26 层 \texttt{mlp.down\_proj} 的输入里有一个通道 |x| = 6368，是该层通道最大值中位数的 358 倍；逐张量的激活步长由它决定，其余通道只剩几个量化级。
+SmoothQuant 逐张量在 α=0.8 时仍 +32\%：离群太大，平滑把难度挪给权重后权重也装不下；逐 token 激活加平滑才回到 +1.3\%。
+LLM.int8 把 |x| > 6 的列留在 fp16，+0.27\% 是所有 W8A8 方法中最好的，代价是平均 700 列、最多 18702 列走 fp16。
+\end{findingbox}
+
+7B 上方法的排序被拉开：W3 g128 时 RTN +75\%、AWQ +23\%、GPTQ +15\%。AWQ 按激活幅度缩放通道，在离群明显的模型上才有东西可缩放。
+GPTQ 第一次运行在 \texttt{down\_proj}（18944 维输入）上报 Cholesky 非正定：1\% 阻尼的 fp32 Hessian 被离群通道撑得条件数太大。
+\texttt{gptq\_quantize} 现在用 float64 分解，失败时把阻尼放大 10 / 100 倍重试；三个 GPTQ 配置各 967 s。
+
+\begin{caveatbox}
+困惑度协议（HF ctx 1024）与 edge-deploy llama-cpp-7b 的 llama-perplexity ctx 512 不同，两边数字不能直接比；W8A8 全部是精度模拟（fp16 GEMM），不含速度；
+只有一个 7B 模型，离群通道的位置与幅度是 Qwen2.5 的特性。
+\end{caveatbox}
+
 \section{与理论模型的对照}
 
 \subsection{融合：时间 = 字节 / 带宽}

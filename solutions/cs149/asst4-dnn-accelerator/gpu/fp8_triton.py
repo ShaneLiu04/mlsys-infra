@@ -19,8 +19,11 @@ import torch
 import triton
 import triton.language as tl
 
-RAW = Path(os.environ["FP8_OUT"]) if os.environ.get("FP8_OUT") else (
-    Path(__file__).resolve().parents[1] / "artifacts" / "raw" / "gpu")
+_LAB = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_LAB.parents[2]))
+from mlsys_harness.paths import raw_dir  # noqa: E402
+
+RAW = raw_dir(_LAB, "FP8_OUT")
 # (BLOCK_M, BLOCK_N, BLOCK_K, warps, stages, group_m)
 CONFIGS = [
     (64, 64, 64, 4, 3, 8),

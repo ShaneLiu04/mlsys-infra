@@ -20,6 +20,7 @@ import torch
 import torch.nn.functional as F
 
 from common import RAW_GPU, JsonlWriter, env_info, is_oom
+from mlsys_harness.devices import get  # noqa: E402
 from tiny_gpt import GPT, GPTConfig
 
 import mlsys_calc as calc  # noqa: E402
@@ -144,7 +145,7 @@ def peak_flops() -> tuple[float, str]:
     p = RAW_GPU / "peaks.json"
     if p.exists():
         return json.loads(p.read_text())["peak_bf16_flops"], "measured_bf16_matmul"
-    return 209.5e12, "spec_dense_bf16"
+    return get("rtx5090").spec_bf16_flops, "spec_dense_bf16"
 
 
 def throughput(w: JsonlWriter, precision: str, impl: str, seq_len: int, batch: int, sweep: str,

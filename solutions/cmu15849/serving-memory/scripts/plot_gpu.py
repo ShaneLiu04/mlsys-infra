@@ -17,8 +17,9 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
 LAB = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(LAB / "code"), str(LAB.parents[2] / "tools")]
+sys.path[:0] = [str(LAB.parents[2]), str(LAB / "code"), str(LAB.parents[2] / "tools")]
 import mlsys_calc  # noqa: E402
+from mlsys_harness.devices import get  # noqa: E402
 from servesim.scheduler import CostModel, simulate_continuous, simulate_static, summarize  # noqa: E402
 from servesim.workload import poisson_arrivals, sample_lengths  # noqa: E402
 
@@ -49,8 +50,10 @@ def save(fig, name: str) -> None:
 
 
 def measured_gpu(summary: dict) -> mlsys_calc.GPU:
-    return mlsys_calc.GPU("RTX 5090 (measured)", summary.get("gemm_tflops", 209.5) * 1e12,
-                          summary.get("copy_gbps", 1500) * 1e9, 32e9, 64e9)
+    spec = get("rtx5090")
+    return mlsys_calc.GPU("RTX 5090 (measured)",
+                          summary.get("gemm_tflops", spec.spec_bf16_flops / 1e12) * 1e12,
+                          summary.get("copy_gbps", spec.reference_copy_bw / 1e9) * 1e9, 32e9, 64e9)
 
 
 # --------------------------------------------------------------------------- roofline
@@ -175,7 +178,8 @@ def fig_roofline(summary: dict) -> None:
         fig, ax = plt.subplots(figsize=(7, 3.6))
         B = [r["batch"] for r in sel]
         for gname, g, ls in (("H100 (lab assumption)", mlsys_calc.GPUS["h100"], ":"),
-                             ("RTX 5090 spec 1.79 TB/s / 209.5 TF", mlsys_calc.GPU("5090", 209.5e12, 1.792e12, 32e9, 64e9), "--"),
+                             ("RTX 5090 spec 1.79 TB/s / 209.5 TF",
+                              mlsys_calc.GPU("5090", get("rtx5090").spec_bf16_flops, get("rtx5090").spec_hbm_bw, 32e9, 64e9), "--"),
                              ("RTX 5090 measured", gpu, "-")):
             ax.loglog(B, [mlsys_calc.decode_step_time(QWEN, g, 513, b)["time_s"] * 1e3 for b in B], ls, label=f"model: {gname}")
         ax.loglog(B, [r["t_graph_s"] * 1e3 for r in sel], "o", color="k", label="measured (CUDA graph)")

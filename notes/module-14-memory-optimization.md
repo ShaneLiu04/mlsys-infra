@@ -258,6 +258,7 @@ M13 的切法 t=8, p=4：每级 20 层，1F1B 第 1 级在途 4 个 micro-batch
 - [M13 张量与流水线并行](module-13-tensor-pipeline-parallel.md)：SP 与 1F1B 在途 micro-batch
 - [M08 FlashAttention](module-08-attention-flashattention.md)：不物化 s² 矩阵
 - [M17 压缩与 PEFT](module-17-compression-quantization.md)：数值格式、QLoRA 的分页优化器
+- [edge-deploy M04 静态内存规划](https://gitee.com/liu-xingyan04/edge-deploy/blob/main/notes/module-04-static-memory-planning.md)：MCU 上的激活下界、arena 规划与 patch 重算，对应训练侧的激活重计算
 
 ## 本讲小结
 

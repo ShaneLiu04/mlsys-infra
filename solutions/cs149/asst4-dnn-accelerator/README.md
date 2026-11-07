@@ -212,6 +212,37 @@ fp32 和 bf16 都停在 cuBLAS 的约 80%，再调 tile 搬不动。FP8 用的�
 
 Ada 的共享内存上限是 99 KB。编译器实验里 256×256、BK=64、3 级流水要 128 KB，直接 `OutOfResources`。这是 Hopper 的 tile 搬到 Ada 上编译失败的原因，不是搜索写错了。
 
+### 第三张卡：RTX 6000D 的算力不是一个稳定的数（`sustained.jsonl`、`burst.jsonl`）
+
+跨卡比较里 6000D 的 FlashAttention 只有 5090 的 0.43 倍、cuBLAS fp16 8192³ 0.64 倍，而 `peaks.json` 的 bf16 峰值却是 0.97 倍。
+两个探针回答「哪个数是真的」：
+
+- **持续负载**（`gpu/sustained_probe.py`，每个形状连续 8 s，0.25 s 一个窗口，配 100 ms 的 nvidia-smi）：每个形状从第一个窗口起就是平的，
+  最后一个窗口 ≥ 最大值的 98%；8192³ / 16384³ 稳定在 141–145 TFLOP/s，SM 时钟 2422 MHz 不动，功耗最高 443 W（上限 600 W），没有任何降频原因。
+  不是过热，也不是功耗墙。
+
+![sustained](artifacts/figures/rtx6000d/sustained.png)
+
+- **逐 kernel 计时**（`gpu/burst_probe.py`，每次 `torch.mm` 一对 CUDA event，约 0.4 s 工作量，`burst_summary.csv`）：单个 kernel 的速度是双峰的。
+  2048³ 有 58% 的 kernel 在 240–260 TFLOP/s，其余在 50–80；4096³ 最快 303，中位数 136。快慢段交替，快段中位 0.15–0.75 ms、
+  慢段 0.2–4.4 ms，没有固定周期；kernel 之间平均只空 0.4 µs，GPU 一直在忙。按时间平均，2048³ 114、4096³ 117–133、8192³ 143 TFLOP/s。
+  7 ms 一个的 8192³ kernel 自己就把快慢段平均掉了，所以分布集中在 150 附近。
+- **空闲不换来爆发**：4096³ 前面空闲 0 / 2 ms / 10 ms / 50 ms / 0.2 / 1 / 3 s，整段平均都是 116–118（bf16）和 132–133（fp16），最快单 kernel 都是约 300 / 258。
+  这不是「攒一段预算、用完降速」的模型。20 ms 一次的 nvidia-smi（1525 个样本）里 SM 时钟只在 2385–2422 MHz 之间，降频原因全是 0。
+
+![burst](artifacts/figures/rtx6000d/burst.png)
+
+结论：`peaks.json` 的 228.7 是 30 次 75 µs 的 2048³ 正好落在一个快段里（共 2.3 ms），是采样假象；这张卡能用来算 roofline 的是约 143 TFLOP/s 的持续值，
+相对 5090 的 236 是 0.61 倍——cuBLAS 0.64 倍其实就是算力比，FlashAttention 0.43 倍再低一截是因为它的 kernel 更短、更受快慢段影响（没有单独验证）。
+限速发生在时钟以下、NVML 看不到的层面；没有 ncu 权限，具体机制（固件限流、tensor 管线发射限制）无法确认。
+
+教训：短 benchmark 测「峰值」，要么跑够几百毫秒，要么报中位数和分布；同一个 `a @ b` 计时 2 ms 和计时 8 s 在这张卡上差 1.6 倍。
+
+```bash
+python gpu/sustained_probe.py --seconds 8 && python gpu/plot_sustained.py --card rtx6000d
+python gpu/burst_probe.py && python gpu/plot_burst.py --card rtx6000d
+```
+
 ## 面试讲法
 
 **20 秒结论**：分块 GEMM 的 HBM 流量是 b(MK·N/tn + KN·M/tm + MN)，强度约等于 2/(b(1/tm+1/tn))，

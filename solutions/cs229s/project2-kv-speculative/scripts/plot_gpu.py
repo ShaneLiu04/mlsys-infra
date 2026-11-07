@@ -19,6 +19,7 @@ import numpy as np  # noqa: E402
 LAB = Path(__file__).resolve().parents[1]
 RAW = LAB / "artifacts" / "raw" / "gpu"
 FIG = LAB / "artifacts" / "figures"
+sys.path.insert(0, str(LAB.parents[2]))
 sys.path.insert(0, str(LAB.parents[2] / "tools"))
 import mlsys_calc as mc  # noqa: E402
 
@@ -63,7 +64,8 @@ def write_csv(name: str, rows: list[dict]) -> None:
 HW = {r["kind"]: r for r in load("hw") if r["kind"] != "gemm_fp16"}
 GEMM = max((r["TFLOPs"] for r in load("hw") if r["kind"] == "gemm_fp16"), default=209.5)
 BW = HW.get("copy_bw", {}).get("GBps", 1550.0) * 1e9
-GPU = mc.GPU("RTX 5090 (measured)", GEMM * 1e12, BW, 32e9, 64e9)
+_GPU_NAME = HW.get("device", {}).get("name", "GPU")
+GPU = mc.GPU(f"{_GPU_NAME} (measured)", GEMM * 1e12, BW, 32e9, 64e9)
 
 
 def mc_model(name: str) -> mc.Model:

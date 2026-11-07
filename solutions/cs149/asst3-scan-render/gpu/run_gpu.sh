@@ -8,7 +8,10 @@ B="$LAB/gpu/build"
 RAW="$LAB/artifacts/raw/gpu"
 mkdir -p "$RAW/images"
 LOCK=/root/autodl-tmp/gpu.lock
-run() { if [ -e "$LOCK" ]; then flock "$LOCK" "$@"; else "$@"; fi; }
+# MLSYS_LOCK_HELD means the campaign runner already holds $LOCK. A second flock blocks.
+run() {
+  if [ -n "${MLSYS_LOCK_HELD:-}" ] || [ ! -e "$LOCK" ]; then "$@"; else flock "$LOCK" "$@"; fi
+}
 what=${1:-all}
 if [[ $what == saxpy || $what == all ]]; then run "$B/saxpy" "$RAW/saxpy.jsonl"; fi
 if [[ $what == scan || $what == all ]]; then run "$B/scan" "$RAW/scan.jsonl" "$RAW/find_repeats.jsonl" 28; fi

@@ -204,6 +204,37 @@ python -m pytest -q tests                  # 本地 29 passed + 4 skipped（CUDA
 GPU 部分不能推出的结论：W8A8/SmoothQuant/LLM.int8 是精度模拟（fp16 GEMM），没有端到端 int8 速度；GPT-2 的离群远弱于 6.7B+ 模型；
 AWQ 为简化版、GPTQ 无 act-order；LoRA 只训 150 步单种子，0.01 量级的 loss 差在噪声内；cuSPARSELt 的 ~445 µs 下限可能是软件路径问题。
 
+## 换到 7B：Qwen2.5-7B 上的同一套量化（RTX 6000D）
+
+GPT-2 的激活离群远弱于 6.7B+ 模型，所以把同一份 `gpu/quant_llm.py` 原样跑在 Qwen2.5-7B（bf16 载入，wikitext-2 test 29.9 万 token，
+校准 128 × 1024 token）。原始结果 `artifacts/raw/rtx6000d/quant_ppl_Qwen2.5-7B.jsonl`，图与汇总由 `scripts/plot_qwen7b.py` 生成（`quant_scale_summary.csv`）。
+
+![quant scale](artifacts/figures/gpu_quant_scale.png)
+
+| 方法 | GPT-2 124M | GPT-2 355M | Qwen2.5-7B（fp16 7.639） |
+| --- | ---: | ---: | ---: |
+| W8 逐张量 / 逐通道 | +14.6% / +0.06% | +7.8% / −0.005% | +5.0% / +0.11% |
+| W4 g128：RTN / AWQ / GPTQ | +11.1 / +8.0 / +4.1% | +6.1 / +5.9 / +3.7% | +5.9 / +3.8 / +2.9% |
+| W3 g128：RTN / AWQ / GPTQ | +120 / +78 / +24% | +49 / +36 / +17% | +75 / +23 / +15% |
+| W4 逐通道：RTN / GPTQ | +28 / +8.8% | +18 / +6.8% | +34 / +9.1% |
+| W8A8 逐张量 / 逐 token | +67 / +0.71% | +10 / +0.31% | **+109** / +2.5% |
+| SmoothQuant α=0.5 / 0.8（逐张量） | +1260 / +1.8% | +22 / +1.2% | +58 / +32% |
+| SmoothQuant α=0.5 / 0.8（逐 token） | +0.64 / +0.65% | +0.87 / +0.23% | +1.5 / +1.3% |
+| LLM.int8（阈值 6） | +0.32% | +0.23% | **+0.27%** |
+
+- **权重量化随规模变容易，激活量化随规模变难**：W4 g128 GPTQ 从 +4.1% 降到 +2.9%，W3 GPTQ 从 +24% 降到 +15%；
+  而 W8A8 逐张量从 GPT-2 355M 的 +10% 涨到 7B 的 +109%。下图解释了原因：Qwen 第 26 层 `mlp.down_proj` 的输入里有一个通道 |x| = 6368，
+  是该层通道最大值中位数的 358 倍；逐张量的激活步长由它决定，其余通道只剩几个量化级。
+- **7B 上方法的排序被拉开**：W3 g128 时 RTN +75%、AWQ +23%、GPTQ +15%；GPT-2 上 AWQ 与 RTN 的差距没这么大。AWQ 按激活幅度缩放通道，
+  在离群明显的模型上才有东西可缩放。
+- **SmoothQuant 逐张量救不了 7B**：α=0.8 仍 +32%，因为离群 6368 太大，平滑把难度挪给权重后权重也装不下；逐 token 激活 + 平滑才回到 +1.3%。
+  LLM.int8 用混合精度把 |x| > 6 的列留在 fp16，+0.27% 是全部 W8A8 方法里最好的——代价是平均 700 列、最多 18702 列（某层几乎整层）走 fp16。
+- **GPTQ 在 7B 上需要 float64 Cholesky**：第一次运行在 `down_proj`（18944 维输入）上报「leading minor of order 18004 is not positive-definite」，
+  1% 阻尼的 fp32 Hessian 被离群通道撑得条件数太大。`gptq_quantize` 现在用 float64 分解，失败时把阻尼放大 10 / 100 倍重试；三个 GPTQ 配置各 967 s，AWQ 473–566 s。
+
+不能推出：perplexity 协议是 HF ctx 1024，与 edge-deploy llama-cpp-7b 的 llama-perplexity ctx 512 不同，两边数字不能直接比；W8A8 全部是精度模拟（fp16 GEMM）；
+只有一个 7B 模型，离群通道的位置与幅度是 Qwen2.5 的特性。
+
 ## 文件
 
 ```text

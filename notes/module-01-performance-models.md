@@ -314,6 +314,7 @@ print(roofline(1e8, 6e8, **H100))             # (0.167, 1.79e-4, 'memory')
 - [M03](module-03-parallel-programming-scheduling.md)：work/span 与 work stealing 的调度界。
 - [M05](module-05-gpu-architecture-cuda.md)：GPU 上的 roofline、warp 与延迟隐藏。
 - [M15](module-15-inference-kv-speculative.md)：decode 的 memory-bound 分析与 batch 拐点。
+- [edge-deploy M01 端侧 roofline](https://gitee.com/liu-xingyan04/edge-deploy/blob/main/notes/module-01-edge-roofline.md)：同一模型在 4 核 CPU 上的实测版：fp32 拐点 11.5、int8 29.5，单核 DRAM 13.4 GB/s 受 Little 定律限制
 
 ## 本讲小结
 

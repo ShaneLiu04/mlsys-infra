@@ -308,6 +308,7 @@ MFU 用 `6N`；若开了全量激活重计算，前向多跑一遍，硬件实�
 - [M08 Attention 与 FlashAttention](module-08-attention-flashattention.md)：把分块思想用到 softmax 上。
 - [M09 专用硬件与加速器编程](module-09-accelerators.md)：systolic array 是硬化的分块 GEMM。
 - [M15 Transformer 推理](module-15-inference-kv-speculative.md)：decode 的 GEMV 瓶颈。
+- [edge-deploy M05 卷积 kernel](https://gitee.com/liu-xingyan04/edge-deploy/blob/main/notes/module-05-convolution-kernels.md)：CPU 上的 im2col、implicit GEMM、depthwise 布局与 Winograd 数值；M07 的双缓冲对应 cp.async 多级流水
 
 ## 本讲小结
 

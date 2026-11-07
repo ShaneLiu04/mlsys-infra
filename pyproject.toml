@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mlsys-infra"
+version = "0.1.0"
+description = "ML systems labs, measurements and the shared benchmark harness"
+requires-python = ">=3.11"
+readme = "README.md"
+
+[tool.setuptools.packages.find]
+include = ["mlsys_harness*"]
+
+[tool.ruff]
+line-length = 120
+src = ["mlsys_harness", "tools/tests/test_harness.py"]
+extend-exclude = ["solutions", "reports", "assignments"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+"tools/tests/test_harness.py" = ["E402"]
+"scripts/*.py" = ["E402"]

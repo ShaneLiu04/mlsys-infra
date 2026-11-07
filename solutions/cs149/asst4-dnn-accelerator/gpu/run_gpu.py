@@ -19,6 +19,7 @@ import torch
 
 HERE = Path(__file__).resolve().parent
 LAB = HERE.parent
+sys.path.insert(0, str(LAB.parents[2]))
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(LAB / "code"))
 sys.path.insert(0, str(LAB.parents[2] / "tools"))
@@ -32,7 +33,9 @@ except Exception:  # pragma: no cover - tools/ missing in a partial checkout
     def gemm_intensity(m, n, k, bytes_per_el=2):
         return 2 * m * n * k / (bytes_per_el * (m * k + k * n + m * n))
 
-RAW = LAB / "artifacts" / "raw" / "gpu"
+from mlsys_harness.paths import raw_dir  # noqa: E402
+
+RAW = raw_dir(LAB)
 DEV = "cuda"
 torch.set_num_threads(int(os.environ.get("OMP_NUM_THREADS", "2")))
 

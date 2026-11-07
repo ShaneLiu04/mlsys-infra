@@ -47,6 +47,10 @@ Write-Host "== reports =="
 & $Python (Join-Path $root "scripts/check_reports.py")
 if ($LASTEXITCODE -ne 0) { $fail++ }
 
+Write-Host "== published numbers =="
+& $Python (Join-Path $root "scripts/check_claims.py")
+if ($LASTEXITCODE -ne 0) { $fail++ }
+
 Write-Host "== secrets =="
 $hits = & git -C $root grep -nIE "(gitee\.com/[^ ]*:[^ ]*@|password\s*=|[0-9a-f]{32})" -- ':!*.csv' ':!*.json' 2>$null
 if ($hits) { $hits | ForEach-Object { Write-Host "  $_" }; $fail++ } else { Write-Host "  OK" }

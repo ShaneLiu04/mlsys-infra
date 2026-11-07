@@ -1,4 +1,4 @@
-"""5090 roofline: measured copy bandwidth and BF16 matmul peak, then the pieces of one Llama-2-7B layer
+"""Measured roofline: copy bandwidth and BF16 matmul peak, then the pieces of one Llama-2-7B layer
 (QKV projection, attention, output projection, gated MLP) for prefill and decode shapes.
 
 Analytic FLOPs/bytes per op come from tools/mlsys_calc.py (gemm_intensity, kv_cache_bytes) so measured
@@ -17,6 +17,7 @@ from torch.nn.attention import SDPBackend, sdpa_kernel
 from common import RAW_GPU, JsonlWriter, cuda_time_ms, env_info
 
 import mlsys_calc as calc  # noqa: E402  (path set up by common)
+from mlsys_harness.devices import UnknownDevice, match_device  # noqa: E402
 
 MODEL = calc.MODELS["llama2-7b"]
 BF16 = torch.bfloat16
@@ -135,9 +136,15 @@ def main() -> None:
     t0 = time.time()
     bw = bench_copy(w)
     peak = bench_matmul(w)
-    gpu = calc.GPU("RTX 5090 (measured)", peak, bw, 32 * calc.GB, 64 * calc.GB)
-    peaks = {"peak_bf16_flops": peak, "peak_copy_bw": bw, "ridge": gpu.ridge, "spec_bf16_flops": 209.5e12,
-             "spec_bw": 1.792e12}
+    name = torch.cuda.get_device_name(0)
+    try:
+        dev = match_device(name)
+        spec_flops, spec_bw, slug = dev.spec_bf16_flops, dev.spec_hbm_bw, dev.slug
+    except UnknownDevice:
+        spec_flops, spec_bw, slug = None, None, None
+    gpu = calc.GPU(f"{name} (measured)", peak, bw, 32 * calc.GB, 64 * calc.GB)
+    peaks = {"peak_bf16_flops": peak, "peak_copy_bw": bw, "ridge": gpu.ridge,
+             "spec_bf16_flops": spec_flops, "spec_bw": spec_bw, "device": slug}
     w.write({"part": "peaks", **peaks})
     (RAW_GPU / "peaks.json").write_text(json.dumps(peaks, indent=2))
     print("peaks", peaks, flush=True)

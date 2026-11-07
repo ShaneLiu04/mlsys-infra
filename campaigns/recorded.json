@@ -1,0 +1,33 @@
+{
+  "name": "recorded-4080",
+  "device": "rtx4080s",
+  "lock": null,
+  "note": "Sanity bounds on the 4080 SUPER results already committed. verify runs no GPU work. A rerun that exits 0 with an error above these bounds is a failed step.",
+  "steps": [
+    {
+      "id": "copy",
+      "checks": [
+        {"id": "copy-band", "file": "solutions/cs229s/project2-kv-speculative/artifacts/raw/ada4080/hw.jsonl", "where": {"kind": "copy_bw"}, "field": "GBps", "min": 400, "max": 900}
+      ]
+    },
+    {
+      "id": "attention",
+      "checks": [
+        {"id": "fa-band", "file": "solutions/cs229s/project1-transformer-kernels/artifacts/raw/ada4080/attention_fwd.jsonl", "where": {"part": "fwd", "method": "triton", "dtype": "fp16", "B": 2, "H": 16, "D": 64, "T": 8192, "causal": false, "status": "ok"}, "field": "tflops", "min": 80, "max": 140}
+      ]
+    },
+    {
+      "id": "fp8",
+      "checks": [
+        {"id": "fp8-err", "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/fp8_triton.jsonl", "where": {"part": "correctness"}, "field": "max_abs_err", "max": 1.0},
+        {"id": "fp8-8192", "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/fp8_triton.jsonl", "where": {"part": "best", "N": 8192}, "field": "tflops", "min": 180, "max": 250}
+      ]
+    },
+    {
+      "id": "spec",
+      "checks": [
+        {"id": "spec-band", "file": "solutions/cs229s/project2-kv-speculative/artifacts/raw/ada4080/spec.jsonl", "where": {"kind": "spec", "draft": "gpt2", "target": "gpt2-xl", "gamma": 4, "temperature": 0.0}, "field": "speedup", "min": 1.2, "max": 2.0}
+      ]
+    }
+  ]
+}

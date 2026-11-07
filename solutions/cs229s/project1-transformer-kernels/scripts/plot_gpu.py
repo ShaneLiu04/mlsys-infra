@@ -227,8 +227,9 @@ def fig_roofline(dfr: pd.DataFrame) -> None:
     fig, ax = plt.subplots(figsize=(9, 6))
     xs = np.logspace(-1, 4, 200)
     ax.loglog(xs, np.minimum(peak, xs * bw) / 1e12, "k-", lw=2, label=f"measured roof: {peak / 1e12:.0f} TFLOP/s, {bw / 1e12:.2f} TB/s")
-    ax.loglog(xs, np.minimum(pk["spec_bf16_flops"], xs * pk["spec_bw"]) / 1e12, "k:", lw=1,
-              label=f"spec roof: {pk['spec_bf16_flops'] / 1e12:.1f} TFLOP/s, {pk['spec_bw'] / 1e12:.3f} TB/s")
+    if pk.get("spec_bf16_flops") and pk.get("spec_bw"):
+        ax.loglog(xs, np.minimum(pk["spec_bf16_flops"], xs * pk["spec_bw"]) / 1e12, "k:", lw=1,
+                  label=f"spec roof: {pk['spec_bf16_flops'] / 1e12:.1f} TFLOP/s, {pk['spec_bw'] / 1e12:.3f} TB/s")
     mm = dfr[(dfr.part == "matmul") & (dfr.dtype == "bf16")]
     ax.scatter(mm["intensity"], mm["tflops"], marker=".", color="gray", label="square bf16 matmuls 256..16384")
     ops = {"qkv_proj": "o", "attention": "s", "out_proj": "^", "mlp": "D"}

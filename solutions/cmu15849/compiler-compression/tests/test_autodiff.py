@@ -25,7 +25,8 @@ def test_mlp_grads_match_finite_differences_and_torch():
         np.testing.assert_allclose(p.grad, num, rtol=1e-6, atol=1e-8)
 
     tx, tw1, tb1, tw2 = (torch.tensor(t.data, requires_grad=True) for t in (x, w1, b1, w2))
-    tl = torch.nn.functional.cross_entropy(torch.relu(tx @ tw1 + tb1) @ tw2, torch.tensor(labels))
+    tl = torch.nn.functional.cross_entropy(torch.relu(tx @ tw1 + tb1) @ tw2,
+                                           torch.tensor(labels, dtype=torch.long))
     tl.backward()
     assert float(loss.data) == pytest.approx(tl.item(), rel=1e-12)
     for ours, theirs in ((x, tx), (w1, tw1), (b1, tb1), (w2, tw2)):

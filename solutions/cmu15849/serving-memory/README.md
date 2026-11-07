@@ -130,6 +130,33 @@ for p in continuous chunked; do python gpu/serve_bench.py engine --policy $p --r
 python scripts/plot_gpu.py
 ```
 
+### 对照 vLLM 0.11（RTX 6000D，同一负载，`engine_vllm_*.jsonl`、`vllm_compare.csv`）
+
+`gpu/vllm_bench.py` 用同一个 Qwen2.5-0.5B bf16、同样的长度分布与 Poisson 到达（同种子）、同样 2 GiB KV 预算、最多 128 序列、8192 批 token，
+输出强制到采样长度。V1 总是对长 prefill 分块，所以最接近的自写策略是 `chunked`。
+
+![vllm compare](artifacts/figures/rtx6000d/vllm_compare.png)
+
+| λ（req/s） | 自写 continuous tok/s / TPOT | 自写 chunked | vLLM eager | vLLM CUDA graph |
+| ---: | --- | --- | --- | --- |
+| 10 | 1666 / 10.9 ms | 1685 / 10.6 ms | 1778 / 5.7 ms | 1804 / 2.5 ms |
+| 20 | 2849 / 11.4 ms | 2857 / 11.3 ms | 3310 / 6.1 ms | 3569 / 2.7 ms |
+| 40 | 4140 / 11.3 ms | 3977 / 13.0 ms | 5417 / 6.5 ms | 6666 / 3.2 ms |
+
+- **λ = 10 时吞吐差不多**（1666 对 1804）：负载还没压满，大家都在服务到达的请求；差别全在每 token 延迟，TPOT 10.9 对 2.5 ms，4.3 倍。
+- **λ = 40 时 vLLM 吞吐 1.61 倍**：每步更快，同样的到达率下排队更少、批更满。
+- **把 8.1 ms 的 TPOT 差拆开**：vLLM eager 6.5 ms，自写 11.3 ms——约 5 ms 是 Python 调度与逐 kernel 下发的差（上面成本模型的「每迭代 9.15 ms 固定开销」）；
+  CUDA graph 再省 3.3 ms。0.5B 模型 decode 的瓶颈按顺序是：调度/下发 → kernel 数 → 带宽，与 B1 的结论一致。
+- **尾 TTFT**：自写 chunked 在 λ = 40 时 p99 181 ms，vLLM 30 ms；vLLM 的分块预算与调度顺序让新请求更快拿到首 token，自写版本的块大小没有调。
+- 不能推出：这是 0.5B 模型、单卡、随机 token 的提示（前缀缓存关闭）；大模型上 GEMM 时间变长，下发开销占比会小得多，差距会收窄。
+
+```bash
+<vllm venv>/bin/python gpu/vllm_bench.py --rates 10,20,40 && <vllm venv>/bin/python gpu/vllm_bench.py --rates 10,20,40 --eager
+python scripts/plot_vllm.py --card rtx6000d
+```
+
+vLLM 0.11 要求 transformers < 5；venv 若继承系统的 transformers 5.x，会在 `all_special_tokens_extended` 处报错，需在 venv 里单独装 4.x。
+
 ## 面试讲法
 
 **20 秒结论**：KV cache 是 serving 的容量瓶颈。连续预留浪费 85%，分页把浪费压到块尾（≈ block/2 每序列），

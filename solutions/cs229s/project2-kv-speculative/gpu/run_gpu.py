@@ -22,7 +22,10 @@ from gpt2_fast import (MODEL_ROOT, GPT2, GraphStep, SpecEngine, StaticKV, genera
                        generate_kv, generate_nocache, load_state_dict)
 
 LAB = Path(__file__).resolve().parents[1]
-OUT = Path(os.environ.get("P2_OUT", LAB / "artifacts" / "raw" / "gpu"))
+sys.path.insert(0, str(LAB.parents[2]))
+from mlsys_harness.paths import raw_dir  # noqa: E402
+
+OUT = raw_dir(LAB, "P2_OUT")
 DATA = Path(os.environ.get("P2_DATA", "/root/autodl-tmp/p2data"))
 MODELS = ["gpt2", "gpt2-medium", "gpt2-large", "gpt2-xl"]
 torch.set_num_threads(2)

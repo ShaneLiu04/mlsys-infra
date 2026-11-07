@@ -1,0 +1,26 @@
+{"part": "meta", "python": "3.12.3", "torch": "2.8.0+cu128", "numpy": "2.3.2", "cuda": "12.8", "cudnn": 91002, "host": "autodl-container-tjudth3qst-4b0da440", "cpu_affinity": [196, 197, 205, 207], "triton": "3.4.0", "gpu": "NVIDIA RTX 6000D", "sm_count": 156, "capability": "12.0", "vram_gb": 89.17, "l2_mb": 112.0}
+{"part": "recall_gpu", "n_pairs": 4, "beta": 1.0, "n_test": 5000, "acc_cpu": 0.8385999798774719, "acc_gpu": 0.8385999798774719, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 174.50456228107214}
+{"part": "recall_gpu", "n_pairs": 4, "beta": 2.0, "n_test": 5000, "acc_cpu": 0.998199999332428, "acc_gpu": 0.998199999332428, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 1.008709892630577}
+{"part": "recall_gpu", "n_pairs": 4, "beta": 4.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 0.8407235145568848}
+{"part": "recall_gpu", "n_pairs": 4, "beta": 8.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 0.8717896416783333}
+{"part": "recall_gpu", "n_pairs": 4, "beta": 16.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 0.8592000231146812}
+{"part": "recall_gpu", "n_pairs": 4, "beta": 30.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 0.8458485826849937}
+{"part": "recall_gpu", "n_pairs": 8, "beta": 1.0, "n_test": 5000, "acc_cpu": 0.4537999927997589, "acc_gpu": 0.4537999927997589, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 3.3305855467915535}
+{"part": "recall_gpu", "n_pairs": 8, "beta": 2.0, "n_test": 5000, "acc_cpu": 0.8198000192642212, "acc_gpu": 0.8198000192642212, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 1.4678854495286942}
+{"part": "recall_gpu", "n_pairs": 8, "beta": 4.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 1.447867602109909}
+{"part": "recall_gpu", "n_pairs": 8, "beta": 8.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 1.4698458835482597}
+{"part": "recall_gpu", "n_pairs": 8, "beta": 16.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 1.4488846063613892}
+{"part": "recall_gpu", "n_pairs": 8, "beta": 30.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 1.451028510928154}
+{"part": "recall_gpu", "n_pairs": 16, "beta": 1.0, "n_test": 5000, "acc_cpu": 0.3285999894142151, "acc_gpu": 0.3285999894142151, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 4.537372849881649}
+{"part": "recall_gpu", "n_pairs": 16, "beta": 2.0, "n_test": 5000, "acc_cpu": 0.46939998865127563, "acc_gpu": 0.46939998865127563, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 3.8094716146588326}
+{"part": "recall_gpu", "n_pairs": 16, "beta": 4.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 4.059151746332645}
+{"part": "recall_gpu", "n_pairs": 16, "beta": 8.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 3.8008149713277817}
+{"part": "recall_gpu", "n_pairs": 16, "beta": 16.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 3.802848979830742}
+{"part": "recall_gpu", "n_pairs": 16, "beta": 30.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 3.8281772285699844}
+{"part": "recall_gpu", "n_pairs": 32, "beta": 1.0, "n_test": 5000, "acc_cpu": 0.22679999470710754, "acc_gpu": 0.22679999470710754, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 12.618799693882465}
+{"part": "recall_gpu", "n_pairs": 32, "beta": 2.0, "n_test": 5000, "acc_cpu": 0.2825999855995178, "acc_gpu": 0.2825999855995178, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 11.84950117021799}
+{"part": "recall_gpu", "n_pairs": 32, "beta": 4.0, "n_test": 5000, "acc_cpu": 0.9987999796867371, "acc_gpu": 0.9987999796867371, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 12.32085656374693}
+{"part": "recall_gpu", "n_pairs": 32, "beta": 8.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 11.788873933255672}
+{"part": "recall_gpu", "n_pairs": 32, "beta": 16.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 11.812753044068813}
+{"part": "recall_gpu", "n_pairs": 32, "beta": 30.0, "n_test": 5000, "acc_cpu": 1.0, "acc_gpu": 1.0, "pred_mismatch_cpu_vs_gpu": 0, "gpu_ms": 11.821132153272629}
+{"part": "meta_end", "elapsed_s": 18.1}

@@ -17,15 +17,16 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
 LAB = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(LAB / "gpu"), str(LAB / "code"), str(LAB.parents[2] / "tools")]
+sys.path[:0] = [str(LAB.parents[2]), str(LAB / "gpu"), str(LAB / "code"), str(LAB.parents[2] / "tools")]
 import mlsys_calc  # noqa: E402
 from gpt import CONFIGS, activation_bytes_model, amp_weight_copy_bytes, logits_bytes  # noqa: E402
+from mlsys_harness.devices import get  # noqa: E402
 
 RAW = LAB / "artifacts" / "raw" / "gpu"
 FIG = LAB / "artifacts" / "figures"
 GB = 1e9
 GiB = 2**30
-NOMINAL = 209.5e12
+NOMINAL = get("rtx5090").spec_bf16_flops
 MODES = ["fp32", "amp_bf16", "bf16", "bf16_master"]
 MODE_LABEL = {"fp32": "fp32", "amp_bf16": "AMP bf16 (fp32 weights)", "bf16": "pure bf16",
               "bf16_master": "bf16 + fp32 master"}

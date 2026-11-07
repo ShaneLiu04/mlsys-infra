@@ -26,15 +26,18 @@ import torch.nn.functional as F
 
 HERE = Path(__file__).resolve().parent
 LAB = HERE.parent
-sys.path[:0] = [str(HERE), str(LAB / "code"), str(LAB.parents[2] / "tools")]
+sys.path[:0] = [str(LAB.parents[2]), str(HERE), str(LAB / "code"), str(LAB.parents[2] / "tools")]
 
 import mlsys_calc  # noqa: E402
 from gpt import CONFIGS, GPT, Stage, activation_bytes_model, flops_per_token, init_seed, logits_bytes  # noqa: E402
+from mlsys_harness.devices import get  # noqa: E402
+from mlsys_harness.paths import raw_dir  # noqa: E402
 
-RAW = LAB / "artifacts" / "raw" / "gpu"
+RAW = raw_dir(LAB)
 MiB = 2**20
-NOMINAL_5090_BF16 = 209.5e12  # dense bf16 tensor, fp32 accumulate (NVIDIA Blackwell GeForce spec)
-NOMINAL_5090_BW = 1.792e12
+_D5090 = get("rtx5090")
+NOMINAL_5090_BF16 = _D5090.spec_bf16_flops  # dense bf16 tensor, fp32 accumulate
+NOMINAL_5090_BW = _D5090.spec_hbm_bw
 
 
 class Sink:

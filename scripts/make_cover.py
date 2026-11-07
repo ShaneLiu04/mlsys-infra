@@ -171,7 +171,7 @@ def main() -> None:
                          closed=True, facecolor=GOLD, edgecolor="none", zorder=4))
     ax.text(0.055, 0.362, "三门课，一条从硬件到服务的系统栈。", color="#c9d3e0",
             fontsize=11.0, family=CJK, va="baseline")
-    ax.text(0.055, 0.324, "18 讲笔记 · 22 条公式 · 10 个实验 · 11 份报告",
+    ax.text(0.055, 0.324, "18 讲笔记 · 22 条公式 · 10 个实验 · 11 份报告 · 3 张 GPU",
             color=MUTED, fontsize=9.5, family=CJK, va="baseline")
 
     stats = (
@@ -222,7 +222,7 @@ def main() -> None:
             family=MONO, va="baseline", zorder=5)
     ax.text(0.615, 0.770, "三门课程 × 五层系统栈", color="#c9d3e0", fontsize=9.5,
             family=CJK, va="baseline", zorder=5)
-    ax.text(0.945, 0.800, "18 MODULES", color=MUTED, fontsize=8.5,
+    ax.text(0.945, 0.800, "18 MODULES  ·  3 GPUS", color=MUTED, fontsize=8.5,
             family=MONO, ha="right", va="baseline", zorder=5)
     ax.plot([0.615, 0.945], [0.748, 0.748], color=GOLD, alpha=0.25, lw=0.6, zorder=3)
 
@@ -284,8 +284,10 @@ def main() -> None:
                     fontweight="bold", family=MONO, va="center", zorder=4)
             px += width + 0.008
 
-    ax.text(0.780, 0.108, "M01 — M18  /  HARDWARE → SERVING", color=MUTED,
-            fontsize=8.5, family=MONO, ha="center", va="baseline", zorder=4)
+    ax.text(0.780, 0.118, "RTX 5090  ·  RTX 4080 SUPER  ·  RTX 6000D", color=GOLD,
+            fontsize=7.5, family=MONO, ha="center", va="baseline", zorder=4)
+    ax.text(0.780, 0.098, "Qwen2.5-7B  ·  vLLM 0.11  ·  CROSS-GPU INVARIANTS", color=MUTED,
+            fontsize=6.4, family=MONO, ha="center", va="baseline", zorder=4)
 
     out = ROOT / "assets" / "mlsys-infra-cover.png"
     out.parent.mkdir(exist_ok=True)

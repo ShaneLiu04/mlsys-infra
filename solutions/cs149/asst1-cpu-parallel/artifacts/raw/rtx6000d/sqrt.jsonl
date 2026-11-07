@@ -1,0 +1,8 @@
+{"kind":"sqrt","pattern":"random","n":20000000,"repeat":1,"ms":0.133472,"gelem_per_s":149.8442,"mismatch":0}
+{"kind":"sqrt","pattern":"all_slow","n":20000000,"repeat":1,"ms":0.138944,"gelem_per_s":143.9429,"mismatch":0}
+{"kind":"sqrt","pattern":"all_one","n":20000000,"repeat":1,"ms":0.124608,"gelem_per_s":160.5033,"mismatch":0}
+{"kind":"sqrt","pattern":"one_slow_8","n":20000000,"repeat":1,"ms":0.139008,"gelem_per_s":143.8766,"mismatch":0}
+{"kind":"sqrt","pattern":"one_slow_16","n":20000000,"repeat":1,"ms":0.139424,"gelem_per_s":143.4473,"mismatch":0}
+{"kind":"sqrt","pattern":"one_slow_32","n":20000000,"repeat":1,"ms":0.138688,"gelem_per_s":144.2086,"mismatch":0}
+{"kind":"sqrt","pattern":"one_slow_64","n":20000000,"repeat":1,"ms":0.132640,"gelem_per_s":150.7841,"mismatch":0}
+{"kind":"sqrt","pattern":"sorted_random","n":20000000,"repeat":1,"ms":0.128480,"gelem_per_s":155.6663,"mismatch":0}

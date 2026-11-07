@@ -4,6 +4,7 @@
 set -u
 PY=${PYTHON:-python3}
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
+export PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}"
 SUITES=(
   "tools mlsys_calc|tools/tests"
   "cs149 asst1 cpu-parallel|solutions/cs149/asst1-cpu-parallel/tests"

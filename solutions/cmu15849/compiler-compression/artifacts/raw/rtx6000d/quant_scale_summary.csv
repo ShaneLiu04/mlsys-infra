@@ -1,0 +1,55 @@
+model,method,ppl,rel_increase_pct
+GPT-2 124M,fp16,29.9618,0.0
+GPT-2 124M,w8_tensor,34.3301,14.58
+GPT-2 124M,w8_channel,29.9784,0.056
+GPT-2 124M,w4_channel,38.4014,28.168
+GPT-2 124M,w4_g128,33.2734,11.053
+GPT-2 124M,w3_g128,65.9149,119.997
+GPT-2 124M,awq_w4_g128,32.3628,8.013
+GPT-2 124M,awq_w3_g128,53.3518,78.066
+GPT-2 124M,gptq_w4_channel,32.5863,8.76
+GPT-2 124M,gptq_w4_g128,31.1948,4.115
+GPT-2 124M,gptq_w3_g128,37.2406,24.294
+GPT-2 124M,w8a8_tensor,49.9351,66.663
+GPT-2 124M,w8a8_token,30.1756,0.713
+GPT-2 124M,smoothquant_tensor,407.245,1259.214
+GPT-2 124M,smoothquant_token,30.1539,0.641
+GPT-2 124M,smoothquant_tensor_a0.8,30.4857,1.748
+GPT-2 124M,smoothquant_token_a0.8,30.1574,0.653
+GPT-2 124M,llm_int8,30.0577,0.32
+GPT-2 355M,fp16,21.7196,0.0
+GPT-2 355M,w8_tensor,23.4043,7.757
+GPT-2 355M,w8_channel,21.7186,-0.005
+GPT-2 355M,w4_channel,25.5384,17.582
+GPT-2 355M,w4_g128,23.0388,6.074
+GPT-2 355M,w3_g128,32.4483,49.397
+GPT-2 355M,awq_w4_g128,23.0027,5.908
+GPT-2 355M,awq_w3_g128,29.4258,35.48
+GPT-2 355M,gptq_w4_channel,23.1868,6.755
+GPT-2 355M,gptq_w4_g128,22.5323,3.742
+GPT-2 355M,gptq_w3_g128,25.5015,17.412
+GPT-2 355M,w8a8_tensor,23.9708,10.365
+GPT-2 355M,w8a8_token,21.7867,0.309
+GPT-2 355M,smoothquant_tensor,26.53,22.148
+GPT-2 355M,smoothquant_token,21.908,0.868
+GPT-2 355M,smoothquant_tensor_a0.8,21.9691,1.149
+GPT-2 355M,smoothquant_token_a0.8,21.7687,0.226
+GPT-2 355M,llm_int8,21.7696,0.23
+Qwen2.5-7B,fp16,7.6393,0.0
+Qwen2.5-7B,w8_tensor,8.0221,5.011
+Qwen2.5-7B,w8_channel,7.6476,0.11
+Qwen2.5-7B,w4_channel,10.2541,34.228
+Qwen2.5-7B,w4_g128,8.0862,5.851
+Qwen2.5-7B,w3_g128,13.3392,74.614
+Qwen2.5-7B,awq_w4_g128,7.9307,3.815
+Qwen2.5-7B,awq_w3_g128,9.4215,23.33
+Qwen2.5-7B,gptq_w4_channel,8.3313,9.058
+Qwen2.5-7B,gptq_w4_g128,7.8597,2.885
+Qwen2.5-7B,gptq_w3_g128,8.8005,15.201
+Qwen2.5-7B,w8a8_tensor,15.9912,109.33
+Qwen2.5-7B,w8a8_token,7.832,2.523
+Qwen2.5-7B,smoothquant_tensor,12.0683,57.977
+Qwen2.5-7B,smoothquant_tensor_a0.8,10.0471,31.519
+Qwen2.5-7B,smoothquant_token,7.7566,1.536
+Qwen2.5-7B,smoothquant_token_a0.8,7.7372,1.282
+Qwen2.5-7B,llm_int8,7.6595,0.265

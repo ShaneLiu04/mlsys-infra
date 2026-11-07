@@ -274,6 +274,7 @@ QLoRA 双重量化：0.5 bit → 8/64 + 32/(64×256) = 0.127 bit，省 0.373 bit
 - [M15 推理](module-15-inference-kv-speculative.md)：decode 由字节决定，量化直接缩短步时间
 - [M16 推理服务](module-16-llm-serving.md)：多 LoRA 服务与 KV 量化带来的并发
 - [M10 ML 编译器](module-10-ml-compilers.md)：量化算子的融合与代码生成
+- [edge-deploy M02–M03、M08](https://gitee.com/liu-xingyan04/edge-deploy/blob/main/notes/module-03-calibration-localization.md)：端侧的整数契约、校准与误差定位，以及同一 GPT-2 协议下的 Q8_0 / Q4_0 困惑度
 
 ## 本讲小结
 

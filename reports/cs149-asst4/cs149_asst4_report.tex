@@ -484,6 +484,40 @@ OW=7 时一个 128 线程 block 只有 7 个线程在干活。(3) cuDNN fp32 在
 同一个融合，在中间张量溢出 L2 时省 0.46~ms（11\%），在 L2 内只省 17~µs（3\%），在计算受限的层上为零。
 \end{findingbox}
 
+\subsection{第三张卡：RTX 6000D 的算力不是一个稳定的数}\label{sec:6000d}
+
+跨卡比较里 RTX 6000D 的 FlashAttention 只有 5090 的 0.43 倍、cuBLAS fp16 8192$^3$ 0.64 倍，而 \texttt{peaks.json} 的 bf16 峰值却是 0.97 倍。两个探针回答“哪个数是真的”。
+
+\textbf{持续负载}（\texttt{gpu/sustained\_probe.py}：每个形状连续 8~s，0.25~s 一个窗口，配 100~ms 的 nvidia-smi）。每个形状从第一个窗口起就是平的，
+8192$^3$ / 16384$^3$ 稳定在 141--145~TFLOP/s；SM 时钟 2422~MHz 不动，功耗最高 443~W（上限 600~W），没有任何降频原因——既不是过热，也不是功耗墙。
+
+\begin{figure}[H]
+\centering\includegraphics[width=\linewidth]{rtx6000d/sustained.png}
+\caption{RTX 6000D 持续 8~s 的 matmul：每 0.25~s 窗口的 TFLOP/s、SM 时钟与功耗。}
+\label{fig:sustained}
+\end{figure}
+
+\textbf{逐 kernel 计时}（\texttt{gpu/burst\_probe.py}：每次 \texttt{torch.mm} 一对 CUDA event）。单个 kernel 的速度是双峰的：
+2048$^3$ 有 58\% 的 kernel 在 240--260~TFLOP/s，其余在 50--80；4096$^3$ 最快 303，中位数 136。快慢段交替，快段 0.15--0.75~ms、慢段 0.2--4.4~ms，没有固定周期；
+kernel 之间平均只空 0.4~µs。前面空闲 0~ms 到 3~s 的整段平均都一样（bf16 116--118），所以这不是“攒一段预算、用完降速”的模型。
+
+\begin{figure}[H]
+\centering\includegraphics[width=\linewidth]{rtx6000d/burst.png}
+\caption{逐 kernel 速度分布（双峰）与空闲时长扫描（无影响）。}
+\label{fig:burst}
+\end{figure}
+
+\begin{findingbox}[：短 benchmark 测到的“峰值”是采样假象]
+\texttt{peaks.json} 的 228.7~TFLOP/s 是 30 次 75~µs 的 2048$^3$ 正好落在一个快段里（共 2.3~ms）。能用来算 roofline 的是约 143~TFLOP/s 的持续值，
+相对 5090 的 236 是 0.61 倍——cuBLAS 的 0.64 倍就是算力比。同一个 \texttt{a @ b} 计时 2~ms 和计时 8~s 在这张卡上差 1.6 倍。
+短 benchmark 要么跑够几百毫秒，要么报中位数和分布。
+\end{findingbox}
+
+\begin{caveatbox}
+限速发生在时钟以下、NVML 看不到的层面；没有 ncu 权限，具体机制（固件限流、tensor 管线发射限制）无法确认。
+FlashAttention 0.43 倍再低一截，推测是它的 kernel 更短、更受快慢段影响，没有单独验证。
+\end{caveatbox}
+
 %==========================================================================================
 \section{与理论模型的对照}
 \label{sec:theory}

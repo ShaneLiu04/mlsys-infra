@@ -6,6 +6,7 @@ import csv
 import io
 import json
 import math
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -15,10 +16,14 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
 LAB = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(LAB.parents[2]))
+from mlsys_harness.devices import get  # noqa: E402
+
 RAW = LAB / "artifacts" / "raw" / "gpu"
 FIG = LAB / "artifacts" / "figures"
-SPEC_FP32 = 104.8e12  # RTX 5090 datasheet fp32 (non-tensor) at boost clock
-SPEC_BW = 1.792e12  # GDDR7 datasheet
+_D5090 = get("rtx5090")
+SPEC_FP32 = _D5090.spec_fp32_flops  # datasheet fp32 (non-tensor) at boost clock
+SPEC_BW = _D5090.spec_hbm_bw
 
 LADDER_ORDER = ["naive", "coalesced", "smem8", "smem16", "smem32", "reg1d", "reg2d", "reg2d_nc", "vec4", "vec4_db",
                 "vec4_db_lb2",

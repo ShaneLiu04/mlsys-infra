@@ -1,0 +1,184 @@
+{
+  "claims": [
+    {
+      "id": "5090-copy",
+      "note": "interview/HARDWARE-NUMBERS.md: D2D copy 1518-1522 GB/s",
+      "file": "solutions/cs229s/project2-kv-speculative/artifacts/raw/gpu/hw.jsonl",
+      "where": {"kind": "copy_bw"},
+      "field": "GBps",
+      "min": 1518,
+      "max": 1523
+    },
+    {
+      "id": "5090-spec-g3",
+      "note": "P2 README table: gpt2 to xl, greedy, gamma 3, 1.631x",
+      "file": "solutions/cs229s/project2-kv-speculative/artifacts/raw/gpu/spec.jsonl",
+      "where": {"kind": "spec", "draft": "gpt2", "target": "gpt2-xl", "gamma": 3, "temperature": 0.0},
+      "field": "speedup",
+      "expect": 1.631,
+      "tol_abs": 0.001
+    },
+    {
+      "id": "5090-fa-8192",
+      "note": "P1 README: Triton fp16 T=8192 is 214.9 TFLOP/s",
+      "file": "solutions/cs229s/project1-transformer-kernels/artifacts/raw/gpu/attention_fwd.jsonl",
+      "where": {"part": "fwd", "method": "triton", "dtype": "fp16", "B": 2, "H": 16, "D": 64, "T": 8192, "causal": false, "status": "ok"},
+      "field": "tflops",
+      "expect": 214.9,
+      "tol_abs": 0.05
+    },
+    {
+      "id": "5090-fa-32768",
+      "note": "P1 README: Triton fp16 T=32768 is 224.5 TFLOP/s",
+      "file": "solutions/cs229s/project1-transformer-kernels/artifacts/raw/gpu/attention_fwd.jsonl",
+      "where": {"part": "fwd", "method": "triton", "dtype": "fp16", "B": 2, "H": 16, "D": 64, "T": 32768, "causal": false, "status": "ok"},
+      "field": "tflops",
+      "expect": 224.5,
+      "tol_abs": 0.05
+    },
+    {
+      "id": "ada-copy",
+      "note": "A4 and P2 READMEs: 4080 SUPER copy 626 GB/s",
+      "file": "solutions/cs229s/project2-kv-speculative/artifacts/raw/ada4080/hw.jsonl",
+      "where": {"kind": "copy_bw"},
+      "field": "GBps",
+      "expect": 626,
+      "tol_abs": 0.5
+    },
+    {
+      "id": "ada-spec-g4",
+      "note": "P2 README: 4080 SUPER greedy gamma 4 is 1.631x",
+      "file": "solutions/cs229s/project2-kv-speculative/artifacts/raw/ada4080/spec.jsonl",
+      "where": {"kind": "spec", "draft": "gpt2", "target": "gpt2-xl", "gamma": 4, "temperature": 0.0},
+      "field": "speedup",
+      "expect": 1.631,
+      "tol_abs": 0.001
+    },
+    {
+      "id": "ada-vec4",
+      "note": "A4 README: vec4 fp32 24.2 TFLOP/s at N=8192",
+      "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/gemm_ladder.jsonl",
+      "where": {"variant": "vec4", "M": 8192, "N": 8192, "K": 8192},
+      "field": "gflops",
+      "expect": 24200,
+      "tol_abs": 50
+    },
+    {
+      "id": "ada-cublas-fp32",
+      "note": "A4 README: cuBLAS fp32 30.8 TFLOP/s",
+      "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/gemm_ladder.jsonl",
+      "where": {"variant": "cublas_fp32", "M": 8192, "N": 8192, "K": 8192},
+      "field": "gflops",
+      "expect": 30800,
+      "tol_abs": 50
+    },
+    {
+      "id": "ada-wmma-bf16",
+      "note": "A4 README: WMMA bf16 86.9 TFLOP/s",
+      "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/gemm_ladder.jsonl",
+      "where": {"variant": "wmma_bf16", "M": 8192, "N": 8192, "K": 8192},
+      "field": "gflops",
+      "expect": 86900,
+      "tol_abs": 50
+    },
+    {
+      "id": "ada-cublas-bf16",
+      "note": "A4 README: cuBLAS bf16 108.0 TFLOP/s",
+      "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/gemm_ladder.jsonl",
+      "where": {"variant": "cublas_bf16", "M": 8192, "N": 8192, "K": 8192},
+      "field": "gflops",
+      "expect": 108000,
+      "tol_abs": 50
+    },
+    {
+      "id": "ada-vec4-frac",
+      "note": "A4 README: vec4 is 79% of cuBLAS fp32",
+      "type": "ratio",
+      "num": {"file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/gemm_ladder.jsonl", "where": {"variant": "vec4", "M": 8192, "N": 8192, "K": 8192}, "field": "gflops"},
+      "den": {"file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/gemm_ladder.jsonl", "where": {"variant": "cublas_fp32", "M": 8192, "N": 8192, "K": 8192}, "field": "gflops"},
+      "expect": 0.79,
+      "tol_abs": 0.005
+    },
+    {
+      "id": "ada-wmma-frac",
+      "note": "A4 README: WMMA bf16 is 80% of cuBLAS bf16",
+      "type": "ratio",
+      "num": {"file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/gemm_ladder.jsonl", "where": {"variant": "wmma_bf16", "M": 8192, "N": 8192, "K": 8192}, "field": "gflops"},
+      "den": {"file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/gemm_ladder.jsonl", "where": {"variant": "cublas_bf16", "M": 8192, "N": 8192, "K": 8192}, "field": "gflops"},
+      "expect": 0.80,
+      "tol_abs": 0.01
+    },
+    {
+      "id": "ada-fp8-best",
+      "note": "A4 README: best Triton FP8 at N=8192 is 207.5",
+      "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/fp8_triton.jsonl",
+      "where": {"part": "best", "N": 8192},
+      "field": "tflops",
+      "expect": 207.5,
+      "tol_abs": 0.05
+    },
+    {
+      "id": "ada-fp8-cublas",
+      "note": "A4 README: cuBLAS FP8 at N=8192 is 207.6",
+      "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/fp8_triton.jsonl",
+      "where": {"part": "best", "N": 8192},
+      "field": "cublas_tflops",
+      "expect": 207.6,
+      "tol_abs": 0.05
+    },
+    {
+      "id": "ada-fp8-over-wmma",
+      "note": "A4 README: FP8 is 2.4x WMMA bf16",
+      "type": "ratio",
+      "num": {"file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/fp8_triton.jsonl", "where": {"part": "best", "N": 8192}, "field": "tflops"},
+      "den": {"file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/gemm_ladder.jsonl", "where": {"variant": "wmma_bf16", "M": 8192, "N": 8192, "K": 8192}, "field": "gflops", "scale": 0.001},
+      "expect": 2.4,
+      "tol_abs": 0.05
+    },
+    {
+      "id": "ada-fp8-2048",
+      "note": "A4 README: N=2048 small tile reaches 185, above cuBLAS 145",
+      "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/fp8_triton.jsonl",
+      "where": {"part": "best", "N": 2048},
+      "field": "tflops",
+      "expect": 185,
+      "tol_abs": 0.5
+    },
+    {
+      "id": "ada-fp8-2048-cublas",
+      "note": "A4 README: cuBLAS FP8 at N=2048 is 145",
+      "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/fp8_triton.jsonl",
+      "where": {"part": "best", "N": 2048},
+      "field": "cublas_tflops",
+      "expect": 145,
+      "tol_abs": 0.5
+    },
+    {
+      "id": "ada-fp8-1024",
+      "note": "A4 README: N=1024 cuBLAS 50.7 beats Triton 42.6",
+      "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/fp8_triton.jsonl",
+      "where": {"part": "best", "N": 1024},
+      "field": "cublas_tflops",
+      "expect": 50.7,
+      "tol_abs": 0.05
+    },
+    {
+      "id": "ada-fp8-1024-triton",
+      "note": "A4 README: Triton FP8 at N=1024 is 42.6",
+      "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/fp8_triton.jsonl",
+      "where": {"part": "best", "N": 1024},
+      "field": "tflops",
+      "expect": 42.6,
+      "tol_abs": 0.05
+    },
+    {
+      "id": "ada-fp8-err",
+      "note": "A4 README: max abs err vs cuBLAS is 1.0",
+      "file": "solutions/cs149/asst4-dnn-accelerator/artifacts/raw/ada4080/fp8_triton.jsonl",
+      "where": {"part": "correctness", "N": 1024},
+      "field": "max_abs_err",
+      "expect": 1.0,
+      "tol_abs": 0.0
+    }
+  ]
+}

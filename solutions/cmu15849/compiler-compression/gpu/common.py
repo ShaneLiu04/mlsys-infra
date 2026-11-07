@@ -1,4 +1,4 @@
-"""Shared helpers for the GPU experiments: timing, raw-result writers, RTX 5090 numbers."""
+"""Shared helpers for the GPU experiments: timing, raw-result writers, device specs."""
 
 from __future__ import annotations
 
@@ -10,22 +10,18 @@ import time
 from pathlib import Path
 
 LAB = Path(__file__).resolve().parents[1]
-RAW = LAB / "artifacts" / "raw" / "gpu"
+_REPO = LAB.parents[2]
+sys.path.insert(0, str(_REPO))
 sys.path.insert(0, str(LAB / "code"))
-sys.path.insert(0, str(LAB.parents[2] / "tools"))
+sys.path.insert(0, str(_REPO / "tools"))
 
-# RTX 5090 (sm_120). Peak numbers are datasheet values; `saxpy_bw` was measured on this box.
-RTX5090 = {
-    "name": "RTX 5090",
-    "sms": 170,
-    "hbm_bw": 1.792e12,        # GDDR7 512-bit @ 28 Gbps
-    "saxpy_bw": 1.55e12,       # measured streaming bandwidth
-    "bf16_flops": 209.5e12,    # dense tensor core, fp32 accumulate (GeForce: half the fp16-accumulate rate)
-    "int8_ops": 838e12,        # dense int8 tensor core, int32 accumulate
-    "fp8_flops": 419e12,       # dense fp8 e4m3, fp32 accumulate
-    "l2_bytes": 96 * 2 ** 20,
-    "smem_per_sm": 128 * 1024,
-}
+from mlsys_harness.devices import get  # noqa: E402
+from mlsys_harness.paths import raw_dir  # noqa: E402
+
+# Datasheet values live in mlsys_harness.devices. saxpy_bw is the rounded streaming
+# bandwidth the 5090 plots already use, not a fresh measurement.
+RTX5090 = get("rtx5090").legacy_dict()
+RAW = raw_dir(LAB)
 
 
 def set_threads(n: int = 2) -> None:

@@ -9,7 +9,16 @@ CORES=${CORES:-38,40}
 LOCK=${LOCK:-/root/autodl-tmp/gpu.lock}
 Q=${1:-}
 cd "$(dirname "$0")/.."
-run() { echo "=== $* ($(date +%T))"; flock "$LOCK" taskset -c "$CORES" python "$@" || echo "!!! failed: $*"; }
+# MLSYS_LOCK_HELD means the campaign runner already holds $LOCK. Flocking it
+# again from this process blocks forever, and the GPU then sits idle.
+run() {
+  echo "=== $* ($(date +%T))"
+  if [ -n "${MLSYS_LOCK_HELD:-}" ]; then
+    taskset -c "$CORES" python "$@" || echo "!!! failed: $*"
+  else
+    flock "$LOCK" taskset -c "$CORES" python "$@" || echo "!!! failed: $*"
+  fi
+}
 
 taskset -c "$CORES" python -c "import sys; sys.path.insert(0,'gpu'); import dwconv_cuda as d; d.load_ext()"
 run -m pytest -q tests/test_gpu.py

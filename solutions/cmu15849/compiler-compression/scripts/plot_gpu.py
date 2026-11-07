@@ -12,6 +12,7 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT.parents[2]))
 sys.path.insert(0, str(ROOT / "code"))
 sys.path.insert(0, str(ROOT.parents[2] / "tools"))
 
@@ -25,13 +26,15 @@ from scipy.stats import spearmanr  # noqa: E402
 import mlsys_calc  # noqa: E402
 from compkit.graph_ir import fuse_elementwise, kernel_cost, transformer_mlp  # noqa: E402
 from compkit.schedule_search import Machine, Schedule, cost  # noqa: E402
+from mlsys_harness.devices import get  # noqa: E402
 
 RAW = ROOT / "artifacts" / "raw" / "gpu"
 FIG = ROOT / "artifacts" / "figures"
-HBM = 1.792e12
-SAXPY = 1.55e12
-PEAK_BF16 = 209.5e12
-SMS = 170
+_D5090 = get("rtx5090")
+HBM = _D5090.spec_hbm_bw
+SAXPY = _D5090.reference_copy_bw
+PEAK_BF16 = _D5090.spec_bf16_flops
+SMS = _D5090.sms
 GPU5090 = mlsys_calc.GPU("RTX 5090 32GB", PEAK_BF16, HBM, 32e9, 64e9)
 SUMMARY: dict = {}
 MODE_C = {"eager": "tab:gray", "default": "tab:blue", "max-autotune": "tab:orange",

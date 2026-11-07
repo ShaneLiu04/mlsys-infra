@@ -22,5 +22,7 @@ def binary():
 
 def test_selftest(binary):
     out = subprocess.run([str(binary), "selftest"], check=True, capture_output=True, text=True)
+    for name in ("chain", "star", "grid", "er", "rmat"):
+        assert f"ok {name} " in out.stdout
     assert "ok all" in out.stdout
     assert "FAIL" not in out.stdout

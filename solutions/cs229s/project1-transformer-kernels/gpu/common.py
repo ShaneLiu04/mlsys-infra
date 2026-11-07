@@ -11,11 +11,15 @@ from pathlib import Path
 import torch
 
 LAB = Path(__file__).resolve().parents[1]
-RAW_GPU = LAB / "artifacts" / "raw" / "gpu"
-TOOLS = LAB.parents[2] / "tools"
-for p in (str(LAB / "code"), str(TOOLS), str(LAB / "gpu")):
+_REPO = LAB.parents[2]
+TOOLS = _REPO / "tools"
+for p in (str(_REPO), str(LAB / "code"), str(TOOLS), str(LAB / "gpu")):
     if p not in sys.path:
         sys.path.insert(0, p)
+
+from mlsys_harness.paths import raw_dir  # noqa: E402
+
+RAW_GPU = raw_dir(LAB)
 
 
 def cuda_time_ms(fn, warmup: int = 3, reps: int = 10, max_ms: float = 1500.0) -> float:

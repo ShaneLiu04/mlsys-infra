@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import os
+import re
 from pathlib import Path
 
 import torch
@@ -55,12 +56,14 @@ def perplexity(model, wins: torch.Tensor, bs: int = 8) -> float:
 
 
 def linear_modules(model) -> dict[str, torch.nn.Module]:
-    """Every projection inside the transformer blocks (Conv1D in GPT-2, or nn.Linear)."""
+    """Every projection inside the transformer blocks: GPT-2 `transformer.h.N` (Conv1D), Llama/Qwen `model.layers.N` (Linear)."""
     out = {}
     for name, m in model.named_modules():
-        if ".h." in f".{name}" or name.startswith("transformer.h."):
+        if re.search(r"(^|\.)(h|layers)\.\d+\.", name):
             if type(m).__name__ in ("Conv1D", "Linear") and "lm_head" not in name:
                 out[name] = m
+    if not out:
+        raise ValueError("no transformer-block projections found; unknown module naming")
     return out
 
 

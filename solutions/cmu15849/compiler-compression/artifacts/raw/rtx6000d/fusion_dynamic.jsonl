@@ -1,0 +1,46 @@
+{"part": "env", "gpu": "NVIDIA RTX 6000D", "cc": "12.0", "sms": 156, "vram_gb": 83.0, "torch": "2.8.0+cu128", "triton": "3.4.0", "cuda": "12.8", "cudnn": 91002}
+{"part": "dynamic", "strategy": "static", "step": 0, "seq": 512, "first_call_s": 1.6155176004394889, "cum_s": 1.6155176004394889, "graphs": 1}
+{"part": "dynamic", "strategy": "static", "step": 1, "seq": 768, "first_call_s": 0.6984988963231444, "cum_s": 2.3140164967626333, "graphs": 2}
+{"part": "dynamic", "strategy": "static", "step": 2, "seq": 1024, "first_call_s": 0.4781565610319376, "cum_s": 2.792173057794571, "graphs": 3}
+{"part": "dynamic", "strategy": "static", "step": 3, "seq": 1536, "first_call_s": 0.4836022462695837, "cum_s": 3.2757753040641546, "graphs": 4}
+{"part": "dynamic", "strategy": "static", "step": 4, "seq": 2048, "first_call_s": 0.4820951223373413, "cum_s": 3.757870426401496, "graphs": 5}
+{"part": "dynamic", "strategy": "static", "step": 5, "seq": 3072, "first_call_s": 0.49678271543234587, "cum_s": 4.254653141833842, "graphs": 6}
+{"part": "dynamic", "strategy": "static", "step": 6, "seq": 4096, "first_call_s": 0.49241766706109047, "cum_s": 4.747070808894932, "graphs": 7}
+{"part": "dynamic", "strategy": "static", "step": 7, "seq": 640, "first_call_s": 0.6002739500254393, "cum_s": 5.3473447589203715, "graphs": 8}
+{"part": "dynamic", "strategy": "static", "step": 8, "seq": 1024, "first_call_s": 0.0003865007311105728, "cum_s": 5.347731259651482, "graphs": 8}
+{"part": "dynamic", "strategy": "static", "step": 9, "seq": 2048, "first_call_s": 0.00026848912239074707, "cum_s": 5.347999748773873, "graphs": 8}
+{"part": "dynamic_steady", "strategy": "static", "seq": 512, "time_s": 8.055343517678321e-05, "eager_s": 9.63952172662794e-05}
+{"part": "dynamic_steady", "strategy": "static", "seq": 1024, "time_s": 0.0001462476564490277, "eager_s": 0.00015453425221059514}
+{"part": "dynamic_steady", "strategy": "static", "seq": 2048, "time_s": 0.0003084121326823811, "eager_s": 0.0003092544078826904}
+{"part": "dynamic_steady", "strategy": "static", "seq": 4096, "time_s": 0.0006129874274844215, "eager_s": 0.0006083686263472945}
+{"part": "dynamic_total", "strategy": "static", "total_s": 5.347999748773873, "graphs": 8, "recompiles": -1}
+{"part": "dynamic", "strategy": "automatic", "step": 0, "seq": 512, "first_call_s": 0.450426428578794, "cum_s": 0.450426428578794, "graphs": 1}
+{"part": "dynamic", "strategy": "automatic", "step": 1, "seq": 768, "first_call_s": 0.5909126000478864, "cum_s": 1.0413390286266804, "graphs": 2}
+{"part": "dynamic", "strategy": "automatic", "step": 2, "seq": 1024, "first_call_s": 0.00033970270305871964, "cum_s": 1.041678731329739, "graphs": 2}
+{"part": "dynamic", "strategy": "automatic", "step": 3, "seq": 1536, "first_call_s": 0.00023991893976926804, "cum_s": 1.0419186502695084, "graphs": 2}
+{"part": "dynamic", "strategy": "automatic", "step": 4, "seq": 2048, "first_call_s": 0.00022417400032281876, "cum_s": 1.0421428242698312, "graphs": 2}
+{"part": "dynamic", "strategy": "automatic", "step": 5, "seq": 3072, "first_call_s": 0.00031905341893434525, "cum_s": 1.0424618776887655, "graphs": 2}
+{"part": "dynamic", "strategy": "automatic", "step": 6, "seq": 4096, "first_call_s": 0.0003635948523879051, "cum_s": 1.0428254725411534, "graphs": 2}
+{"part": "dynamic", "strategy": "automatic", "step": 7, "seq": 640, "first_call_s": 0.00013931002467870712, "cum_s": 1.0429647825658321, "graphs": 2}
+{"part": "dynamic", "strategy": "automatic", "step": 8, "seq": 1024, "first_call_s": 0.00021152012050151825, "cum_s": 1.0431763026863337, "graphs": 2}
+{"part": "dynamic", "strategy": "automatic", "step": 9, "seq": 2048, "first_call_s": 0.00021555740386247635, "cum_s": 1.0433918600901961, "graphs": 2}
+{"part": "dynamic_steady", "strategy": "automatic", "seq": 512, "time_s": 8.758979148053109e-05, "eager_s": 9.637497895516004e-05}
+{"part": "dynamic_steady", "strategy": "automatic", "seq": 1024, "time_s": 0.0001465944310893183, "eager_s": 0.00015433642406337307}
+{"part": "dynamic_steady", "strategy": "automatic", "seq": 2048, "time_s": 0.0003094533284505208, "eager_s": 0.00031232492740337664}
+{"part": "dynamic_steady", "strategy": "automatic", "seq": 4096, "time_s": 0.0006133644886505909, "eager_s": 0.0006053308580742508}
+{"part": "dynamic_total", "strategy": "automatic", "total_s": 1.0433918600901961, "graphs": 2, "recompiles": -1}
+{"part": "dynamic", "strategy": "mark_dynamic", "step": 0, "seq": 512, "first_call_s": 0.5677321311086416, "cum_s": 0.5677321311086416, "graphs": 1}
+{"part": "dynamic", "strategy": "mark_dynamic", "step": 1, "seq": 768, "first_call_s": 0.0003103800117969513, "cum_s": 0.5680425111204386, "graphs": 1}
+{"part": "dynamic", "strategy": "mark_dynamic", "step": 2, "seq": 1024, "first_call_s": 0.0002477560192346573, "cum_s": 0.5682902671396732, "graphs": 1}
+{"part": "dynamic", "strategy": "mark_dynamic", "step": 3, "seq": 1536, "first_call_s": 0.0002251025289297104, "cum_s": 0.5685153696686029, "graphs": 1}
+{"part": "dynamic", "strategy": "mark_dynamic", "step": 4, "seq": 2048, "first_call_s": 0.0002254946157336235, "cum_s": 0.5687408642843366, "graphs": 1}
+{"part": "dynamic", "strategy": "mark_dynamic", "step": 5, "seq": 3072, "first_call_s": 0.00032621994614601135, "cum_s": 0.5690670842304826, "graphs": 1}
+{"part": "dynamic", "strategy": "mark_dynamic", "step": 6, "seq": 4096, "first_call_s": 0.00036632921546697617, "cum_s": 0.5694334134459496, "graphs": 1}
+{"part": "dynamic", "strategy": "mark_dynamic", "step": 7, "seq": 640, "first_call_s": 0.00014242995530366898, "cum_s": 0.5695758434012532, "graphs": 1}
+{"part": "dynamic", "strategy": "mark_dynamic", "step": 8, "seq": 1024, "first_call_s": 0.00021894648671150208, "cum_s": 0.5697947898879647, "graphs": 1}
+{"part": "dynamic", "strategy": "mark_dynamic", "step": 9, "seq": 2048, "first_call_s": 0.00021067075431346893, "cum_s": 0.5700054606422782, "graphs": 1}
+{"part": "dynamic_steady", "strategy": "mark_dynamic", "seq": 512, "time_s": 8.171940853721218e-05, "eager_s": 9.629098892211915e-05}
+{"part": "dynamic_steady", "strategy": "mark_dynamic", "seq": 1024, "time_s": 0.00014714632752121137, "eager_s": 0.00015378500223159791}
+{"part": "dynamic_steady", "strategy": "mark_dynamic", "seq": 2048, "time_s": 0.00030878181083529604, "eager_s": 0.000308114869253976}
+{"part": "dynamic_steady", "strategy": "mark_dynamic", "seq": 4096, "time_s": 0.0006113771509241175, "eager_s": 0.0006085848039196383}
+{"part": "dynamic_total", "strategy": "mark_dynamic", "total_s": 0.5700054606422782, "graphs": 1, "recompiles": -1}

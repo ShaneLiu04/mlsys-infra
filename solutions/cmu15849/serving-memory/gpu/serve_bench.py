@@ -25,14 +25,15 @@ import torch
 
 HERE = Path(__file__).resolve().parent
 LAB = HERE.parent
-sys.path[:0] = [str(HERE), str(LAB / "code"), str(LAB.parents[2] / "tools")]
+sys.path[:0] = [str(LAB.parents[2]), str(HERE), str(LAB / "code"), str(LAB.parents[2] / "tools")]
 
 import mlsys_calc  # noqa: E402
+from mlsys_harness.paths import raw_dir  # noqa: E402
 from servesim.block_manager import BlockManager  # noqa: E402
 from servesim.waste import waste_table  # noqa: E402
 from servesim.workload import MAX_MODEL_LEN, poisson_arrivals, sample_lengths  # noqa: E402
 
-RAW = LAB / "artifacts" / "raw" / "gpu"
+RAW = raw_dir(LAB)
 
 
 class Sink:

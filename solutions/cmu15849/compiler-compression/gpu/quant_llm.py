@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import copy
 import math
+import re
 import time
 
 import torch
@@ -50,10 +51,13 @@ def collect(model, mods: dict, calib: torch.Tensor, want_h: bool = True):
 
 
 def block_groups(mods: dict) -> list[list[str]]:
+    """Group module names by transformer block: GPT-2 `transformer.h.3.attn`, Llama/Qwen `model.layers.3.mlp`."""
     groups: dict[int, list[str]] = {}
     for n in mods:
-        idx = int(n.split(".h.")[1].split(".")[0])
-        groups.setdefault(idx, []).append(n)
+        m = re.search(r"\.(?:h|layers)\.(\d+)\.", n)
+        if m is None:
+            raise ValueError(f"no block index in {n}")
+        groups.setdefault(int(m.group(1)), []).append(n)
     return [groups[k] for k in sorted(groups)]
 
 
@@ -68,8 +72,18 @@ def gptq_quantize(w: torch.Tensor, H: torch.Tensor, bits: int, g: int | None = 1
     dead = torch.diag(H) == 0
     H[dead, dead] = 1
     W[:, dead] = 0
-    H += damp * torch.mean(torch.diag(H)) * torch.eye(cols, device=H.device)
-    Hinv = torch.linalg.cholesky(torch.cholesky_inverse(torch.linalg.cholesky(H)), upper=True)
+    # Qwen2.5's down_proj inputs reach |x| ~ 6e3, so H is too ill-conditioned for fp32 Cholesky at 1% damping.
+    eye = torch.eye(cols, device=H.device, dtype=torch.float64)
+    for d in (damp, damp * 10, damp * 100):
+        Hd = H.double() + d * torch.mean(torch.diag(H)).double() * eye
+        L, bad = torch.linalg.cholesky_ex(Hd)
+        if not bad:
+            U, bad = torch.linalg.cholesky_ex(torch.cholesky_inverse(L), upper=True)
+            if not bad:
+                Hinv = U.float()
+                break
+    else:
+        raise torch.linalg.LinAlgError(f"H not positive-definite even at damp {damp * 100}")
     Q = torch.zeros_like(W)
     if g is None:
         s, z = asym_params(W, bits)
@@ -196,12 +210,14 @@ def main():
     ap.add_argument("--methods", default="all")
     ap.add_argument("--eval-windows", type=int, default=0)
     ap.add_argument("--calib", type=int, default=128)
+    # Qwen2.5 activations exceed the fp16 range in a few layers; bf16 is what the checkpoint ships in.
+    ap.add_argument("--dtype", default="fp16", choices=["fp16", "bf16"])
     a = ap.parse_args()
     set_threads(2)
     torch.manual_seed(0)
     w = Writer(f"quant_ppl_{a.model}")
     w(part="env", **env_info())
-    base, tok = load_model(a.model)
+    base, tok = load_model(a.model, dtype=torch.float16 if a.dtype == "fp16" else torch.bfloat16)
     test = windows(wikitext_ids(tok, "test"), 1024, a.eval_windows or None)
     calib = windows(wikitext_ids(tok, "train"), 1024, a.calib, seed=0)
     nparams = sum(p.numel() for p in base.parameters())

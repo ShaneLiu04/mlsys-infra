@@ -1,0 +1,22 @@
+{
+  "name": "next-gpu",
+  "device": "rtx4080s",
+  "lock": "/root/autodl-tmp/gpu.lock",
+  "note": "The one measurement still worth a rented card. It rewrites nothing under artifacts/raw/gpu or artifacts/raw/ada4080. MLSYS_LOCK_HELD is set by the runner so the lab script does not flock the same file.",
+  "steps": [
+    {
+      "id": "p1-roofline",
+      "cwd": "solutions/cs229s/project1-transformer-kernels",
+      "cmd": ["python", "gpu/bench_roofline.py"],
+      "gpu": true,
+      "timeout_s": 1800,
+      "env": {
+        "MLSYS_RAW_DIR": "solutions/cs229s/project1-transformer-kernels/artifacts/raw/rtx4080s-rerun",
+        "PATH": "/usr/local/cuda/bin:/root/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      },
+      "checks": [
+        {"id": "has-peak", "file": "solutions/cs229s/project1-transformer-kernels/artifacts/raw/rtx4080s-rerun/peaks.json", "where": {}, "field": "peak_bf16_flops", "min": 80000000000000, "max": 160000000000000}
+      ]
+    }
+  ]
+}

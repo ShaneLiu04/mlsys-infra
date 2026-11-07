@@ -23,3 +23,5 @@ jobs:
         run: ./scripts/check-repo.ps1
       - name: All test suites (GPU tests skip without CUDA; C++ tests use the runner's g++)
         run: PYTHON=python ./scripts/run-all-tests.sh
+        env:
+          PYTHONPATH: ${{ github.workspace }}

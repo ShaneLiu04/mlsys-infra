@@ -313,6 +313,7 @@ GEMM：2·8192·4096·4096 = 2.75e11 FLOPs → 278 µs（计算受限）
 - [M11 深度学习框架与自动微分](module-11-frameworks-autodiff.md)：eager 与图模式，编译器的前端来源。
 - [M13 张量并行与自动并行](module-13-tensor-pipeline-parallel.md)：从设备放置到自动并行。
 - [M08 FlashAttention](module-08-attention-flashattention.md)：编译器难以自动发现、需要手写的融合。
+- [edge-deploy M06 调度搜索](https://gitee.com/liu-xingyan04/edge-deploy/blob/main/notes/module-06-schedule-search.md)：同一套搜索在真机测量上做：噪声与差距同量级，代价模型 Spearman 0.47–0.53
 
 ## 本讲小结
 

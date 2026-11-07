@@ -1,0 +1,10 @@
+id,label,unit,rtx5090,rtx4080s,rtx6000d,ratio_rtx4080s,ratio_rtx6000d,class
+copy,拷贝带宽,GB/s,1522.49,625.737,1278.01,0.4110,0.8394,bandwidth
+scan-cub,CUB scan（2^28）,GB/s,1520.67,629.775,1277.73,0.4141,0.8402,bandwidth
+fa-8192,FlashAttention T=8192,TFLOP/s,214.942,100.784,92.8285,0.4689,0.4319,compute
+cublas-fp16,cuBLAS fp16 GEMM N=8192,TFLOP/s,222.343,106.723,142.672,0.4800,0.6417,compute
+bf16-peak,实测 bf16 GEMM 峰值,TFLOP/s,236.295,109.906,228.65,0.4651,0.9676,compute
+scan-frac,自写 raking / CUB,比值,0.497367,0.50325,0.49922,1.0118,1.0037,invariant
+vec4-frac,vec4 / cuBLAS fp32,比值,0.754638,0.787616,0.807657,1.0437,1.0703,invariant
+wmma-frac,WMMA bf16 / cuBLAS bf16,比值,0.779128,0.804552,0.897315,1.0326,1.1517,invariant
+spec-g4,推测解码 gpt2→xl γ=4 贪心,倍,1.62861,1.63075,1.65998,1.0013,1.0193,invariant

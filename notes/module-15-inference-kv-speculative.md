@@ -263,6 +263,7 @@ Llama-3-70B bf16，权重 141.2 GB，8K 序列 KV = 8192 × 327680 B = 2.68 GB
 - [M16 LLM 推理服务](module-16-llm-serving.md)：KV 显存的分页管理与调度
 - [M17 量化](module-17-compression-quantization.md)：weight-only 量化与 KV 量化减少每步字节
 - [M01 性能模型](module-01-performance-models.md)：roofline 与拐点
+- [edge-deploy M08 块量化解码](https://gitee.com/liu-xingyan04/edge-deploy/blob/main/notes/module-08-block-quantized-decode.md)：端侧 batch 1 解码：Q4 × Q8 GEMV 与 tok/s ≤ 带宽 / 权重字节
 
 ## 本讲小结
 

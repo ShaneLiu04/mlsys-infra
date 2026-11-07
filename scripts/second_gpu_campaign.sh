@@ -3,6 +3,9 @@
 # where they are: each lab's artifacts/raw/gpu is snapshotted, the lab writes
 # a fresh tree, that tree is copied to $OUT/<lab>, then the snapshot is put
 # back. One lab at a time. A failed step is logged and the campaign continues.
+# New runs should use `python -m mlsys_harness.campaign run campaigns/next_gpu.json`
+# instead of growing this script. That runner holds the GPU lock once and checks
+# the result file, so a process that exits 0 with a bad measurement is a failure.
 set -u
 export PATH=/usr/local/cuda/bin:/root/miniconda3/bin:$PATH
 export PYTHONUNBUFFERED=1 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 TOKENIZERS_PARALLELISM=false
@@ -47,13 +50,23 @@ for cpu, (i1, t1) in a.items():
     dt = t2 - t1
     rank.append(((i2 - i1) / dt if dt else 0.0, cpu))
 rank.sort(reverse=True)
+def siblings(cpu):
+    try:
+        text = open(f"/sys/devices/system/cpu/cpu{cpu}/topology/thread_siblings_list").read().strip()
+    except OSError:
+        return {cpu}
+    out = set()
+    for part in text.split(","):
+        lo, _, hi = part.partition("-")
+        out.update(range(int(lo), int(hi or lo) + 1))
+    return out
 chosen, used = [], set()
 for frac, cpu in rank:
-    sib = cpu + 64 if cpu < 64 else cpu - 64
-    if frac < 0.5 or cpu in used or sib in used:
+    sib = siblings(cpu)
+    if frac < 0.5 or used & sib:
         continue
     chosen.append(cpu)
-    used.update((cpu, sib))
+    used.update(sib)
     if len(chosen) == 4:
         break
 print(",".join(str(c) for c in (chosen or [0, 1, 2, 3])))

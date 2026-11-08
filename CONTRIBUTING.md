@@ -16,6 +16,11 @@
 - 没有来源的长段第三方文本、图片或代码；
 - 没有跑出来的数字。README 里的每个数字都要能在 `artifacts/raw/` 里找到。
 
+## 怎么写
+
+文字按 [写作约定](templates/WRITING.md) 来：先讲为什么，再给推导和数字；一句话只说一件事；术语第一次出现时解释；
+有真实经历就写，没有就不编。读者是想学会这些东西的人，不是来核对清单的人。
+
 ## 提交前
 
 1. 笔记遵循 `templates/lecture-note.md`，`python notes/check_notes.py` 通过；

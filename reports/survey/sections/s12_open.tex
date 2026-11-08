@@ -1,36 +1,36 @@
 \section{开放问题与研究方向}
 \label{sec:open}
 
-本节把各节「研究视角」中的问题归并为六个方向。每个方向都给出它对应式~\eqref{eq:three} 的哪一项、目前的代表性工作，以及一个可以在 CPU 上起步的切入点。
+前面各节的「研究视角」框里散落着不少问题。本节把它们归并成六个方向，每个方向都说明它对应式~\eqref{eq:three} 的哪一项、目前有哪些代表性工作，以及一个可以先在 CPU 上起步的切入点。
 
-\textbf{(1) 长上下文的访存墙。}上下文从 8K 走向百万级后，KV cache 成为 decode 的主导字节（Llama-3-8B 在 128K 时单序列 16~GiB）。
-现有路线包括结构压缩（GQA/MLA~\cite{ainslie2023gqa,deepseekai2024v2}）、KV 量化、序列并行~\cite{liu2023ring,jacobs2023deepspeed}，以及 attention-free 架构~\cite{gu2023mamba}。
-开放问题是：在精确检索能力（第~\ref{sec:eff} 节的 associative recall）与每 token 字节数之间，帕累托前沿在哪里？
+\textbf{(1) 长上下文的访存墙。}上下文从 8K 走向百万级以后，KV cache 成了 decode 中最主要的字节来源，Llama-3-8B 在 128K 时单条序列就要 16~GiB。
+现有的路线有结构压缩（GQA/MLA~\cite{ainslie2023gqa,deepseekai2024v2}）、KV 量化、序列并行~\cite{liu2023ring,jacobs2023deepspeed}，以及 attention-free 架构~\cite{gu2023mamba}。
+开放的问题是：在精确检索能力（第~\ref{sec:eff} 节的 associative recall）和每 token 字节数之间，帕累托前沿在哪里？
 
-\textbf{(2) 推理调度的理论。}continuous batching、chunked prefill、prefill/decode 分离~\cite{yu2022orca,agrawal2024sarathi,zhong2024distserve,patel2024splitwise}
-都是在 TTFT、TPOT 与吞吐之间做取舍，但大多以经验调参。把它们形式化为带 SLO 约束的排队问题，给出 goodput 的上界与可证明的调度策略，仍是空白较多的方向。
+\textbf{(2) 推理调度的理论。}continuous batching、chunked prefill 和 prefill/decode 分离~\cite{yu2022orca,agrawal2024sarathi,zhong2024distserve,patel2024splitwise}
+都是在 TTFT、TPOT 和吞吐之间做取舍，但大多靠经验调参。把它们形式化成带 SLO 约束的排队问题，给出 goodput 的上界和可以证明的调度策略，这个方向的空白还很多。
 
-\textbf{(3) 自动并行与代价模型。}Alpa~\cite{zheng2022alpa} 与 GSPMD~\cite{xu2021gspmd} 证明了自动搜索 3D 并行的可行性，但代价模型对通信重叠、显存碎片与故障的刻画仍很粗。
-第~\ref{sec:train} 节的解析式可以作为可微或可搜索的代价模型起点，关键问题是它与实测的偏差来源。
+\textbf{(3) 自动并行与代价模型。}Alpa~\cite{zheng2022alpa} 和 GSPMD~\cite{xu2021gspmd} 证明了自动搜索 3D 并行是可行的，但它们的代价模型对通信重叠、显存碎片和故障的刻画仍然很粗。
+第~\ref{sec:train} 节的解析式可以作为一个可微或可搜索的代价模型的起点，关键问题是弄清它和实测之间的偏差从哪里来。
 
-\textbf{(4) 低精度的边界。}FP8 训练~\cite{micikevicius2022fp8,deepseekai2024v3} 与 4 位推理~\cite{frantar2023gptq,lin2024awq} 已经实用，更低位宽（FP4、三值）受限于离群值与累加精度。
-系统侧的问题是：缩放因子的粒度（per-tensor、per-channel、per-block）在 kernel 效率与精度之间如何取舍？
+\textbf{(4) 低精度的边界。}FP8 训练~\cite{micikevicius2022fp8,deepseekai2024v3} 和 4 位推理~\cite{frantar2023gptq,lin2024awq} 已经进入实用，更低的位宽（FP4、三值）则受限于离群值和累加精度。
+系统一侧的问题是：缩放因子的粒度（per-tensor、per-channel、per-block）该怎样在 kernel 效率和精度之间取舍？
 
-\textbf{(5) 规模化的可靠性。}万卡训练的故障间隔以小时计~\cite{dubey2024llama3,jiang2024megascale}。异步 checkpoint、冗余副本、慢节点检测与静默数据损坏的发现都还是工程密集、
-理论稀疏的领域；把 Young 公式推广到「故障率随规模变化 + 恢复时间随 checkpoint 位置变化」是一个干净的建模问题。
+\textbf{(5) 规模化的可靠性。}万卡训练的故障间隔以小时计~\cite{dubey2024llama3,jiang2024megascale}。异步 checkpoint、冗余副本、慢节点检测和静默数据损坏的发现，目前都是工程投入多、理论很少的领域。
+把 Young 公式推广到「故障率随规模变化，恢复时间随 checkpoint 位置变化」的情形，是一个干净的建模问题。
 
-\textbf{(6) 编译器与硬件的协同。}Hopper 的 TMA 与 warp 特化~\cite{shah2024flashattention3}、Trainium 的 NKI~\cite{awsneuron} 都要求程序员显式地管理异步数据搬运。
-编译器能否自动生成 FlashAttention-3 级别的 kernel？Triton~\cite{tillet2019triton} 与 TVM/Ansor~\cite{chen2018tvm,zheng2020ansor} 给出了部分答案，但在异步流水线与跨 kernel 融合上仍依赖人工。
+\textbf{(6) 编译器与硬件的协同。}Hopper 的 TMA 和 warp 特化~\cite{shah2024flashattention3}、Trainium 的 NKI~\cite{awsneuron}，都要求程序员显式地管理异步数据搬运。
+编译器能不能自动生成 FlashAttention-3 这个水平的 kernel？Triton~\cite{tillet2019triton} 和 TVM/Ansor~\cite{chen2018tvm,zheng2020ansor} 给出了部分答案，但在异步流水线和跨 kernel 融合上仍然依赖人工。
 
 \begin{keypts}
 \begin{itemize}
-\item 面试中谈研究方向时，先说它对应计算、访存、通信的哪一项，再说代表工作，最后说你会做的第一个实验。
-\item 好的开放问题有清晰的度量（goodput、每 token 字节、MFU、有效训练时间）。
+\item 面试中谈研究方向时，先说它对应计算、访存、通信中的哪一项，再说代表性工作，最后说你会做的第一个实验。
+\item 好的开放问题都有清晰的度量，比如 goodput、每 token 字节数、MFU、有效训练时间。
 \end{itemize}
 \end{keypts}
 
 \begin{research}
 \begin{itemize}
-\item 选择上述任一方向，写一页研究提案：问题、为什么现在重要、可证伪的假设、最小实验、预期结果与风险。这是研究岗面试中最常见的「带回家」题型。
+\item 从上面任选一个方向，写一页研究提案：问题是什么，为什么现在重要，可证伪的假设，最小的实验，预期结果和风险。这是研究岗面试中最常见的「带回家」题型。
 \end{itemize}
 \end{research}

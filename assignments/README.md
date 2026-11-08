@@ -1,7 +1,9 @@
 # 官方作业
 
-这里放官方 starter code 的只读镜像，由 `scripts/sync-upstream.ps1` 克隆，来源和 commit 记在
-[UPSTREAM.md](../UPSTREAM.md)。不在这里改代码；个人实现都在 [solutions/](../solutions/README.md)。
+这里放官方 starter 的只读镜像，由 `scripts/sync-upstream.ps1` 克隆，来源和 commit 记在
+[UPSTREAM.md](../UPSTREAM.md)。题面以这里为准，我的解答在 [solutions/](../solutions/README.md)，两边不要混。对着题面先自己做一遍再看解答，不然很容易把我的实现当成唯一写法。
+
+下表把每个官方作业和对应的个人实现对上，方便从题目找到代码。
 
 | 课程 | 作业 | 官方题目 | 个人实现 |
 | --- | --- | --- | --- |
@@ -14,4 +16,4 @@
 | CS229S | Project 2 | KV cache 与推测解码 | [project2-kv-speculative](../solutions/cs229s/project2-kv-speculative/README.md) |
 | 15-849 | — | 论文课，无编程作业 | [cmu15849/](../solutions/cmu15849/) 三个论文复现 |
 
-2026-10-28 建仓时 github.com 不可达，镜像为空。
+2026-10-28 建仓时 github.com 访问不到，所以镜像目前是空的。

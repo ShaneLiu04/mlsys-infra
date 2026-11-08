@@ -1,62 +1,63 @@
 \section{集群、可靠性与数据}
 \label{sec:cluster}
 
-单个作业之上，还有三类问题决定了大模型训练的真实效率：多个作业如何共享集群（调度），万卡规模下故障如何不吞掉进度（可靠性），
-以及 GPU 是否在等数据（数据管线）。这一层是训练 infra 岗位的高级面试题来源。
+把单个作业的并行策略调好以后，大模型训练的真实效率还受三件事影响：多个作业怎样共享集群（调度），万卡规模下的故障怎样才不会吞掉训练进度（可靠性），
+以及 GPU 是不是在等数据（数据管线）。这一层是训练 infra 岗位高级面试题的主要来源。
 
 \subsection{深度学习集群调度}
 
-Jeon 等人对微软 Philly 集群的分析~\cite{jeon2019analysis} 揭示了 DL 作业的特点：分布式训练需要 gang scheduling（所有 worker 同时启动，否则空等），
-对拓扑局部性敏感（同一节点或同一交换机下），而局部性约束又导致排队时间变长；相当比例的作业因用户错误或故障失败。
-Gandiva~\cite{xiao2018gandiva} 利用 DL 作业的迭代性做时间片轮转、迁移与「自省」式的放置调整；Tiresias~\cite{gu2019tiresias} 在不知道作业时长的情况下，
-用「已获得服务量 = GPU 数 $\times$ 时间」的二维 LAS 策略降低平均完成时间；Pollux~\cite{qiao2021pollux} 注意到吞吐与统计效率都随 batch 变化，
-联合调整每个作业的 GPU 数与 batch size，以 goodput 为目标。
+深度学习作业和传统的批处理作业很不一样。Jeon 等人分析微软 Philly 集群~\cite{jeon2019analysis} 后发现：分布式训练需要 gang scheduling，即所有 worker 必须同时启动，否则先启动的只能空等；
+作业对拓扑局部性很敏感，最好放在同一节点或同一交换机下，而这种局部性约束又让排队时间变长；还有相当比例的作业因为用户错误或故障而失败。
+针对这些特点，Gandiva~\cite{xiao2018gandiva} 利用 DL 作业的迭代性做时间片轮转和迁移，并根据运行时的观察调整放置。Tiresias~\cite{gu2019tiresias} 在不知道作业时长的前提下，
+按「已获得的服务量 = GPU 数 $\times$ 时间」做二维 LAS（least attained service）调度，降低平均完成时间。
+Pollux~\cite{qiao2021pollux} 注意到吞吐和统计效率都会随 batch 变化，于是联合调整每个作业的 GPU 数和 batch size，以 goodput 为优化目标。
 
 \begin{qa}{深度学习集群调度和传统批处理调度有什么不同？}
-\ans 四点：（1）gang scheduling——分布式作业的所有 worker 必须同时拿到资源；（2）拓扑敏感——同节点/同交换机的放置直接影响 all-reduce 时间；
-（3）可抢占与弹性——作业可以依赖 checkpoint 暂停、迁移、伸缩；（4）吞吐与资源非线性——卡数加倍不一定吞吐加倍，batch 变大还会改变统计效率（Pollux）。
+\ans 主要有四点不同。第一是 gang scheduling：分布式作业的所有 worker 必须同时拿到资源。第二是拓扑敏感：放在同一节点或同一交换机下，会直接影响 all-reduce 的时间。
+第三是可抢占和弹性：作业可以依靠 checkpoint 暂停、迁移和伸缩。第四是吞吐与资源不成线性关系：卡数加倍不一定吞吐加倍，batch 变大还会改变统计效率（Pollux）。
 \wrong 「按 GPU 数量排队就行」。
 \end{qa}
 
 \subsection{大规模训练的故障与恢复}
 
-万卡训练中，故障是常态而非例外。Llama~3 报告在约 1.6 万张 H100 上的 54 天预训练快照中发生了 466 次作业中断，其中 419 次为非计划中断，
-约 78\% 归因于已确认的硬件问题（GPU 与主机组件），GPU 相关问题是最大类别；通过自动化恢复，有效训练时间仍超过 90\%~\cite{dubey2024llama3}。
-MegaScale~\cite{jiang2024megascale} 在 12,288 张 GPU 上把算法、通信重叠、算子与数据管线的优化与「深度可观测性」（细粒度监控、心跳、自动诊断与慢节点剔除）结合，
-达到 55.2\% 的 MFU。Gemini 技术报告~\cite{geminiteam2023gemini} 也讨论了大规模训练中的静默数据损坏（SDC）与快速恢复。
+到了万卡规模，故障就是常态。Llama~3 报告，在约 1.6 万张 H100 上的一段 54 天预训练中，作业共中断了 466 次，其中 419 次是非计划中断；
+约 78\% 归因于已确认的硬件问题（GPU 和主机组件），GPU 相关问题是最大的一类。靠自动化恢复，有效训练时间仍然超过了 90\%~\cite{dubey2024llama3}。
+MegaScale~\cite{jiang2024megascale} 在 12,288 张 GPU 上，把算法、通信重叠、算子和数据管线的优化，与「深度可观测性」（细粒度监控、心跳、自动诊断和慢节点剔除）结合起来，
+达到了 55.2\% 的 MFU。Gemini 技术报告~\cite{geminiteam2023gemini} 也讨论了大规模训练中的静默数据损坏（SDC）和快速恢复。
 
 \begin{est}{万卡训练多久坏一次？checkpoint 应该多久存一次？}
-设单卡年故障率 2\%，1 万张卡每年约 200 次，平均约 44 小时一次；加上网络、主机与软件故障，实际常为十几小时一次。
-70B 模型的完整 checkpoint（BF16 权重 + FP32 主权重与 Adam 状态）约 $16\times70.6\times10^9\approx1.1$~TB。
-Young 公式~\cite{young1974first} 给出最优间隔 $\tau\approx\sqrt{2\delta M}$，$\delta$ 为一次保存的开销、$M$ 为平均故障间隔：
-$\delta=30$~s、$M=12$~h 时 $\tau\approx\sqrt{2\times30\times43200}\approx1610$~s，约 27 分钟存一次；平均每次故障损失约 $\tau/2$ 加重启时间。
+设单卡的年故障率是 2\%，1 万张卡每年约坏 200 次，平均约 44 小时一次；再算上网络、主机和软件故障，实际往往是十几小时一次。
+70B 模型的完整 checkpoint（BF16 权重加 FP32 主权重和 Adam 状态）约为 $16\times70.6\times10^9\approx1.1$~TB。
+Young 公式~\cite{young1974first} 给出最优的保存间隔 $\tau\approx\sqrt{2\delta M}$，其中 $\delta$ 是一次保存的开销，$M$ 是平均故障间隔。
+取 $\delta=30$~s、$M=12$~h，$\tau\approx\sqrt{2\times30\times43200}\approx1610$~s，也就是约 27 分钟存一次；每次故障平均损失约 $\tau/2$，再加上重启的时间。
 \end{est}
 
-工程上的要点是把 $\delta$ 压小：异步 checkpoint 先把分片拷到主机内存（每卡几 GB，数秒），训练立即继续，后台再写分布式存储；
-每个 DP 组只需保存一份；CheckFreq~\cite{mohan2021checkfreq} 把快照与持久化流水化并自适应地调整频率。
-$\delta$ 越小，最优间隔越短，故障造成的平均损失也越小。
+从公式可以看出，工程上的关键是把 $\delta$ 压小。异步 checkpoint 先把分片拷到主机内存，每张卡几 GB，几秒就能完成，训练随即继续，再由后台写入分布式存储；
+每个 DP 组只需要保存一份；CheckFreq~\cite{mohan2021checkfreq} 则把快照和持久化组成流水线，并自适应地调整保存频率。
+$\delta$ 越小，最优间隔就越短，故障造成的平均损失也越小。
 
 \begin{qa}{checkpoint 间隔怎么定？为什么要异步？}
-\ans 间隔太短，保存开销占比高；太长，故障时丢失的进度多。最小化期望损失得到 Young 公式 $\tau\approx\sqrt{2\delta M}$。异步保存把 $\delta$ 从「写分布式存储的时间」
-降为「拷贝到主机内存的时间」，既降低开销，又允许更频繁地保存。还要考虑恢复时间：从内存副本（或相邻节点的冗余副本）恢复远快于从远端存储读取。
-\wrong 「每 N 步存一次就行」而不考虑故障率与保存开销；或同步写远端存储阻塞训练。
+\ans 间隔要在保存开销和故障损失之间平衡：间隔太短，保存开销占比高；太长，故障时丢的进度多。最小化期望损失，就得到 Young 公式 $\tau\approx\sqrt{2\delta M}$。
+异步保存把 $\delta$ 从「写分布式存储的时间」降成「拷贝到主机内存的时间」，既降低了开销，又允许存得更频繁。恢复时间也要考虑：从内存副本（或相邻节点上的冗余副本）恢复，比从远端存储读取快得多。
+\wrong 「每 N 步存一次就行」，不考虑故障率和保存开销；或者同步写远端存储，把训练阻塞住。
 \end{qa}
 
 \begin{qa}{分布式训练挂住了，你怎么查？}
-\ans 挂住几乎总是集合通信不匹配：某个 rank 少调或多调了一次 collective，或调用顺序不同。步骤：打开 \texttt{NCCL\_DEBUG=INFO} 与异步错误处理并设合理超时，让挂住变成报错；
-用 \texttt{py-spy dump} 看每个 rank 停在哪一行，停在不同 collective 上即是顺序不一致；常见根因是只在 rank 0 执行的分支里调了 collective、变长输入导致某个 rank 多跑一轮、
-部分参数在某些 rank 上没有梯度。若只是变慢，先用 \texttt{nccl-tests} 测 bus bandwidth 并与式~\eqref{eq:ring} 的理论值比较，再查拓扑（是否走了 PCIe）与 IB 配置。
-\wrong 「重启一下」或「加大超时」而不定位哪个 rank 不一致。
+\ans 挂住几乎总是因为集合通信对不上：某个 rank 少调或多调了一次 collective，或者各 rank 的调用顺序不同。我会这样查。先打开 \texttt{NCCL\_DEBUG=INFO} 和异步错误处理，并设一个合理的超时，
+让「挂住」变成「报错」。再用 \texttt{py-spy dump} 看每个 rank 停在哪一行，如果停在不同的 collective 上，就是顺序不一致。常见的根因有：只在 rank 0 执行的分支里调用了 collective；
+输入长度不同，导致某个 rank 多跑了一轮；部分参数在某些 rank 上没有梯度。如果只是变慢而不是挂住，就先用 \texttt{nccl-tests} 测 bus bandwidth，与式~\eqref{eq:ring} 的理论值比较，
+再检查拓扑（是不是走了 PCIe）和 IB 的配置。
+\wrong 「重启一下」或「把超时调大」，却不去定位是哪个 rank 不一致。
 \end{qa}
 
 \subsection{性能排查的顺序}
 
-训练或推理变慢时，面试官要的是\emph{排查顺序}与\emph{能区分假设的那一个观测}。表~\ref{tab:debug} 给出了一个可复述的对照表：先用 roofline 算上界
-（实测在上界 1.2 倍以内就不要再优化 kernel），再看时间线上的空洞，再看单个 kernel 的 DRAM 与 SM 吞吐，最后才调超参，每次只动一个变量。
+训练或推理变慢时，面试官想听的是\emph{排查的顺序}，以及\emph{能区分不同假设的那个观测}。一个可以复述的顺序是：先用 roofline 算出上界，实测如果已经在上界的 1.2 倍以内，就别再优化 kernel 了；
+再看时间线上有没有空洞；然后看单个 kernel 的 DRAM 和 SM 吞吐；最后才调超参，而且每次只动一个变量。表~\ref{tab:debug} 把常见的时间线症状和对应的原因、区分方法列在一起。
 
 \begin{table}[!t]
 \centering
-\caption{时间线症状、最可能原因与区分性观测}
+\caption{时间线症状、最可能的原因与区分性观测}
 \label{tab:debug}
 \footnotesize
 \begin{tabularx}{\columnwidth}{@{}L{2.2cm} L{2.4cm} Y@{}}
@@ -74,34 +75,35 @@ kernel 间大量小空洞 & CPU 发射开销、小 kernel 过多 & 空洞宽度�
 \end{table}
 
 \begin{qa}{MFU 只有 25\%，你怎么查？}
-\ans 先算账：模型 FLOPs 用 $6N$ 加 attention 项估计，确认 MFU 的分母（稠密峰值，不含稀疏）。然后看 profile：通信是否暴露（未重叠的 all-reduce/all-gather）、
-流水线气泡是否过大（$m<4p$）、dataloader 是否造成步首空白、逐元素 kernel 是否未融合、micro-batch 是否太小导致 GEMM 不饱和、是否开了全量重计算（HFU 高而 MFU 低）。
-按占比从大到小处理，每次只改一个因素并重新测。
-\wrong 直接去手写 kernel，或者只报 HFU。
+\ans 先算账，再看 profile。算账是指用 $6N$ 加上 attention 项估计模型 FLOPs，并确认 MFU 的分母用的是稠密峰值，不含稀疏。然后按占比从大到小逐项排查：通信有没有暴露（没有和计算重叠的 all-reduce 或 all-gather）；
+流水线气泡是不是太大（$m<4p$）；dataloader 有没有造成每步开头的空白；逐元素 kernel 有没有融合；micro-batch 是不是太小，GEMM 吃不满；是不是开了全量重计算（这时 HFU 高而 MFU 低）。
+每次只改一个因素，改完重新测。
+\wrong 一上来就去手写 kernel，或者只报 HFU。
 \end{qa}
 
 \subsection{数据管线}
 
-Mohan 等人~\cite{mohan2021analyzing} 发现，许多训练作业的时间有相当一部分是「数据停顿」（data stall）：数据读取与预处理跟不上 GPU。
-tf.data~\cite{murray2021tfdata} 用流水化、并行 map 与自动调优缓解这一问题。LLM 预训练的数据管线以离线预分词、内存映射的二进制分片与按长度打包（packing）为主，
-在线开销较小，但多模态（图像/视频解码）与 RL（rollout 生成）场景又把数据侧推回了关键路径。Spark 的 RDD~\cite{zaharia2012resilient} 以 lineage 重算实现容错，
-是大规模离线数据处理的基础；参数服务器~\cite{li2014scaling} 则在推荐场景中继续承担稀疏 embedding 的训练。把这两者与 all-reduce 对照讲，
-是 CS149 与 15-849 衔接最自然的一处：它们分别代表了数据并行原语在批处理、稀疏训练与稠密训练中的三种形态。
-另一个方向是用学习方法优化系统本身，例如用强化学习做设备放置~\cite{mirhoseini2017device}，它属于研究岗的加分项。
+最后一个容易被忽视的问题是：GPU 会不会在等数据？Mohan 等人~\cite{mohan2021analyzing} 发现，很多训练作业有相当一部分时间耗在「数据停顿」（data stall）上，也就是数据读取和预处理跟不上 GPU。
+tf.data~\cite{murray2021tfdata} 用流水化、并行 map 和自动调优来缓解这个问题。LLM 预训练的数据管线以离线预分词、内存映射的二进制分片和按长度打包（packing）为主，在线开销较小；
+但多模态（要解码图像和视频）和 RL（要生成 rollout）又把数据这一侧推回了关键路径。
+
+这里还有两个经典系统值得一提。Spark 的 RDD~\cite{zaharia2012resilient} 靠 lineage 重算实现容错，是大规模离线数据处理的基础；参数服务器~\cite{li2014scaling} 则在推荐场景中继续承担稀疏 embedding 的训练。
+把这两者和 all-reduce 对照着讲，是 CS149 和 15-849 之间最自然的衔接：它们分别代表了数据并行原语在批处理、稀疏训练和稠密训练中的三种形态。
+另一个方向是用学习的方法来优化系统本身，比如用强化学习做设备放置~\cite{mirhoseini2017device}，这对研究岗是加分项。
 
 \begin{keypts}
 \begin{itemize}
-\item DL 调度的特点：gang、拓扑敏感、可抢占与弹性、吞吐非线性（Gandiva、Tiresias、Pollux）。
-\item 万卡训练故障按小时计；Llama~3 的 54 天里 419 次非计划中断、约 78\% 为硬件问题。
-\item Young 公式 $\tau\approx\sqrt{2\delta M}$；异步、分片、先内存后落盘以压小 $\delta$。
-\item 排查顺序：roofline 上界 → 时间线空洞 → 单 kernel 吞吐 → 超参；挂住先查 collective 顺序。
+\item DL 调度的特点：gang、拓扑敏感、可抢占与弹性、吞吐与资源非线性（Gandiva、Tiresias、Pollux）。
+\item 万卡训练的故障按小时计；Llama~3 的 54 天里有 419 次非计划中断，约 78\% 是硬件问题。
+\item Young 公式 $\tau\approx\sqrt{2\delta M}$；用异步、分片、先写内存再落盘来压小 $\delta$。
+\item 排查顺序：先算 roofline 上界，再看时间线空洞，然后看单 kernel 吞吐，最后调超参；训练挂住时先查 collective 的调用顺序。
 \end{itemize}
 \end{keypts}
 
 \begin{research}
 \begin{itemize}
-\item 静默数据损坏（SDC）在万卡规模下如何检测？一个可做的设计是周期性地在不同 rank 上重复计算同一个小批次并比较梯度哈希，
-需要量化其开销与检出率的权衡。
+\item 静默数据损坏（SDC）在万卡规模下怎样检测？一个可做的设计是周期性地让不同的 rank 重复计算同一个小批次，并比较梯度的哈希；
+需要量化它的开销和检出率之间的权衡。
 \item 用本文的事件模拟器研究「慢节点」对同步训练的影响：一个 rank 慢 10\% 时，DP、PP、TP 各自的整体吞吐下降多少？
 哪种并行方式对尾部延迟最敏感？
 \end{itemize}

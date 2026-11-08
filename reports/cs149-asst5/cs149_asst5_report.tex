@@ -11,20 +11,23 @@
 \maketitle
 
 \begin{abstract}
-本文完成 Stanford CS149（Fall 2024）加分作业 Assignment 5 ``Big Graph Processing in OpenMP''：
-在同一份 CSR 图上实现串行 BFS、三种同步方式的自顶向下（top-down）并行 BFS、自底向上（bottom-up）BFS，
+本文完成 Stanford CS149（Fall 2024）的加分作业 Assignment 5 ``Big Graph Processing in OpenMP''。
+BFS 每一层的工作量差别极大，作业真正要回答的是：怎样让并行版本在每一层都做便宜的那一种？
+为此我们在同一份 CSR 图上实现了串行 BFS、三种同步方式的自顶向下（top-down）并行 BFS、自底向上（bottom-up）BFS，
 以及按 Beamer、Asanovic 与 Patterson（SC 2012）的工作量估计在两者之间切换的 hybrid。
-作为面试补充，在同一张 RMAT 图上比较了 PageRank 的 pull 与带原子加的 push。
+作为面试补充，还在同一张 RMAT 图上比较了 PageRank 的 pull 与带原子加的 push。
 所有 BFS 变体与串行队列 BFS 的距离数组逐元素相等；pull 与 push 的 PageRank 向量 $\ell_1$ 差在 $10^{-15}$ 量级，质量和为 1。
 平台是本机 4 物理核 / 8 逻辑核（无 GPU），计时取 3 次的最小值。
-主要结论：(1) RMAT（$2^{20}$ 顶点、约 $8.2\times 10^6$ 边）上 hybrid 在 8 线程达到 6.58 倍，检查的边只有 top-down 的 9.1\%；
-(2) 切换发生在 frontier 膨胀的两层，收缩后立刻切回 top-down，因为 bottom-up 要扫过全部未访问顶点；
-(3) 把下一层 frontier 收到各线程私有数组里，比共享下标的原子加在 4 线程上快 1.90 倍，而且后者几乎不随线程扩展；
-(4) 网格和链的 frontier 每层只有几十到几百个顶点、层数却有几百到两万，OpenMP 的并行区开销让 4 线程比串行慢两个数量级；
-(5) PageRank 的 pull 在 8 线程上 7.03 倍，push 只有 4.22 倍，而且 8 线程的 push 仍慢于 1 线程的 pull；
-(6) 把 RMAT 从 $2^{16}$ 放大到 $2^{23}$ 顶点（6\,619 万边），hybrid 的 8 线程加速从 1.33 倍涨到 12.2 倍：串行每条边的代价从 2.6\,ns 涨到 10.0\,ns，而层级形状几乎不随规模变；
-(7) 按边区间切分 frontier 解决了星图枢纽的负载不均，却没有让它超过串行，瓶颈是每个顶点的认领与 frontier 物化成本；
-(8) 三个不同种子的 RMAT 图、每组 7 次重复，hybrid 8 线程的中位加速在 6.56--6.94 倍之间，复现了 (1)。
+
+在 RMAT（$2^{20}$ 顶点、约 $8.2\times 10^6$ 边）上，hybrid 在 8 线程达到 6.58 倍，检查的边只有 top-down 的 9.1\%。
+它只在 frontier 膨胀的两层切到 bottom-up，frontier 一收缩就切回 top-down，因为 bottom-up 每层都要扫过全部未访问顶点。
+同步方面，把下一层 frontier 收到各线程私有数组里，比共享下标的原子加在 4 线程上快 1.90 倍，后者几乎不随线程扩展。
+网格和链是反例：frontier 每层只有几十到几百个顶点，层数却有几百到两万，OpenMP 的并行区开销让 4 线程比串行慢两个数量级。
+PageRank 的 pull 在 8 线程上 7.03 倍，push 只有 4.22 倍，而且 8 线程的 push 仍慢于 1 线程的 pull。
+
+扩展实验回答了三个追问。把 RMAT 从 $2^{16}$ 放大到 $2^{23}$ 顶点（6\,619 万边），hybrid 的 8 线程加速从 1.33 倍涨到 12.2 倍：串行每条边的代价从 2.6\,ns 涨到 10.0\,ns，而层级形状几乎不随规模变。
+按边区间切分 frontier 消除了星图枢纽的负载不均，却没有让它超过串行，瓶颈是每个顶点的认领与 frontier 物化成本。
+换三个种子生成 RMAT 图、每组重复 7 次，hybrid 8 线程的中位加速在 6.56--6.94 倍之间，复现了 6.58 倍的主结果。
 \end{abstract}
 
 \tableofcontents
@@ -90,8 +93,8 @@ write-up 的四个问题 & 同步在哪、如何少同步、切换规则、为�
 \section{一层 frontier 的工作量}
 \label{sec:levels}
 
-BFS 的并行单位不是``整张图''，而是\textbf{每一层}。一层的 top-down 工作量正比于 frontier 的出边数，
-bottom-up 的工作量正比于``还没访问的顶点还要向上看多少条入边''，而且一条入边命中就可以停。
+动手写并行代码之前，先要弄清工作量落在哪里。BFS 的并行单位是\emph{每一层}，而不是整张图：层与层之间有依赖，只有同一层内部可以并行。
+一层的 top-down 工作量正比于 frontier 的出边数；bottom-up 的工作量正比于``还没访问的顶点要向上看多少条入边''，而且一条入边命中就可以停。
 \cref{fig:levels} 把这两种成本和它们的墙钟时间画在一起。
 
 \begin{figure}[H]
@@ -101,7 +104,7 @@ bottom-up 的工作量正比于``还没访问的顶点还要向上看多少条�
 \label{fig:levels}
 \end{figure}
 
-RMAT 只有 6 层，工作量极不均匀（表~\ref{tab:levels}）：
+先看 RMAT。它只有 6 层，各层的工作量极不均匀（表~\ref{tab:levels}）：
 
 \begin{table}[H]
 \centering
@@ -134,21 +137,21 @@ top-down 总检查边数就是 $m=261\,120$；bottom-up 检查了 $6.64\times 10
 右下角每层只有约 0.05\,ms，已经接近计时噪声，所以那张曲线只能看趋势：bottom-up 每层都更慢，没有一层值得切换。
 
 \begin{findingbox}[：层级]
-方向选择是按层做的，不是按图做的。RMAT 上值得用 bottom-up 的只有 frontier 最大的两层；
-网格的每一层都是 top-down 更便宜。hybrid 的价值就是把这个判断做成运行时的比较，而不是事先写死。
+方向选择是按层做的，不是按图做的：RMAT 上值得用 bottom-up 的只有 frontier 最大的两层，网格的每一层都是 top-down 更便宜。
+hybrid 的价值就是把这个判断放到运行时去做，而不是事先写死。
 \end{findingbox}
 
 \section{Part 1：top-down 与同步}
 \label{sec:td}
 
 top-down 的一步是：对 frontier 里的每个 $u$，看它的每条出边 $u\to v$；若 $v$ 还没访问，则把距离写成 $\mathrm{level}+1$ 并放进下一层。
-两个线程可能同时看到同一个 $v$。官方提示要求用 \texttt{\_\_sync\_bool\_compare\_and\_swap}，并问``什么时候可以不 CAS''。
+问题在于两个线程可能同时看到同一个 $v$，于是同一个顶点被认领两次、放进下一层两次。官方提示要求用 \texttt{\_\_sync\_bool\_compare\_and\_swap}（CAS，比较并交换），并问``什么时候可以不 CAS''。
 
-本文的 \texttt{local} 版本做了两件事：
+本文的 \texttt{local} 版本在此基础上做了两件事：
 
 \begin{enumerate}
 \item 先读 \texttt{dist[v]}。已经非负就直接跳过，不再 CAS。这个读是良性的：读到旧值只会多做一次必然失败的 CAS，读到新值说明别人已经认领。x86 上对齐的 \texttt{int} 读是原子的。
-\item CAS 成功的线程把 $v$ 放进\textbf{自己的}下一层数组，层结束再串行拼起来。拼数组的成本是 $O(|\text{frontier}|)$，相对扫边可以忽略。
+\item CAS 成功的线程把 $v$ 放进\emph{自己的}下一层数组，层结束再串行拼起来。拼数组的成本是 $O(|\text{frontier}|)$，相对扫边可以忽略。
 \end{enumerate}
 
 对照版本 \texttt{atomic} 在 CAS 成功后用 \texttt{\_\_sync\_fetch\_and\_add} 抢一个共享下标，写入共享数组。
@@ -161,24 +164,24 @@ top-down 的一步是：对 frontier 里的每个 $u$，看它的每条出边 $u
 \label{fig:sync}
 \end{figure}
 
-RMAT、4 线程：\texttt{local} 19.37\,ms，\texttt{atomic} 36.90\,ms，串行 49.18\,ms。
-共享下标让每次成功的认领都去碰同一条缓存行，4 线程只比串行快 1.33 倍，8 线程也只有 33.83\,ms（1.45 倍）。
-私有 frontier 把原子操作收成``每个顶点最多一次 CAS''，8 线程到 12.93\,ms（3.80 倍）。
+在 RMAT、4 线程下，\texttt{local} 19.37\,ms，\texttt{atomic} 36.90\,ms，串行 49.18\,ms。
+共享下标让每次成功的认领都去碰同一条缓存行，所以 4 线程只比串行快 1.33 倍，8 线程也只有 33.83\,ms（1.45 倍）。
+私有 frontier 把原子操作收成``每个顶点最多一次 CAS''，8 线程能到 12.93\,ms（3.80 倍）。
 
-链上的比较说明另一件事。frontier 每层只有 1 个顶点，critical 区里几乎没有争用，4 线程 critical 是 688\,ms，
-\texttt{local} 反而是 1300\,ms，二者都远慢于串行的 1.96\,ms。
-这里的成本不是锁，而是 \textbf{20\,000 次 OpenMP 并行区的创建}。critical 在这个图上``赢''，不能理解成 critical 是好的同步方式。
+链上的比较说明的是另一件事。frontier 每层只有 1 个顶点，critical 区里几乎没有争用；4 线程 critical 是 688\,ms，
+\texttt{local} 反而是 1300\,ms，两者都远慢于串行的 1.96\,ms。
+这里的成本不在锁上，而在 20\,000 次 OpenMP 并行区的创建。所以 critical 在这张图上``赢''了，并不说明 critical 是好的同步方式。
 
 \begin{findingbox}[：同步]
-top-down 需要原子性的只有``距离从 $-1$ 改成层号''这一下，用 CAS 即可；下一层 frontier 不要用共享下标收集。
-先读再 CAS，是因为 RMAT 第 1、2 层的出边大多指向已经访问过的顶点（表~\ref{tab:levels}：400 万条边只产生 33.8 万个新顶点），
-失败的 CAS 比一次普通读贵。
+top-down 只有``距离从 $-1$ 改成层号''这一下需要原子性，用 CAS 即可；下一层 frontier 不要用共享下标收集。
+CAS 之前先读一次距离，因为 RMAT 第 1、2 层的出边大多指向已访问的顶点（表~\ref{tab:levels}：400 万条边只产生 33.8 万个新顶点），而失败的 CAS 比一次普通读贵。
 \end{findingbox}
 
 \section{Part 2：bottom-up 为什么可以不原子}
 \label{sec:bu}
 
-bottom-up 的一步换成：对每个还没访问的 $v$，沿入边找，若某个邻居在当前 frontier 上，就把 $v$ 放进下一层并停止。
+top-down 的同步成本来自多个线程抢同一个顶点。如果换个方向，让每个顶点自己去找父节点，这种争抢就不存在了。
+bottom-up 的一步是：对每个还没访问的 $v$ 沿入边找，若某个邻居在当前 frontier 上，就把 $v$ 放进下一层并停止。
 外层循环按顶点编号划分，每个 $v$ 只属于一个线程，\texttt{dist[v]} 的写入没有竞争。
 frontier 成员用一个 \texttt{char} 数组表示，层与层之间单线程重建。这就是作业问的``同步需求有何不同''：
 top-down 的写冲突在顶点上，bottom-up 把写冲突设计掉了。
@@ -194,7 +197,7 @@ ER 上反过来：bottom-up 检查 $3.94\times 10^7$ 条，是 top-down 的 9.6 
 \label{fig:examined}
 \end{figure}
 
-调度：RMAT 的入度差很大，\texttt{schedule(dynamic, 1024)} 在 8 线程上是 9.36\,ms，\texttt{schedule(static)} 是 12.69\,ms（\cref{fig:sched}）。
+最后看 OpenMP 调度。RMAT 的入度差很大，\texttt{schedule(dynamic, 1024)} 在 8 线程上是 9.36\,ms，\texttt{schedule(static)} 是 12.69\,ms（\cref{fig:sched}）。
 差距只有 1.36 倍，因为早停把大度数顶点的工作也削平了；不是 A1 那种差几倍的负载不均。网格上 dynamic 没有帮助，每层工作量本来就差不多，动态调度只多一次分发。
 
 \begin{figure}[H]
@@ -207,7 +210,8 @@ ER 上反过来：bottom-up 检查 $3.94\times 10^7$ 条，是 top-down 的 9.6 
 \section{Part 3：hybrid}
 \label{sec:hy}
 
-Beamer 等人~\cite{beamer} 的切换条件是比较两种方向的估计边数，而不是比较 frontier 的顶点数。本文用
+前两节说明两种方向各有擅长的层，剩下的问题是：程序运行时怎么知道当前这一层该用哪种？
+Beamer 等人~\cite{beamer} 的做法是比较两种方向的估计边数，而不是比较 frontier 的顶点数。本文用
 \begin{equation}
 E_{\mathrm{td}} = \sum_{u\in F} \mathrm{outdeg}(u), \qquad
 E_{\mathrm{bu}} = \frac{n_{\mathrm{unvisited}}}{\alpha}\cdot \frac{m}{n},
@@ -275,7 +279,8 @@ hybrid 快，是因为它在第 0 层拒绝了 bottom-up、在第 3 层拒绝了
 \section{什么图不该并行}
 \label{sec:bad}
 
-\cref{fig:which} 和\cref{fig:speedup} 把五种图放在一起。加速比相对各自的串行实现，4 线程或 1--8 线程。
+到目前为止，主角都是 RMAT 这种``大而乱''的图。但并行并不总是划算，这一节看它在哪些图上会亏。
+\cref{fig:which} 和\cref{fig:speedup} 把五种图放在一起，加速比都相对各自的串行实现，前者是 4 线程，后者是 1--8 线程。
 
 \begin{figure}[H]
 \centering
@@ -314,7 +319,7 @@ ER & 74.32 & 32.59（2.28） & 51.67（1.44） & 27.07（2.75） & 19.91 & 3.73 
 串行网格 0.566\,ms 能做完，是因为它的内层就是几条紧挨着的出边，没有运行时。
 
 星图说明 top-down 的并行粒度。扩展只发生在第 0 层，frontier 里只有顶点 0，它有 209 万条出边。
-本文的并行循环划的是 frontier 的\textbf{顶点}，于是这一层只有一个迭代，其余线程空转，4 线程 top-down（32.6\,ms）比串行（10.2\,ms）还慢。
+本文的并行循环划的是 frontier 的\emph{顶点}，于是这一层只有一个迭代，其余线程空转，4 线程 top-down（32.6\,ms）比串行（10.2\,ms）还慢。
 bottom-up 把循环放在 209 万个顶点上，4 线程 15.8\,ms，是这张图上最好的并行版本，但仍然没有超过串行：
 每个顶点只看一条入边，算下来每个顶点不到 10\,ns 的工作，线程分发已经比工作贵。
 直觉上的修法是把并行粒度改成``顶点 0 的边区间''，而不是``frontier 里的顶点''。第~\ref{sec:extra}~节实现并测了这个修法：
@@ -328,13 +333,13 @@ bottom-up 把循环放在 209 万个顶点上，4 线程 15.8\,ms，是这张图
 而 BFS 的内层在追指针，带宽和延迟都已经紧，超线程填不满。剩下的缺口来自四件事，都能量到：
 
 \begin{enumerate}
-\item \textbf{层间是串行的}。6 层里第 4、5 层合计不到 0.3\,ms，但第 0 层只有 1 个顶点，并行度为 1。Amdahl 限制就在这两头。
-\item \textbf{第 2 层的顶点度数差几个数量级}。dynamic 调度把差距压到 1.36 倍（第~\ref{sec:bu}~节），没有消除。
-\item \textbf{CAS 和随机 CSR}。top-down 的出边指向随机顶点，8.03M 次随机读落在远大于 L3 的数组上。这是带宽问题，不是线程数问题。
-\item \textbf{表示转换}。hybrid 在进入 bottom-up 前要把 frontier 写成 \texttt{char} 数组，离开时再写回。RMAT 上这一层有 33.8 万个顶点，转换本身不是主项，但星图上 hybrid 比纯 bottom-up 慢（39.1 对 15.8\,ms），多出来的就是两套表示。
+\item 层与层之间是串行的。6 层里第 4、5 层合计不到 0.3\,ms，但第 0 层只有 1 个顶点，并行度为 1。Amdahl 限制就在这两头。
+\item 第 2 层的顶点度数相差几个数量级。dynamic 调度把差距压到 1.36 倍（第~\ref{sec:bu}~节），但没有消除。
+\item CAS 和随机 CSR 访问。top-down 的出边指向随机顶点，8.03M 次随机读落在远大于 L3 的数组上。这是带宽问题，加线程解决不了。
+\item 表示转换。hybrid 在进入 bottom-up 前要把 frontier 写成 \texttt{char} 数组，离开时再写回。RMAT 上这一层有 33.8 万个顶点，转换本身不是主项；但星图上 hybrid 比纯 bottom-up 慢（39.1 对 15.8\,ms），多出来的就是维护两套表示的成本。
 \end{enumerate}
 
-所以``做不到线性''不是一句负载不均就能打发的。4 核上它基本是线性的；再往上，先撞上的是 SMT 和随机访存，不是调度。
+所以``做不到线性''不能用一句负载不均打发。4 核以内它基本是线性的；再往上，先撞上的是 SMT 和随机访存，而不是调度。
 这些数字都来自 $2^{20}$ 顶点的图。下一节把图放大 8 倍，加速比会继续涨，说明上面的``缺口''有一部分是小图特有的。
 
 \section{扩展实验：规模、边区间切分与重复性}
@@ -379,7 +384,7 @@ scale & $m$ & 串行 & top-down & bottom-up & hybrid & hybrid 加速 & 串行 ns
 \end{tabular}
 \end{table}
 
-三件事。第一，hybrid 的加速比随规模单调上升，$2^{23}$ 时 12.2 倍，超过 8 个逻辑线程。超线性不是并行的功劳：
+从表中能读出三点。第一，hybrid 的加速比随规模单调上升，$2^{23}$ 时 12.2 倍，超过 8 个逻辑线程。超线性不是并行的功劳：
 hybrid 只检查 8.7\% 的边，算法本身就省了一大截（$2^{20}$ 时 1 线程 hybrid 已比串行快 2.4 倍，表~\ref{tab:rmatall}）。
 真正衡量并行的是做同样工作量的 top-down：它的 8 线程加速从 $2^{16}$ 的 1.02 倍涨到 $2^{23}$ 的 4.78 倍。
 
@@ -416,7 +421,7 @@ $2^{23}$ 时距离数组 32\,MB、出边数组 260\,MB，每次 \texttt{dist[v]}
 
 星图上，按顶点切分的 \texttt{local} 从 1 到 8 线程都在 33--35\,ms，没有任何扩展，与第~\ref{sec:bad}~节的判断一致。
 按边切分后 4 线程降到 28.3\,ms，\texttt{hybrid\_edges} 8 线程 27.1\,ms，负载不均确实被消除了，但离串行的 10.4\,ms 还很远。
-关键在 1 线程这一列：\texttt{local} 34.3\,ms、\texttt{edges} 35.1\,ms，都是串行的 3.3 倍左右。
+原因要看 1 线程这一列：\texttt{local} 34.3\,ms、\texttt{edges} 35.1\,ms，都是串行的 3.3 倍左右。
 同样的 209 万次认领，串行是一次普通写加一次 \texttt{push\_back}，并行版本是一次带 \texttt{lock} 前缀的 CAS、写进线程私有数组，
 层结束再把私有数组拼成下一层，下一层再把 209 万个出度为 0 的顶点扫一遍。每个顶点多出来的约 11\,ns（(34.3$-$10.4)\,ms / 209 万）是表示和同步的固定成本，
 4 个核分摊之后仍然比串行贵。星图的正确答案不是``切得更匀''，而是``这张图没有值得并行的工作''。
@@ -447,15 +452,14 @@ RMAT 和 ER 上，按边切分没有收益：RMAT 8 线程 13.12 对 13.31\,ms�
 \cref{fig:edges} 里 ER 的 hybrid 4 线程有一次 130\,ms 的离群值（其余 4 次 28.1--29.2\,ms），这正是只报最小值会掩盖、而中位数加范围能暴露的情况。
 
 \begin{findingbox}[：扩展实验]
-规模越大，BFS 越值得并行：串行在大图上被 DRAM 延迟拖慢，多线程能同时挂起多个缺失。层级形状与规模无关，所以 Beamer 的阈值不必重调。
-星图的问题不是负载不均，而是每个顶点的工作太少：把枢纽按边切开以后各线程分得很匀，但每个顶点的认领和物化成本仍然让它慢于串行。
-6.58 倍在三个种子、7 次重复下复现。
+图越大，BFS 越值得并行，因为串行在大图上被 DRAM 延迟拖慢，而多线程能同时挂起多个缺失；层级形状与规模无关，Beamer 的阈值不必重调，6.58 倍也在三个种子、7 次重复下复现。
+星图慢的原因是每个顶点的工作太少：把枢纽按边切开后各线程分得很匀，认领和物化的成本仍让它慢于串行。
 \end{findingbox}
 
 \section{PageRank：pull 与 push}
 \label{sec:pr}
 
-往年的同一份作业还有 PageRank~\cite{pagerank}。迭代是
+BFS 里看到的同步问题（多个线程往同一个位置写）在别的图算法里也会出现。往年的同一份作业还有 PageRank~\cite{pagerank}，正好用来检验这一点。迭代是
 \begin{equation}
 r'(v) = \frac{1-d}{n} + d\sum_{u\to v}\frac{r(u)}{\mathrm{outdeg}(u)} + d\cdot\frac{1}{n}\sum_{u:\mathrm{outdeg}(u)=0} r(u),
 \label{eq:pr}
@@ -478,14 +482,15 @@ push 是 734、434、256、174\,ms，8 线程只有 4.22 倍，而且 174\,ms �
 这和 top-down 的共享下标是同一个现象，只是 PageRank 每一轮都发生，没有``只在认领时发生一次''的缓解。
 
 \begin{findingbox}[：聚合方向]
-图计算里``沿边推''还是``沿边拉''，首先是同步问题，其次才是访存问题。
-出边散射需要原子加或分线程缓冲区；入边聚集可以让每个顶点只写自己的槽。
-度数倾斜越大，这个差别越大。GNN 的消息传递如果按源节点并行写邻居的邮箱，遇到的就是这里的 push。
-GraphMat~\cite{graphmat} 把顶点程序映射成稀疏矩阵--向量乘，本质上也是选择按行（pull）还是按列（push）遍历。
+图计算里``沿边推''还是``沿边拉''，首先是同步问题，其次才是访存问题：入边聚集可以让每个顶点只写自己的槽，出边散射则需要原子加或分线程缓冲区，度数越倾斜，差别越大。
 \end{findingbox}
+
+这个选择在别处也会遇到。GNN 的消息传递如果按源节点并行写邻居的邮箱，遇到的就是这里的 push。
+GraphMat~\cite{graphmat} 把顶点程序映射成稀疏矩阵--向量乘，同样要选择按行（pull）还是按列（push）遍历。
 
 \section{和 A1、A2 的关系}
 
+这份作业的结论能和前两次作业对上，放在一起看更容易记住。
 A1 的结论是墙钟由最重的那一份决定，动态划分同时解决工作量不均和慢核。
 BFS 的每一层都是一次 A1：RMAT 第 2 层是重的那一份，网格的 511 层每一份都太轻，动态划分救不了。
 A2 的结论是自旋线程池的启动大约 1\,\textmu s、睡眠池大约 10\,\textmu s，空任务不值得单独一次 launch。

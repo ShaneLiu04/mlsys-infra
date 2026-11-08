@@ -254,22 +254,22 @@ FlashAttention 的 T=8192 与 T=32768 两个点分开报，并把推测解码放
 ## 报告索引
 
 10 份实验报告中文主体、保留英文术语，含方法、全部实验图的逐张解读、与理论模型的对照、面试追问（带常见错答）、
-20 秒讲法、STAR 故事和局限；1 份 34 页综述给出 57 个面试追问框和 16 个白板估算框。
+20 秒讲法、STAR 故事和局限；1 份 36 页综述给出 57 个面试追问框和 16 个白板估算框。
 综述的 131 篇参考文献逐条核对过标题、年份与出处。
 
 | 课程 | 报告 | 页数 | 代表性结果 |
 | --- | --- | ---: | --- |
-| 综述 | [面试知识综述（CCF-A 格式）](reports/survey/survey.pdf) | 34 | 131 篇参考文献，57 个面试追问框，16 个白板估算框 |
-| CS149 | [A1 多核、SIMD、带宽与 GPU](reports/cs149-asst1/cs149_asst1_report.pdf) | 21 | 12 核连续块 5.89× / 动态 11.1×；AVX-512 双向量交错 18.3×；sqrt 每 8 个混 1 个慢的，AVX2 0.72×；saxpy 过 PCIe 只剩 52 GB/s |
-| CS149 | [A2 任务系统（C++）](reports/cs149-asst2/cs149_asst2_report.pdf) | 22 | spin 0.78 µs、sleep 10.8 µs、spawn 53.3 µs；空闲 spin 烧 11.96 核；2× 超订时带锁 spin 慢 766×；false sharing 19× |
-| CS149 | [A3 CUDA scan 与渲染器](reports/cs149-asst3/cs149_asst3_report.pdf) | 23 | saxpy kernel 1578 GB/s、端到端 53.8 GB/s；scan 2²⁸ 16.75→2.82→1.41 ms；rand1M 渲染 844→0.538 ms |
-| CS149 | [A4 GEMM、卷积与 roofline](reports/cs149-asst4/cs149_asst4_report.pdf) | 24 | SGEMM 0.94→49.4 TFLOP/s（5090，cuBLAS 78%）；6000D 228.7 burst 对 141–145 sustained；WMMA fp16 177.8（86%） |
-| CS149 | [A5 大图 BFS](reports/cs149-asst5/cs149_asst5_report.pdf) | 18 | RMAT hybrid 8 线程 6.58×（三个种子 6.56–6.94×），检查的边只有 top-down 的 9.1%；scale 16→23 加速比 1.33×→12.2× |
-| CS229S | [P1 FlashAttention 与训练](reports/cs229s-project1/cs229s_project1_report.pdf) | 23 | FA 214.9@8192、224.5@32768（FA2 217.9）；反向 FA2 的 80%；GPT-2 small bf16 MFU 0.447 |
-| CS229S | [P2 KV cache 与推测解码](reports/cs229s-project2/cs229s_project2_report.pdf) | 20 | gpt2-xl decode 20.6→4.22 ms（KV + CUDA graph）；推测解码贪心 1.63×、采样 1.45×；三卡 1.63/1.63/1.66 |
-| 15-849 | [编译与压缩](reports/cmu15849-compiler-compression/compiler_compression_report.pdf) | 26 | RMSNorm 9.86×；W3 RTN 65.9→GPTQ 37.2；Qwen2.5-7B W8A8 逐张量 +109%、LLM.int8 +0.27%、W3 GPTQ +15%；2:4 1.54× |
-| 15-849 | [分布式训练](reports/cmu15849-distributed-training/distributed_training_report.pdf) | 22 | 16 B/参数实测 16.00–16.32；激活模型误差 ≤1.3%；774M bf16 MFU 70.2%；全量重计算 +18.9% 时间、batch 8→24；1F1B 气泡 0.343/0.245/0.233 |
-| 15-849 | [服务与显存](reports/cmu15849-serving-memory/serving_memory_report.pdf) | 21 | CUDA graph 2.16 ms 对带宽下限 0.65 ms；KV 浪费 86.8%→1.26%，并发 7.0×；vLLM 0.11 λ=40 1.61×；chunked prefill P99 33.5→17.6 ms |
+| 综述 | [面试知识综述（CCF-A 格式）](reports/survey/survey.pdf) | 36 | 131 篇参考文献，57 个面试追问框，16 个白板估算框 |
+| CS149 | [A1 多核、SIMD、带宽与 GPU](reports/cs149-asst1/cs149_asst1_report.pdf) | 22 | 12 核连续块 5.89× / 动态 11.1×；AVX-512 双向量交错 18.3×；sqrt 每 8 个混 1 个慢的，AVX2 0.72×；saxpy 过 PCIe 只剩 52 GB/s |
+| CS149 | [A2 任务系统（C++）](reports/cs149-asst2/cs149_asst2_report.pdf) | 24 | spin 0.78 µs、sleep 10.8 µs、spawn 53.3 µs；空闲 spin 烧 11.96 核；2× 超订时带锁 spin 慢 766×；false sharing 19× |
+| CS149 | [A3 CUDA scan 与渲染器](reports/cs149-asst3/cs149_asst3_report.pdf) | 25 | saxpy kernel 1578 GB/s、端到端 53.8 GB/s；scan 2²⁸ 16.75→2.82→1.41 ms；rand1M 渲染 844→0.538 ms |
+| CS149 | [A4 GEMM、卷积与 roofline](reports/cs149-asst4/cs149_asst4_report.pdf) | 26 | SGEMM 0.94→49.4 TFLOP/s（5090，cuBLAS 78%）；6000D 228.7 burst 对 141–145 sustained；WMMA fp16 177.8（86%） |
+| CS149 | [A5 大图 BFS](reports/cs149-asst5/cs149_asst5_report.pdf) | 19 | RMAT hybrid 8 线程 6.58×（三个种子 6.56–6.94×），检查的边只有 top-down 的 9.1%；scale 16→23 加速比 1.33×→12.2× |
+| CS229S | [P1 FlashAttention 与训练](reports/cs229s-project1/cs229s_project1_report.pdf) | 25 | FA 214.9@8192、224.5@32768（FA2 217.9）；反向 FA2 的 80%；GPT-2 small bf16 MFU 0.447 |
+| CS229S | [P2 KV cache 与推测解码](reports/cs229s-project2/cs229s_project2_report.pdf) | 21 | gpt2-xl decode 20.6→4.22 ms（KV + CUDA graph）；推测解码贪心 1.63×、采样 1.45×；三卡 1.63/1.63/1.66 |
+| 15-849 | [编译与压缩](reports/cmu15849-compiler-compression/compiler_compression_report.pdf) | 30 | RMSNorm 9.86×；W3 RTN 65.9→GPTQ 37.2；Qwen2.5-7B W8A8 逐张量 +109%、LLM.int8 +0.27%、W3 GPTQ +15%；2:4 1.54× |
+| 15-849 | [分布式训练](reports/cmu15849-distributed-training/distributed_training_report.pdf) | 23 | 16 B/参数实测 16.00–16.32；激活模型误差 ≤1.3%；774M bf16 MFU 70.2%；全量重计算 +18.9% 时间、batch 8→24；1F1B 气泡 0.343/0.245/0.233 |
+| 15-849 | [服务与显存](reports/cmu15849-serving-memory/serving_memory_report.pdf) | 22 | CUDA graph 2.16 ms 对带宽下限 0.65 ms；KV 浪费 86.8%→1.26%，并发 7.0×；vLLM 0.11 λ=40 1.61×；chunked prefill P99 33.5→17.6 ms |
 
 ## 面试索引
 
@@ -354,8 +354,25 @@ python tools/mlsys_calc.py spec --alpha 0.8 --gamma 4
 ├── tools/            白板估算计算器、采样
 ├── assignments/      官方 starter 镜像
 ├── scripts/          测试、仓库检查、claims、跨卡对比、封面
+├── templates/        写作规范、笔记与实验 README 模板
 └── assets/           封面
 ```
+
+
+## 仓库地图
+
+| 要找什么 | 打开 | 内容 |
+| --- | --- | --- |
+| 课程合并 | [CURRICULUM.md](CURRICULUM.md) | 三门课的出处、合并理由与取舍 |
+| 系统笔记 | [notes/](notes/README.md) | 18 讲：速览卡、推导、白板估算、追问链、自测题 |
+| 面试材料 | [interview/](interview/README.md) | 22 条公式、6 道设计、12 个故事、23 道手写、42 道题库、18 讲问答、工程手册、硬件速查 |
+| 实验 | [solutions/](solutions/README.md) | 10 个实验：代码、测试、原始 CSV、图、说明 |
+| 报告 | [reports/](reports/) | 10 份实验报告 + 1 份 36 页综述 |
+| 跨卡与 harness | [artifacts/cross_gpu/](artifacts/cross_gpu/comparison.md)、[mlsys_harness/](mlsys_harness/compare.py)、[claims.json](claims.json) | 三卡比值、统一计时、数字回查 |
+| 工具 | [tools/](tools/mlsys_calc.py) | 白板估算计算器、采样参考实现 |
+| 官方材料 | [assignments/](assignments/README.md) | starter 镜像（依网络条件同步） |
+| 写作规范 | [CONTRIBUTING.md](CONTRIBUTING.md)、[templates/WRITING.md](templates/WRITING.md) | 文档风格、实验 README 模板、提交前检查 |
+| 进度与校验 | [PROGRESS.md](PROGRESS.md)、[VERIFICATION.md](VERIFICATION.md) | 已知缺失、测试清单、数字边界 |
 
 ## 数字边界
 
@@ -377,7 +394,7 @@ python tools/mlsys_calc.py spec --alpha 0.8 --gamma 4
 ## 贡献
 
 欢迎 issue / PR 指出数字、链接或实现错误。提交前运行 `./scripts/check-repo.ps1` 和
-`./scripts/run-all-tests.ps1`（Linux：`scripts/run-all-tests.sh`）；贡献指南见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+`./scripts/run-all-tests.ps1`（Linux：`scripts/run-all-tests.sh`）；贡献指南见 [CONTRIBUTING.md](CONTRIBUTING.md)，文档风格见 [templates/WRITING.md](templates/WRITING.md)。
 
 ## 许可
 

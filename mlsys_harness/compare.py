@@ -137,9 +137,10 @@ def render_markdown(metrics: list[Metric], refs: dict[str, float]) -> str:
         return f"{m.rtx:.1f}", f"{m.ada:.1f}"
 
     lines = [
-        "同一批实验在两张卡上各跑了一次。比值是 4080 SUPER / 5090。"
-        f"带宽参照（拷贝）{refs['bandwidth']:.2f}，算力参照（bf16 GEMM 峰值）{refs['compute']:.2f}，"
-        "与卡无关的参照是 1。分类取对数距离最近的参照。",
+        "同一批实验在两张卡上各跑了一次，表里的比值是 4080 SUPER 除以 5090。"
+        "判断一个指标受什么限制，就看它的比值离哪个参照最近："
+        f"两张卡的拷贝带宽之比是 {refs['bandwidth']:.2f}，bf16 GEMM 峰值之比是 {refs['compute']:.2f}，"
+        "和卡无关的指标比值应该是 1。「最近」按对数距离算。",
         "",
         "| 指标 | 5090 | 4080 SUPER | 比值 | 归类 |",
         "| --- | ---: | ---: | ---: | --- |",
@@ -149,13 +150,14 @@ def render_markdown(metrics: list[Metric], refs: dict[str, float]) -> str:
         lines.append(f"| {m.label} | {a} | {b} | {m.ratio:.2f} | {CLASS_ZH[m.expected]} |")
     lines += [
         "",
-        "读法：FlashAttention 和 cuBLAS fp16 的比值贴近算力比，CUB scan 贴近带宽比，"
-        "而推测解码的加速倍数和「自写 kernel / 厂商库」的比例两张卡几乎一样。"
-        "换一张带宽只有四成的卡，验证多个 token 的代价没有变贵。",
+        "怎么读这张表：FlashAttention 和 cuBLAS fp16 的比值贴近算力之比，说明它们受算力限制；"
+        "CUB scan 贴近带宽之比，说明它受带宽限制。"
+        "推测解码的加速倍数，以及「自写 kernel 相对厂商库」的比例，在两张卡上几乎一样。"
+        "也就是说，换到一张带宽只有四成的卡上，一次验证多个 token 并没有变得更贵。",
         "",
-        "4080 的 `peaks.json` 里 `spec_bf16_flops` / `spec_bw` 仍是 5090 的规格值："
-        "当时的 roofline 脚本把规格写死了。测到的 `peak_bf16_flops` 和 `peak_copy_bw` 是这张卡自己的。"
-        "脚本现在按 GPU 名称查 `mlsys_harness.devices`，下一次跑写进新目录，不覆盖这两份记录。",
+        "一个记录上的瑕疵：4080 的 `peaks.json` 里，`spec_bf16_flops` 和 `spec_bw` 两项仍是 5090 的规格值，"
+        "因为当时的 roofline 脚本把规格写死了。实测的 `peak_bf16_flops` 和 `peak_copy_bw` 是这张卡自己的，表里用的也是实测值。"
+        "脚本现在按 GPU 名称查 `mlsys_harness.devices`，下一次运行会写进新目录，不覆盖这两份记录。",
         "",
     ]
     return "\n".join(lines)
@@ -222,7 +224,7 @@ def write_outputs(root: Path, out_dir: Path) -> list[Metric]:
     text = render_markdown(metrics, refs)
     if len(cards) > 2:
         text += "\n## 三张卡\n\n" + render_cards(root, cards)
-    (out_dir / "comparison.md").write_text(text, encoding="utf-8")
+    (out_dir / "comparison.md").write_text(text, encoding="utf-8", newline="\n")
     return metrics
 
 
@@ -244,7 +246,7 @@ def update_hardware_doc(root: Path, metrics: list[Metric] | None = None,
         body = pre + block + post.lstrip("\n")
     else:
         body = body.rstrip() + "\n\n" + block
-    doc.write_text(body, encoding="utf-8")
+    doc.write_text(body, encoding="utf-8", newline="\n")
 
 
 def _plot(metrics: list[Metric], refs: dict[str, float], path: Path) -> None:

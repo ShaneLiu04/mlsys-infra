@@ -10,19 +10,24 @@
 \maketitle
 
 \begin{abstract}
-本文复刻 Stanford CS149（Fall 2024）Assignment 3「A Simple Renderer in CUDA」的三个部分，并保留本实验目录原有的 numpy 版
-（work/span 计数、乱序误差、tile 分桶测试次数）作为算法层面的对照。GPU 部分全部用 CUDA C++ 手写，在 RTX 5090（sm\_120，
-170 SM，96 MB L2，GDDR7 标称 1.79 TB/s，PCIe 5.0 x16）上测量：
-(1) SAXPY 在 $N=2^{28}$ 时 kernel 达到 1578 GB/s（标称带宽的 88\%），而包含 \texttt{cudaMemcpy} 的端到端只有 53.8 GB/s（pinned）
-和 10.5 GB/s（pageable），kernel 只占端到端时间的 3.4\%；4 个 stream 分块流水把 H2D 与 D2H 重叠后达到 77.1 GB/s。
-(2) 六种 exclusive scan 在 $10^3$–$2^{28}$、含非 2 的幂长度下全部与 CPU 逐元素一致。starter 结构的 global-memory Blelloch 每层一次 launch，
-$2^{28}$ 时 16.75 ms；shared-memory 块内 scan + 递归块和 2.82 ms；\texttt{cub::DeviceScan} 1.41 ms。三者换算到实际 DRAM 流量后都在
-约 1.52 TB/s，差距来自访存次数（$\approx 84N$、$16N$、$8N$ 字节），不是算力。小 $N$ 时时间由 launch 数决定：$N=1000$ 时 naive 20 次 launch 用 49.6\,$\mu$s，
-单 block 版 4.4\,$\mu$s。基于 scan 的 \texttt{find\_repeats} 在 $10^8$ 时 1.87 ms，比 \texttt{thrust::copy\_if}（0.28 ms）慢 6.6 倍，原因同样是多遍访存。
-(3) 渲染器在 9 个 $1024\times1024$ 场景上，starter 式「一线程一圆」kernel 在除 rgb 外的 8 个场景中 48.5\%–100\% 像素出错（rgb 为 24.3\%），且多数场景两次运行结果不同；
-四个正确版本对 90 个（场景, 阶段, tile）组合的最大绝对误差为 0（snow 场景为 $2.98\times10^{-7}$，来自 \texttt{expf}）。
-用 scan 做全局分桶并在 shared memory 中批量取圆后，rand1M 从「每像素遍历所有圆」的 844 ms 降到 0.538 ms，比单核 CPU 顺序参考快 712 倍。
-tile 大小的最优值随圆半径变化：小圆场景 $T=8$，其余多为 $T=16$。
+这份报告复刻 Stanford CS149（Fall 2024）Assignment 3「A Simple Renderer in CUDA」的三个部分。本实验目录原有的 numpy 版
+（统计 work/span、乱序误差和 tile 分桶的测试次数）保留下来，作为算法层面的对照。GPU 部分全部用 CUDA C++ 手写，
+在一块 RTX 5090 上测量（sm\_120，170 个 SM，96 MB L2，GDDR7 标称 1.79 TB/s，PCIe 5.0 x16）。三个部分各回答一个问题。
+
+第一部分问：最简单的访存受限 kernel 在 GPU 上被什么卡住？SAXPY 在 $N=2^{28}$ 时，kernel 跑到 1578 GB/s，是标称显存带宽的 88\%。
+可一旦把 \texttt{cudaMemcpy} 算进来，端到端只剩 53.8 GB/s（pinned 内存）和 10.5 GB/s（pageable 内存），kernel 只占总时间的 3.4\%。
+用 4 个 stream 分块流水、让上行和下行拷贝重叠，可以到 77.1 GB/s。
+
+第二部分问：同样是 exclusive scan，为什么不同写法会差出十几倍？六种实现在 $10^3$–$2^{28}$ 的长度上（含非 2 的幂）都与 CPU 逐元素一致。
+$2^{28}$ 时，starter 结构的 global-memory Blelloch 用 16.75 ms，shared-memory 块内 scan 加递归块和用 2.82 ms，\texttt{cub::DeviceScan} 用 1.41 ms。
+按各自实际的显存流量（约 $84N$、$16N$、$8N$ 字节）折算，三者都在约 1.52 TB/s，所以差距来自搬了多少字节，而不是算力。
+小数组则由 launch 次数决定：$N=1000$ 时，naive 版 20 次 launch 用 49.6\,$\mu$s，单 block 版只要 4.4\,$\mu$s。
+基于 scan 的 \texttt{find\_repeats} 在 $10^8$ 时用 1.87 ms，比 \texttt{thrust::copy\_if}（0.28 ms）慢 6.6 倍，原因同样是多遍访存。
+
+第三部分问：渲染器怎样既并行又保住混合顺序？在 9 个 $1024\times1024$ 场景上，starter 式的「一线程一圆」kernel 除 rgb（24.3\%）外，
+有 48.5\%–100\% 的像素出错，而且多数场景两次运行结果不同。四个正确版本在 90 个（场景, 阶段, tile）组合上与 CPU 参考的最大绝对误差为 0
+（snow 场景为 $2.98\times10^{-7}$，来自 \texttt{expf}）。用 scan 做全局分桶、再用 shared memory 批量取圆之后，
+rand1M 从「每像素遍历所有圆」的 844 ms 降到 0.538 ms，比单核 CPU 顺序参考快 712 倍。最优 tile 大小随圆半径变化：小圆场景是 $T=8$，其余多为 $T=16$。
 \end{abstract}
 
 \tableofcontents
@@ -31,8 +36,8 @@ tile 大小的最优值随圆半径变化：小圆场景 $T=8$，其余多为 $T
 %=====================================================================
 \section{背景与作业要求}
 
-CS149~\cite{cs149} Assignment 3 的官方 starter 是 CUDA 代码，包含三部分。本目录（\path{solutions/cs149/asst3-scan-render}）原先只有 numpy 版，
-本次补上 GPU 部分。对应关系见\cref{tab:map}。
+CS149~\cite{cs149} Assignment 3 的官方 starter 是 CUDA 代码，分为三部分。本目录（\path{solutions/cs149/asst3-scan-render}）原先只有 numpy 版，
+这次补上了 GPU 部分。两者怎么对应，见\cref{tab:map}。
 
 \begin{table}[H]
 \centering\small
@@ -41,7 +46,7 @@ CS149~\cite{cs149} Assignment 3 的官方 starter 是 CUDA 代码，包含三部
 \toprule
 官方部分 & 本仓库 CPU/numpy 实现（已有） & 本次 GPU 实现（\texttt{gpu/}） \\
 \midrule
-Part 1 SAXPY & 无（见 asst1 prog5） & \texttt{saxpy.cu}：kernel 带宽 vs $N$；端到端 pinned / pageable / 4-stream 分块流水；launch 开销 \\
+Part 1 SAXPY & 无（见 asst1 prog5） & \texttt{saxpy.cu}：kernel 带宽随 $N$ 的变化；端到端 pinned、pageable、4-stream 分块流水；launch 开销 \\
 Part 2 \texttt{exclusive\_scan} & \texttt{scan.py}：顺序、Hillis~\cite{hillis1986}--Steele、Blelloch~\cite{blelloch1990}，work/span 计数 & \texttt{scan.cu}：naive（starter 结构，每层一次 launch）、shared-memory Blelloch（有/无 bank padding）、raking + warp shuffle、thrust、cub \\
 Part 2 \texttt{find\_repeats} & \texttt{primitives.py}：flags $\to$ scan $\to$ scatter & flag kernel $\to$ 自写 scan $\to$ scatter，对比 \texttt{thrust::copy\_if} \\
 Part 3 circle renderer & \texttt{renderer.py}：顺序参考、乱序模拟、tile 分桶~\cite{laine2011} + scan 压缩~\cite{sengupta2007} & \texttt{render.cu}：CPU 顺序参考、naive 一线程一圆（错误）、每像素全圆、全局 scan 分桶、分桶 + shared 批量、块内 scan 分桶 \\
@@ -49,16 +54,22 @@ Part 3 circle renderer & \texttt{renderer.py}：顺序参考、乱序模拟、ti
 \end{tabularx}
 \end{table}
 
-\paragraph{渲染器的两个正确性约束。} 官方文档要求：(1) \emph{原子性}：对同一像素的「读--混合~\cite{porter1984}--写」不能被其他圆的更新打断；
-(2) \emph{顺序}：同一像素上的圆必须按输入顺序混合。混合公式是 over 算子
+\paragraph{渲染器的两个正确性约束。} 三部分里最难的是渲染器，难点来自官方文档的两条要求。
+第一条是原子性：对同一个像素「读出颜色、与新圆混合~\cite{porter1984}、写回」这三步，不能被别的圆的更新打断。
+第二条是顺序：同一像素上的圆，必须按输入顺序混合。混合用的是 over 算子
 \begin{equation}
 \mathbf{c} \leftarrow \alpha\,\mathbf{rgb}_k + (1-\alpha)\,\mathbf{c},\label{eq:over}
 \end{equation}
-两个圆交换顺序，结果不同（不满足交换律），所以「按圆并行 + 原子操作」也不够，必须保序。starter 给出的 \texttt{kernelRenderCircles}
-一线程处理一个圆，两个约束都违反。作业的核心是把并行轴从「圆」换到「像素/tile」，并用 scan 在不做全局排序的前提下，为每个 tile 生成有序的圆列表。
+它不满足交换律，两个圆换个顺序，像素颜色就变了。所以「按圆并行，再加原子操作」也不够，还必须保序。
+starter 给出的 \texttt{kernelRenderCircles} 让一个线程处理一个圆，两条约束都违反了。
+作业真正要做的，是把并行的维度从「圆」换成「像素」或「tile」（图像上一块固定大小的方形区域），
+再用 scan 在不做全局排序的前提下，给每个 tile 生成一份仍按输入顺序排列的圆列表。
 
 %=====================================================================
 \section{实验环境}
+
+所有 GPU 数字都在同一台机器上测得（\cref{tab:env}）。读后文时有两个参照值值得记住：GDDR7 显存的标称带宽 1.79 TB/s，
+以及 PCIe 5.0 x16 的单向标称带宽 64 GB/s，两者差了一个多数量级。
 
 \begin{table}[H]
 \centering\small
@@ -70,16 +81,16 @@ GPU & NVIDIA GeForce RTX 5090，32 GB（32607 MiB），170 SM，sm\_120（Blackw
 GPU 带宽参考 & GDDR7 标称 1.79 TB/s（28 Gbps $\times$ 512 bit）；同机 asst1 已测 SAXPY kernel $\approx$1.55 TB/s、端到端 $\approx$52 GB/s；PCIe 5.0 x16 单向标称 64 GB/s\\
 主机 CPU & 2 路 Intel Xeon Gold 6459C（容器可见 128 逻辑核，cgroup 限 16 核，本实验只用 \texttt{taskset -c 33,34}）；CPU 参考渲染器为单线程\\
 工具链 & CUDA 12.8 \texttt{nvcc -O3 -arch=sm\_120 -std=c++17}；g++ 11.4；thrust/cub 随 CUDA 12.8；\texttt{render} 额外加 \texttt{-fmad=false}，使 device 端算术与 host 参考逐位一致\\
-计时 & \texttt{cudaEvent}，预热 2--3 次后取 5--50 次的中位数；端到端用 \texttt{steady\_clock} + 同步；所有 GPU 任务都在 \texttt{flock /root/autodl-tmp/gpu.lock} 下独占运行\\
-分析器 & \texttt{ncu} 报 \texttt{ERR\_NVGPUCTRPERM}（容器内无性能计数器权限，见 \texttt{ncu\_attempt.txt}），改用 \texttt{cudaFuncGetAttributes} + 占用率 API 获得寄存器数与理论 occupancy\\
+计时 & \texttt{cudaEvent}，预热 2--3 次后取 5--50 次的中位数；端到端用 \texttt{steady\_clock} 加同步；所有 GPU 任务都在 \texttt{flock /root/autodl-tmp/gpu.lock} 下独占运行\\
+分析器 & \texttt{ncu} 报 \texttt{ERR\_NVGPUCTRPERM}（容器内无性能计数器权限，见 \texttt{ncu\_attempt.txt}），改用 \texttt{cudaFuncGetAttributes} 和占用率 API 获得寄存器数与理论 occupancy\\
 本地 & Windows Server，4 物理核；Python 3.12、numpy、matplotlib；numpy 版实验与全部绘图在本地运行\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-原始数据在 \path{artifacts/raw/gpu/} 下：\texttt{saxpy}、\texttt{scan}、\texttt{find\_repeats}、\texttt{render}、\texttt{render\_sweep}、
-\texttt{render\_attrs}、\texttt{scan\_attrs} 七个 \texttt{.jsonl} 文件；图像在 \path{artifacts/raw/gpu/images/}（参考图与 naive 图为 512 像素缩略 PNG，差值图为 $1024^2$ 全分辨率 8-bit）。
-复现命令：
+原始数据在 \path{artifacts/raw/gpu/} 下，共七个 \texttt{.jsonl} 文件：\texttt{saxpy}、\texttt{scan}、\texttt{find\_repeats}、\texttt{render}、\texttt{render\_sweep}、
+\texttt{render\_attrs}、\texttt{scan\_attrs}。图像在 \path{artifacts/raw/gpu/images/}，其中参考图与 naive 图是 512 像素的缩略 PNG，差值图是 $1024^2$ 全分辨率的 8-bit 图。
+复现只需一条命令：
 \begin{lstlisting}[language=bash,numbers=none]
 bash gpu/build.sh && bash gpu/run_gpu.sh all && python scripts/plot_gpu.py
 \end{lstlisting}
@@ -87,17 +98,23 @@ bash gpu/build.sh && bash gpu/run_gpu.sh all && python scripts/plot_gpu.py
 %=====================================================================
 \section{方法与实现}
 
+这一节按作业的三个部分，依次说明每个实验测什么、怎么测。读结果之前不必记住全部细节，但计时口径（什么算进时间、什么没算）会直接影响后面的结论。
+
 \subsection{Part 1：SAXPY 与传输开销}
-kernel 为一线程一元素 \texttt{y[i] = a*x[i] + y[i]}，256 线程/块。每个 $N=2^{10},2^{12},\dots,2^{28}$ 测四个量：
-(a) kernel-only（数据已在显存）；(b) pinned：\texttt{cudaMallocHost} 内存上 H2D($x,y$) + kernel + D2H($y$)；
-(c) pageable：同样流程，主机内存是 \texttt{std::vector}；(d) streams：pinned 内存切 16 块轮流放进 4 个 stream，
-H2D、kernel、D2H 异步排队，使不同块的上行和下行拷贝重叠。四者都按 $12N$ 字节（读 $x$、读 $y$、写 $y$）折算有效带宽。
-另测空 kernel 连续 launch 的平均间隔，以及 launch 加同步的往返时间。
+kernel 很简单：一个线程算一个元素 \texttt{y[i] = a*x[i] + y[i]}，每块 256 线程。我想知道的是，同一个 kernel 放进不同的「外壳」里，时间花在了哪里。
+因此对每个 $N=2^{10},2^{12},\dots,2^{28}$ 测四种情形：
+(a) kernel-only，数据已经在显存里；
+(b) pinned，主机内存用 \texttt{cudaMallocHost} 分配（页锁定，DMA 可以直接读），流程是 H2D($x,y$)、kernel、D2H($y$)；
+(c) pageable，流程相同，但主机内存是普通的 \texttt{std::vector}；
+(d) streams，把 pinned 内存切成 16 块，轮流放进 4 个 stream，H2D、kernel、D2H 都异步排队，这样不同块的上行和下行拷贝可以重叠。
+四种情形都按 $12N$ 字节（读 $x$、读 $y$、写 $y$）折算有效带宽。另外还测了空 kernel 连续 launch 的平均间隔，以及「launch 加同步」的往返时间。
 
 \subsection{Part 2：六种 exclusive scan}
 
-\paragraph{naive（starter 结构）。} 输入复制到长度 $m=2^{\lceil\log_2 N\rceil}$ 的缓冲区，尾部补 0；up-sweep 每层一次 launch，
-根置 0，down-sweep 每层一次 launch，共 $2\log_2 m$ 次 launch（测试 \path{test_naive_scan_launches_are_2log2m} 逐行检查）。
+exclusive scan 的输出第 $i$ 项是输入前 $i$ 项之和（不含第 $i$ 项本身）。六种实现从 starter 的写法出发，逐步减少 launch 次数和访存遍数，最后对照库实现。
+
+\paragraph{naive（starter 结构）。} 输入先复制到长度为 $m=2^{\lceil\log_2 N\rceil}$ 的缓冲区，尾部补 0。
+up-sweep 每层一次 launch，然后把根置 0，down-sweep 也是每层一次 launch，共 $2\log_2 m$ 次 launch（测试 \path{test_naive_scan_launches_are_2log2m} 会逐行检查这一点）。
 
 \begin{lstlisting}[language=C++,caption={starter 结构的 up-sweep / down-sweep kernel（\texttt{scan.cu}）}]
 __global__ void upsweep_k(int* a, long long m, long long two_d) {
@@ -112,9 +129,9 @@ __global__ void downsweep_k(int* a, long long m, long long two_d) {
 }
 \end{lstlisting}
 
-\paragraph{smem / smem\_nopad。} 采用 GPU Gems 3 第 39 章的做法\cite{harris2007}：每块 512 线程处理 1024 个元素，在 shared memory 中做
-Blelloch up/down-sweep。块总和写入 \texttt{sums[]}，对 \texttt{sums} 递归调用同一过程，最后用 \texttt{uniform\_add} 把块前缀加回去。
-padding 版每 32 个元素插 1 个空位（\texttt{CF(i) = i>>5}），用来消除深层 stride 访问的 bank conflict。
+\paragraph{smem / smem\_nopad。} 这是 GPU Gems 3 第 39 章的做法\cite{harris2007}：每块 512 线程处理 1024 个元素，在 shared memory 里完成 Blelloch 的 up-sweep 和 down-sweep。
+每块的总和写进 \texttt{sums[]}，对 \texttt{sums} 递归调用同一过程，最后用 \texttt{uniform\_add} 把块前缀加回每个元素。
+padding 版每 32 个元素插 1 个空位（\texttt{CF(i) = i>>5}），目的是消除深层大步长访问造成的 bank conflict（同一 warp 的多个线程访问同一个 shared memory bank，只能排队）。
 
 \begin{lstlisting}[language=C++,caption={块内 Blelloch（节选）与递归驱动}]
 for (int d = SE >> 1; d > 0; d >>= 1) {          // up-sweep in shared memory
@@ -135,26 +152,31 @@ void Rec::run(const int* in, int* out, long long n, size_t lvl) {
 }
 \end{lstlisting}
 
-\paragraph{raking。} 每块 256 线程处理 4096 个元素：先合并访问装入 shared memory（同样 padding），每线程在寄存器里顺序扫 16 个元素，
-再用 \texttt{\_\_shfl\_up\_sync} 做 warp 内 inclusive scan，第 0 个 warp 扫 8 个 warp 和。递归结构与 smem 相同，但每块元素数是 4 倍，递归层数和 block 数更少。
+\paragraph{raking。} 每块 256 线程处理 4096 个元素。先用合并访问把数据装进 shared memory（同样加 padding），每个线程在寄存器里顺序扫自己的 16 个元素，
+再用 \texttt{\_\_shfl\_up\_sync} 在 warp 内做 inclusive scan，最后由第 0 个 warp 扫 8 个 warp 的和。递归结构与 smem 相同，
+但每块的元素数是它的 4 倍，所以递归层数和 block 数都更少。
 
-\paragraph{thrust / cub。} \texttt{thrust::exclusive\_scan(thrust::device, \dots)} 每次调用内部临时分配缓冲区；
-\texttt{cub::DeviceScan::ExclusiveSum} 使用预分配的临时空间。两者底层都是 Merrill--Garland 的单遍 decoupled look-back scan\cite{merrill2016}：
+\paragraph{thrust / cub。} \texttt{thrust::exclusive\_scan(thrust::device, \dots)} 每次调用都在内部临时分配缓冲区；
+\texttt{cub::DeviceScan::ExclusiveSum} 则使用预先分配好的临时空间。两者底层都是 Merrill--Garland 的单遍 decoupled look-back scan\cite{merrill2016}，
 每个元素只读一次、写一次。
 
-\paragraph{测试数据与正确性。} 输入为 \texttt{hash32(i) \& 7}，保证 $2^{28}$ 个元素的总和小于 $2^{31}$；每个 $(N,\text{算法})$ 都把整个输出拷回，
-与 CPU 顺序 scan 逐元素比较，mismatch 数写入 \texttt{scan.jsonl}。$N$ 取 19 个值：$10^3$、$2^{10}$、$4096$、$10^4$、$2^{16}$、$10^5$、$2^{18}$、$2^{20}$、
+\paragraph{测试数据与正确性。} 输入取 \texttt{hash32(i) \& 7}，这样 $2^{28}$ 个元素的总和也小于 $2^{31}$，不会溢出。
+每个 $(N,\text{算法})$ 组合都把整个输出拷回主机，与 CPU 顺序 scan 逐元素比较，不一致的个数写进 \texttt{scan.jsonl}。
+$N$ 取 19 个值，特意混入了非 2 的幂：$10^3$、$2^{10}$、$4096$、$10^4$、$2^{16}$、$10^5$、$2^{18}$、$2^{20}$、
 $2^{20}+1$、$10^6$、$3000007$、$2^{22}$、$10^7$、$2^{24}-1$、$2^{24}$、$2^{26}$、$10^8$、$2^{27}$、$2^{28}$。
 
-\paragraph{find\_repeats。} 自写版本为三步：\texttt{repeat\_flags}（\texttt{f[i] = a[i]==a[i+1]}）$\to$ 自写 scan（smem 或 raking）$\to$
-\texttt{repeat\_scatter}（scatter 时重新计算谓词，避免再读一遍 flags）；输出个数取 \texttt{pos[n-1]}（因为 \texttt{f[n-1]=0}），需要一次 4 字节 D2H。
-对照为 \texttt{thrust::copy\_if(counting\_iterator, \dots, IsRepeat\{a\})}。取值范围为 $[0,100)$ 和 $[0,2)$，对应约 1\% 和 50\% 的重复率。
+\paragraph{find\_repeats。} 任务是找出所有满足 \texttt{a[i]==a[i+1]} 的下标。自写版本分三步：
+\texttt{repeat\_flags} 计算标志 \texttt{f[i] = a[i]==a[i+1]}；用自写 scan（smem 或 raking）把标志变成输出位置；
+\texttt{repeat\_scatter} 按位置写出下标，scatter 时重新计算一次谓词，省掉再读一遍 flags。
+因为 \texttt{f[n-1]=0}，输出个数就是 \texttt{pos[n-1]}，需要一次 4 字节的 D2H。
+对照组是 \texttt{thrust::copy\_if(counting\_iterator, \dots, IsRepeat\{a\})}。输入取值范围为 $[0,100)$ 和 $[0,2)$，分别对应约 1\% 和 50\% 的重复率。
 
 \subsection{Part 3：渲染器}
 
-\paragraph{场景。} 图像 $1024\times1024$，背景为白色，坐标归一化到 $[0,1]$。所有场景由固定种子的 xorshift 生成，见\cref{tab:scenes}。
-\texttt{mean\_coverage} 为 $\sum_k \pi r_k^2$，即平均每个像素被多少个圆覆盖（overdraw）。snow 场景按 $z$ 从远到近排序，颜色和 $\alpha$ 随到圆心的归一化距离衰减：
-$\alpha = 0.5\,\mathrm{clamp}(0.6+0.4(1-z))\,e^{-4d^2}$。其他场景 $\alpha=0.5$，与官方 starter 一致。
+\paragraph{场景。} 图像是 $1024\times1024$，背景为白色，坐标归一化到 $[0,1]$。所有场景都由固定种子的 xorshift 生成，见\cref{tab:scenes}。
+表中的「平均覆盖」是 $\sum_k \pi r_k^2$，也就是平均每个像素被多少个圆盖住（overdraw）。它决定了渲染的基本工作量，后文会反复用到。
+snow 场景按 $z$ 从远到近排序，颜色和 $\alpha$ 随到圆心的归一化距离衰减：
+$\alpha = 0.5\,\mathrm{clamp}(0.6+0.4(1-z))\,e^{-4d^2}$。其他场景都取 $\alpha=0.5$，与官方 starter 一致。
 
 \begin{table}[H]
 \centering\small
@@ -177,23 +199,27 @@ sweep\_$N$ & $10^3$--$3\times10^6$ & $\approx$45 & rand10k 的半径乘 $\sqrt{1
 \end{tabular}
 \end{table}
 
-\paragraph{CPU 参考。} 按输入顺序遍历圆，对每个圆的保守包围盒（\texttt{floor((cx-r)W)} 到 \texttt{ceil((cx+r)W)}）内的像素中心做
-\texttt{d2 <= r*r} 测试并按\cref{eq:over}混合。像素中心为 $((x+0.5)/W,(y+0.5)/H)$。host 和 device 共用同一个 \texttt{\_\_host\_\_ \_\_device\_\_ shade()}，
-并用 \texttt{-fmad=false} 禁止 FMA 收缩，所以 $\alpha=0.5$ 的场景可以要求 GPU 与 CPU 逐位相等。
+\paragraph{CPU 参考。} 正确性要有一个可信的基准。CPU 参考按输入顺序遍历圆，对每个圆的保守包围盒（\texttt{floor((cx-r)W)} 到 \texttt{ceil((cx+r)W)}）内的每个像素中心
+做 \texttt{d2 <= r*r} 测试，命中就按\cref{eq:over}混合。像素中心取 $((x+0.5)/W,(y+0.5)/H)$。
+host 和 device 共用同一个 \texttt{\_\_host\_\_ \_\_device\_\_ shade()}，并用 \texttt{-fmad=false} 禁止编译器把乘加合并成 FMA。
+有了这两条，$\alpha=0.5$ 的场景就可以要求 GPU 与 CPU 逐位相等，而不是「误差足够小」。
 
-\paragraph{五个 GPU 阶段。}
+\paragraph{五个 GPU 阶段。} 下面五个版本从错误的 starter 写法开始，每一步改掉上一步的一个主要问题。
 \begin{enumerate}
-\item \textbf{naive\_per\_circle}：starter 的 \texttt{kernelRenderCircles}，一线程一圆，对包围盒内像素做非原子的「读--shade--写」。
-\item \textbf{allcircles}：一线程一像素（$16\times16$ 块），像素颜色放在寄存器里，按顺序遍历全部 $N$ 个圆，最后写一次。正确，但工作量为 $O(NP)$。
-\item \textbf{binned}：全局分桶。\texttt{k\_bin\_count} 计算每个圆覆盖的 tile 数 \texttt{cnt[k]}，并用 \texttt{atomicAdd} 累加每 tile 计数；
-对 \texttt{cnt} 做 exclusive scan 得到每个圆的写入偏移；对 tile 计数做 exclusive scan 得到每个 tile 列表的起点 \texttt{tile\_start}；
-\texttt{k\_bin\_emit} 按偏移写出 (tile, circle) 对，此时数组按圆的下标排列；最后用 \texttt{cub::DeviceRadixSort::SortPairs} 只对 $\lceil\log_2(\#\text{tiles})\rceil$ 位 key 排序。
-radix sort 是稳定的，所以同一 tile 内的圆仍按输入顺序排列。渲染时一个 block 对应一个 tile，每个线程负责一个像素，从 global memory 逐个读取圆参数。
-\item \textbf{binned\_smem}：列表与 binned 相同。block 每次协作把 \texttt{blockDim} 个圆的 7 个参数（SoA 布局）装进 shared memory，
-同步后每个像素遍历这一批圆（所有线程读同一地址，是 broadcast，没有 bank conflict）。
-\item \textbf{blockscan\_smem}：不生成全局列表，是 CS149 常见的参考解法。每个 block 每轮取 \texttt{blockDim} 个圆，每个线程测试一个圆的包围盒是否与本 tile 相交，
-对命中标志做 block 级 exclusive scan，得到压缩后的位置，命中的圆按原顺序写入 shared memory，然后所有像素着色这一批圆。整个过程只有一次 launch，但每个 tile 都要测试全部 $N$ 个圆。
+\item naive\_per\_circle：starter 的 \texttt{kernelRenderCircles}。一个线程负责一个圆，对包围盒内的像素做非原子的「读、shade、写」。
+\item allcircles：一个线程负责一个像素（$16\times16$ 的块），像素颜色放在寄存器里，按顺序遍历全部 $N$ 个圆，最后写一次。它是正确的，但工作量为 $O(NP)$（$P$ 为像素数）。
+\item binned：全局分桶。\texttt{k\_bin\_count} 算出每个圆覆盖几个 tile（\texttt{cnt[k]}），同时用 \texttt{atomicAdd} 累加每个 tile 的计数。
+对 \texttt{cnt} 做 exclusive scan，得到每个圆的写入偏移；对 tile 计数做 exclusive scan，得到每个 tile 列表的起点 \texttt{tile\_start}。
+\texttt{k\_bin\_emit} 按偏移写出 (tile, circle) 对，这时数组是按圆的下标排列的。最后用 \texttt{cub::DeviceRadixSort::SortPairs} 只对 $\lceil\log_2(\#\text{tiles})\rceil$ 位 key 排序。
+radix sort 是稳定的，相同 key 保持原来的相对顺序，所以同一 tile 内的圆仍按输入顺序排列。渲染时一个 block 对应一个 tile，每个线程负责一个像素，从 global memory 逐个读圆的参数。
+\item binned\_smem：圆列表与 binned 相同，区别在渲染时怎么取圆。block 每次协作把 \texttt{blockDim} 个圆的 7 个参数（SoA 布局）装进 shared memory，
+同步之后每个像素遍历这一批圆。所有线程读的是同一地址，属于 broadcast，不会有 bank conflict。
+\item blockscan\_smem：不生成全局列表，这是 CS149 常见的参考解法。每个 block 每轮取 \texttt{blockDim} 个圆，每个线程检查其中一个圆的包围盒是否与本 tile 相交；
+对命中标志做一次 block 级 exclusive scan，得到压缩后的位置，命中的圆按原顺序写进 shared memory，然后所有像素着色这一批圆。
+整个过程只有一次 launch，代价是每个 tile 都要测试全部 $N$ 个圆。
 \end{enumerate}
+
+下面两段代码分别是 blockscan 的块内循环和全局分桶的主机端流程，可以对照着看两种做法在哪里生成圆列表。
 
 \begin{lstlisting}[language=C++,caption={块内 scan 分桶（\texttt{k\_render\_blockscan}，节选）}]
 for (int cb = 0; cb < s.n; cb += bs) {
@@ -219,102 +245,121 @@ k_bin_emit<<<...>>>(s, W, H, T, TX, off, k1, v1);          // (tile, circle) in 
 cub::DeviceRadixSort::SortPairs(tmp, b, k1, k2, v1, v2, pairs, 0, bits); // stable
 \end{lstlisting}
 
-\paragraph{计时口径。} 每帧时间包含清屏 kernel。binned 系列包含完整分桶流程（2 次 scan、1 次排序、2 次 4 字节 D2H 同步），
-另外单独记录 \texttt{bin\_ms} 和 \texttt{render\_ms}。正确性检查对每个 (场景, 阶段, tile) 都把整帧拷回，与 CPU 参考比较最大绝对误差，
-并统计误差 $>10^{-6}$ 和 $>10^{-3}$ 的像素数。naive 阶段额外连续运行两次并统计两次结果不同的像素数。
+\paragraph{计时口径。} 每帧时间包含清屏 kernel。binned 系列的时间包含完整的分桶流程（2 次 scan、1 次排序、2 次 4 字节 D2H 同步），
+另外单独记录 \texttt{bin\_ms} 和 \texttt{render\_ms}，方便拆开看。正确性检查对每个 (场景, 阶段, tile) 都把整帧拷回，计算与 CPU 参考的最大绝对误差，
+并统计误差 $>10^{-6}$ 和 $>10^{-3}$ 的像素数。naive 阶段额外连续跑两次，统计两次结果不同的像素数，用来区分「确定性的错」和「竞争造成的随机错」。
 
 %=====================================================================
 \section{实验结果}
 
 \subsection{CPU/numpy 部分（已有实验回顾）}
 
-这三张图来自原有的 \texttt{scripts/run\_experiments.py}，数据在 \texttt{artifacts/raw/*.csv}。它们给出与硬件无关的计数，GPU 部分的结果要对照这些计数来读。
+看 GPU 结果之前，先回顾原有的三张 numpy 图。它们给的是与硬件无关的计数：加法做了多少次，乱序会错多少像素，分桶能省多少次测试。
+后面 GPU 上的很多现象，都能在这里找到对应。数据由原有的 \texttt{scripts/run\_experiments.py} 生成，存在 \texttt{artifacts/raw/*.csv}。
 
 \begin{figure}[H]\centering
 \includegraphics[width=\linewidth]{scan_work_span.png}
 \caption{numpy 版 scan 的 work（加法次数）、span（相互依赖的步数）和单核墙钟时间。}\label{fig:cpu-scan}
 \end{figure}
-\Cref{fig:cpu-scan}：Blelloch 的 work 恒为 $2(m-1)$，Hillis--Steele 为 $\Theta(n\log n)$。$n=2^{20}$ 时两者的加法次数分别为 2.10M 和 19.9M，
-单核 numpy 墙钟分别为 13.2 ms 和 76.5 ms。$n=2^{17}+1$ 补齐到 $2^{18}$ 后，Blelloch 的 adds/$n$ 从 2 变成 4。
-这对应 GPU 上 naive 版本的补齐代价（\cref{fig:nonpow2}）。span 一列说明 naive GPU 版需要 $2\log_2 m$ 次全局同步，每次同步就是一次 kernel launch。
+\Cref{fig:cpu-scan} 说明 work 和 span 是两笔不同的账。Blelloch 的 work 恒为 $2(m-1)$，Hillis--Steele 是 $\Theta(n\log n)$。
+$n=2^{20}$ 时两者分别做 2.10M 和 19.9M 次加法，单核 numpy 墙钟是 13.2 ms 和 76.5 ms，在单核上 work 少就是快。
+图中还能看到补齐的代价：$n=2^{17}+1$ 要补到 $2^{18}$，Blelloch 每个元素的加法次数（adds/$n$）从 2 变成 4，GPU 上的 naive 版本也要付这笔账（\cref{fig:nonpow2}）。
+span 一列则预告了 GPU 上的另一笔成本：naive 版需要 $2\log_2 m$ 次全局同步，而在 GPU 上，每次全局同步就是一次 kernel launch。
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.92\linewidth]{render_order_error.png}
 \caption{numpy 版：随机打乱圆的顺序（模拟按圆并行、不保序）与顺序参考之间的差。}\label{fig:cpu-order}
 \end{figure}
-\Cref{fig:cpu-order}：在 512 像素的 mixed 场景（2000 个圆）中，打乱顺序后 92\%--93\% 的像素误差超过 0.01。只有被至少两个圆覆盖、且这些圆的相对顺序被打乱的像素才会出错。
-GPU naive kernel 的错误更严重（\cref{sec:naive}），因为它除了顺序错，还有读--改--写竞争。
+\Cref{fig:cpu-order} 回答「只是顺序乱了，会错多少」。在 512 像素的 mixed 场景（2000 个圆）中，打乱顺序后有 92\%--93\% 的像素误差超过 0.01。
+出错的只是那些被至少两个圆覆盖、而这些圆的相对顺序又被打乱了的像素，可这样的像素已经占了绝大多数。
+GPU 上 naive kernel 的错误比这还严重（\cref{sec:naive}），因为它除了顺序错，还有读--改--写竞争。
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.7\linewidth]{render_binning_savings.png}
 \caption{numpy 版：tile 分桶相对 brute force（每像素测试所有圆）省下的测试次数。}\label{fig:cpu-bin}
 \end{figure}
-\Cref{fig:cpu-bin}：many\_small（8000 个圆）在 tile=16 时测试次数比 brute force 少 167 倍。tile 太小时包围盒测试（圆数 $\times$ tile 数）占主导，
-tile 太大时每个 tile 的圆列表变长。GPU 上的 tile 扫描（\cref{fig:tile}）结论相同，只是还要加上 launch、排序和 shared memory 容量的约束。
+\Cref{fig:cpu-bin} 显示分桶能省多少工作，以及 tile 大小为什么存在一个最优点。many\_small（8000 个圆）在 tile=16 时，测试次数比 brute force 少 167 倍。
+tile 太小时，包围盒测试（圆数 $\times$ tile 数）占主导；tile 太大时，每个 tile 的圆列表又变长。GPU 上的 tile 扫描（\cref{fig:tile}）得出同样的结论，
+只是还要再加上 launch、排序和 shared memory 容量的约束。
 
 \subsection{Part 1：SAXPY——显存带宽与 PCIe}
+
+SAXPY 每个元素只做一次乘加，却要搬 12 个字节，是最典型的访存受限 kernel。正因为计算几乎可以忽略，它能把 GPU 上的几层「墙」一次看清：
+launch 延迟、L2、显存和 PCIe。
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.85\linewidth]{gpu_saxpy_bandwidth.pdf}
 \caption{SAXPY 有效带宽随 $N$ 的变化（\texttt{saxpy.jsonl}）。虚线分别为 GDDR7 标称带宽和 PCIe 5.0 x16 单向标称带宽。}\label{fig:saxpy}
 \end{figure}
 
-\Cref{fig:saxpy} 有四个区间：
+从左往右看，\cref{fig:saxpy} 依次经过四个区间，每个区间被不同的东西卡住：
 \begin{itemize}
-\item \textbf{$N\le 2^{14}$：launch 延迟主导。} kernel 时间几乎不变（$2^{10}$ 时 2.93\,$\mu$s，$2^{16}$ 时 2.78\,$\mu$s），所以带宽与 $N$ 成正比。
-连续 launch 的间隔实测为 1.85\,$\mu$s，launch 加同步为 5.72\,$\mu$s。
-\item \textbf{$2^{20}$--$2^{24}$：数据在 L2 内。} $N=2^{22}$ 时 kernel 达到 4759 GB/s，是 GDDR7 标称值的 2.7 倍。工作集 $12N=50$ MB，小于 96 MB 的 L2，
-而且前面的 \texttt{cudaMemcpy} 已经把数据留在 L2 中。这是 L2 带宽，不是显存带宽。
-\item \textbf{$N\ge 2^{26}$：显存带宽主导。} $2^{26}$ 和 $2^{28}$ 时 kernel 分别为 1577 和 1578 GB/s，是 1.79 TB/s 标称值的 88\%，与 asst1 测得的约 1.55 TB/s 一致。
-\item \textbf{端到端由 PCIe 决定。} $2^{28}$ 时 pinned 端到端 53.8 GB/s，其中 H2D 56.5 GB/s、D2H 54.1 GB/s，约为 PCIe 5.0 x16 标称 64 GB/s 的 85\%–88\%。
-pageable 只有 10.5 GB/s（H2D 10.8 GB/s）：驱动要先用 CPU 把数据拷到内部的 pinned staging 缓冲区，再做 DMA，瓶颈在主机端 memcpy。
-streams 版达到 77.1 GB/s，\emph{超过}单向 PCIe 带宽，因为 PCIe 是全双工，H2D 和 D2H 可以同时进行。它的 41.8 ms 接近单独 H2D 的 38.0 ms，即时间下限为较长方向的拷贝时间。
+\item $N\le 2^{14}$ 时由 launch 延迟主导。kernel 时间几乎不变（$2^{10}$ 时 2.93\,$\mu$s，$2^{16}$ 时 2.78\,$\mu$s），所以带宽与 $N$ 成正比地上升。
+作为参照，空 kernel 连续 launch 的间隔实测为 1.85\,$\mu$s，launch 加同步的往返为 5.72\,$\mu$s。
+\item $2^{20}$ 到 $2^{24}$ 之间，数据装得进 L2。$N=2^{22}$ 时 kernel 「达到」4759 GB/s，是 GDDR7 标称值的 2.7 倍。这不是显存变快了：
+工作集 $12N=50$ MB 小于 96 MB 的 L2，而前面的 \texttt{cudaMemcpy} 刚好把数据留在了 L2 里，所以这里量到的是 L2 带宽。
+\item $N\ge 2^{26}$ 时才真正由显存带宽决定。$2^{26}$ 和 $2^{28}$ 时 kernel 分别为 1577 和 1578 GB/s，是 1.79 TB/s 标称值的 88\%，与 asst1 测得的约 1.55 TB/s 一致。
+\item 端到端的曲线则由 PCIe 决定。$2^{28}$ 时 pinned 端到端为 53.8 GB/s，其中 H2D 56.5 GB/s、D2H 54.1 GB/s，约为 PCIe 5.0 x16 标称 64 GB/s 的 85\%–88\%。
+pageable 只有 10.5 GB/s（H2D 10.8 GB/s），因为驱动得先用 CPU 把数据拷进内部的 pinned staging 缓冲区，再做 DMA，瓶颈落在主机端的 memcpy 上。
+streams 版达到 77.1 GB/s，\emph{超过}了单向 PCIe 带宽。原因是 PCIe 全双工，H2D 和 D2H 可以同时跑。它用时 41.8 ms，接近单独 H2D 的 38.0 ms，
+也就是说，流水化之后的时间下限是较长那个方向的拷贝时间。
 \end{itemize}
+
+带宽曲线只告诉我们「慢」，下面的时间分解告诉我们慢在哪一段。
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.8\linewidth]{gpu_saxpy_breakdown.pdf}
 \caption{端到端时间分解（各段取中位数）。顶部数字为三段之和。}\label{fig:saxpy-break}
 \end{figure}
-\Cref{fig:saxpy-break}：$N=2^{28}$、pinned 时，H2D 38.04 ms、kernel 2.04 ms、D2H 19.85 ms，kernel 只占 3.4\%。H2D 搬 8N 字节、D2H 搬 4N 字节，所以 H2D 时间约为 D2H 的两倍。
-pageable 下总时间为 306.7 ms，是 pinned 的 5.1 倍。
+\Cref{fig:saxpy-break} 中，$N=2^{28}$、pinned 时，H2D 用 38.04 ms，kernel 2.04 ms，D2H 19.85 ms，kernel 只占 3.4\%。
+H2D 要搬 $x$ 和 $y$ 共 8N 字节，D2H 只搬 4N 字节，所以 H2D 的时间约为 D2H 的两倍。pageable 下总时间为 306.7 ms，是 pinned 的 5.1 倍。
+
+SAXPY 的算术强度（每搬一个字节做多少次浮点运算）只有 $2/12\approx0.17$ FLOP/B，在任何 GPU 上都受带宽限制。由此得到这一部分的结论：
 
 \begin{findingbox}[：SAXPY]
-SAXPY 的算术强度是 $2/12\approx0.17$ FLOP/B，任何 GPU 上都受带宽限制。kernel 能用到 88\% 的 GDDR7 带宽，但只要数据需要从主机拷过来再拷回去，
-瓶颈就变成 PCIe，比显存慢约 29 倍（1578 / 53.8）。对这类 kernel，GPU 加速的前提是数据常驻显存，或者在拷贝之后做足够多的计算来摊薄传输。
+kernel 本身已经用到 88\% 的显存带宽；一旦数据要经 PCIe 往返，瓶颈就换成了比显存慢约 29 倍（1578 / 53.8）的 PCIe。
+对这类 kernel，GPU 有收益的前提是数据常驻显存，或者拷贝之后有足够多的计算来摊薄传输。
 \end{findingbox}
 
 \subsection{Part 2：exclusive scan}
+
+scan 的 work 很容易算清楚，可 GPU 上的快慢并不按 work 排序。这一节想弄明白：六种实现之间的差距，到底是被什么决定的？
 
 \begin{figure}[H]\centering
 \includegraphics[width=\linewidth]{gpu_scan_time_bw.pdf}
 \caption{六种 scan 的时间（左）和有效带宽 $8N/t$（右）。所有点 mismatch = 0。}\label{fig:scan}
 \end{figure}
 
-\Cref{fig:scan} 可以分成三段来读：
-\begin{enumerate}
-\item \textbf{大 $N$（$\ge 2^{26}$）。} $2^{28}$ 时 cub 1.412 ms（1521 GB/s）、thrust 1.522 ms、smem 2.817 ms（762 GB/s）、raking 2.839 ms、smem\_nopad 3.049 ms、naive 16.75 ms（128 GB/s）。
-smem 和 raking 的有效带宽几乎正好是 cub 的一半。它们的第一遍读 $N$、写 $N$，\texttt{uniform\_add} 再读 $N$、写 $N$，实际流量是 $16N$ 字节；按 $16N$ 折算是 1.52 TB/s，与 cub 的 1.52 TB/s 相同。
-也就是说，三者都已经跑在显存带宽上限，差别在于搬了多少字节。
-\item \textbf{中等 $N$（$2^{22}$–$2^{24}$）。} 数据部分留在 L2 中，cub 在 $2^{24}$ 时有效带宽为 1816 GB/s，raking 为 1479 GB/s。
-\item \textbf{小 $N$。} 时间不再随 $N$ 变化，见\cref{fig:latency}。
-\end{enumerate}
+\Cref{fig:scan} 可以按 $N$ 分成三段来读。
+
+大 $N$（$\ge 2^{26}$）时，排名很清楚。$2^{28}$ 时 cub 用 1.412 ms（1521 GB/s），thrust 1.522 ms，smem 2.817 ms（762 GB/s），raking 2.839 ms，smem\_nopad 3.049 ms，naive 16.75 ms（128 GB/s）。
+有意思的是，smem 和 raking 的有效带宽几乎正好是 cub 的一半。原因在流量：它们第一遍读 $N$、写 $N$，\texttt{uniform\_add} 再读 $N$、写 $N$，实际搬了 $16N$ 字节。
+按 $16N$ 重新折算，它们是 1.52 TB/s，与 cub 的 1.52 TB/s 相同。换句话说，三者都已经跑在显存带宽的上限，差别只在搬了多少字节。
+
+中等 $N$（$2^{22}$–$2^{24}$）时，数据有一部分留在 L2 里，有效带宽可以超过显存：cub 在 $2^{24}$ 时为 1816 GB/s，raking 为 1479 GB/s。
+
+小 $N$ 时，时间不再随 $N$ 变化。这一段由固定开销决定，下面单独放大来看。
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.75\linewidth]{gpu_scan_latency_floor.pdf}
 \caption{$N\le2^{20}$ 时的延迟下限。图例中给出 $N=2^{20}$ 时各算法的 kernel launch 数（thrust/cub 内部的 launch 未计入）。}\label{fig:latency}
 \end{figure}
-\Cref{fig:latency}：$N=1000$ 时 naive 需要 20 次 launch 加一次 memcpy 和两次 memset，用时 49.55\,$\mu$s，平均每次操作约 2\,$\mu$s，与实测的 1.85\,$\mu$s 连续 launch 间隔一致。
-单 block 的 smem 和 raking 只需一次 launch，用时 4.4\,$\mu$s；cub 需要两次 launch（初始化 tile 状态加 scan），用时 6.98\,$\mu$s；thrust 每次调用都要分配和释放临时缓冲，用时 12.3\,$\mu$s。
-$N$ 从 1000 增加到 $2^{20}$（1000 倍），smem 版只从 4.43 变为 12.54\,$\mu$s，因为这段时间主要是固定开销。
+\Cref{fig:latency} 中，各算法的时间基本可以用「launch 次数乘以每次的开销」来解释。$N=1000$ 时，naive 需要 20 次 launch，外加一次 memcpy 和两次 memset，用时 49.55\,$\mu$s，
+平均每次操作约 2\,$\mu$s，正好与实测的 1.85\,$\mu$s 连续 launch 间隔对得上。单 block 的 smem 和 raking 只需一次 launch，用时 4.4\,$\mu$s；
+cub 要两次 launch（初始化 tile 状态，再做 scan），用时 6.98\,$\mu$s；thrust 每次调用都要分配和释放临时缓冲，用时 12.3\,$\mu$s。
+$N$ 从 1000 增加到 $2^{20}$，涨了 1000 倍，smem 版的时间却只从 4.43 变到 12.54\,$\mu$s，因为这段时间大部分是固定开销。
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.9\linewidth]{gpu_scan_nonpow2.pdf}
 \caption{非 2 的幂长度：每元素时间之比（右侧规模 / 左侧规模）。}\label{fig:nonpow2}
 \end{figure}
-\Cref{fig:nonpow2}：naive 必须补齐到 2 的幂。$10^8$ 补齐到 $2^{27}$，每元素时间是 $2^{26}$ 的 1.37 倍，与补齐比例 $2^{27}/10^8=1.34$ 相符；
-$2^{27}$ 与 $10^8$ 的补齐长度相同，所以 $2^{27}$ 的每元素时间反而只有 $10^8$ 的 0.75 倍。分块算法不需要补齐，比值都约为 1.0。
-唯一的例外是 $2^{20}+1$：smem 每块 1024 个元素，多出的 1 个元素会增加一个 block，块和数组的长度从 1024 变成 1025，因而多出一层递归（launch 数从 3 变为 5），在小规模下这多出的约 2\,$\mu$s 很明显。
+非 2 的幂长度检验的是补齐的代价。\Cref{fig:nonpow2} 中，naive 必须补齐到 2 的幂：$10^8$ 要补到 $2^{27}$，于是每元素时间是 $2^{26}$ 的 1.37 倍，
+与补齐比例 $2^{27}/10^8=1.34$ 吻合。反过来，$2^{27}$ 与 $10^8$ 的补齐长度相同，所以 $2^{27}$ 的每元素时间只有 $10^8$ 的 0.75 倍。
+分块算法不需要补齐，比值都在 1.0 左右。唯一的例外是 $2^{20}+1$：smem 每块 1024 个元素，多出的 1 个元素会多出一个 block，
+块和数组的长度从 1024 变成 1025，于是多了一层递归（launch 数从 3 变为 5）。在这个规模下，多出的约 2\,$\mu$s 很显眼。
 raking 每块 4096 个元素，块和只有 257 个，不受影响。
+
+既然大 $N$ 时差距都能用流量解释，那么 occupancy 和 bank conflict 起了多大作用？\cref{tab:scanattrs} 给出各 kernel 的静态资源。
 
 \begin{table}[H]
 \centering\small
@@ -330,32 +375,41 @@ uniform\_add & 256 & 14 & 0 & 6 & 1.00 \\
 \bottomrule
 \end{tabular}
 \end{table}
-\Cref{tab:scanattrs}：raking 每线程在寄存器中保存 16 个元素，用到 64 个寄存器，占用率降到 0.67，但在 $2^{28}$ 时仍与 smem 一样快（2.839 和 2.817 ms），
-说明这里的瓶颈不在 occupancy，而在 DRAM。padding 只多用 128 B shared memory（两种版本都按 4224 B 静态分配），却在 $2^{24}$ 时把时间从 146.9 降到 112.1\,$\mu$s（快 1.31 倍）。
-因为 ncu 不可用，bank conflict 的次数没有直接计数，这个 1.31 倍是唯一的证据。
+raking 每个线程在寄存器里放 16 个元素，用到 64 个寄存器，理论 occupancy（SM 上实际驻留的线程数占上限的比例）降到 0.67。
+可它在 $2^{28}$ 时与 smem 一样快（2.839 和 2.817 ms），说明这里的瓶颈不在 occupancy，而在 DRAM。
+padding 版只多用 128 B 的 shared memory（两种版本都按 4224 B 静态分配），却在 $2^{24}$ 时把时间从 146.9 降到 112.1\,$\mu$s，快了 1.31 倍。
+由于 ncu 不可用，bank conflict 的次数没有直接计数，这个 1.31 倍是唯一的证据。
 
 \begin{findingbox}[：scan]
-在大规模下，scan 的快慢取决于读写显存的遍数，与 work 是 $2N$ 还是 $N$ 关系不大。naive 的问题是 launch 多和跨步访存，不是算法本身。
-分块递归版本把流量降到 $16N$，单遍 decoupled look-back（cub）进一步降到 $8N$。在小规模下，决定时间的是 launch 次数，每次 launch 约 2\,$\mu$s。
+大规模下，scan 的快慢由读写显存的遍数决定，与 work 是 $2N$ 还是 $N$ 关系不大：分块递归版把流量降到 $16N$，单遍的 cub 降到 $8N$。
+小规模下，决定时间的是 launch 次数，每次约 2\,$\mu$s。
 \end{findingbox}
+
+scan 最常见的用途是流压缩（stream compaction），\texttt{find\_repeats} 就是一例。它能检验上面的结论：如果遍数决定一切，那么多遍的自写版本应该输给单遍的库实现。
 
 \begin{figure}[H]\centering
 \includegraphics[width=\linewidth]{gpu_find_repeats.pdf}
 \caption{\texttt{find\_repeats} 吞吐量（\texttt{find\_repeats.jsonl}），左：约 1\% 重复，右：约 50\% 重复。所有结果与 CPU 一致。}\label{fig:fr}
 \end{figure}
-\Cref{fig:fr}：$N\le10^6$ 时三者都在约 17--21\,$\mu$s，由 launch 和同步决定。自写版本要发 5 个以上 kernel 并做一次 4 字节 D2H，thrust 也要 D2H 取回输出个数。
-$N=10^8$、1\% 重复时，自写 smem 版 1.869 ms，thrust 0.283 ms，后者快 6.6 倍。自写版本的流量估算为：flags 读 $a$ 写 $f$（$8N$）+ scan（$16N$）+ scatter 读 $a$ 和 $pos$（$8N$），共约 $32N=3.2$ GB，
-按 1.87 ms 算是 1.71 TB/s，已经接近显存带宽上限~\cite{williams2009}。\texttt{copy\_if} 用单遍 look-back，把谓词计算和压缩合并在一个 kernel 中，基本只读一次 $a$（$4N$），流量少约 8 倍。
-重复率为 50\% 时，thrust 从 0.283 ms 增加到 0.404 ms，因为要多写 $0.5N$ 个输出；自写版从 1.869 增加到 2.198 ms。
+\Cref{fig:fr} 的结果正是这样。$N\le10^6$ 时三者都在约 17--21\,$\mu$s，由 launch 和同步决定：自写版本要发 5 个以上 kernel 再做一次 4 字节 D2H，thrust 也要 D2H 取回输出个数。
+到了 $N=10^8$、1\% 重复时，自写 smem 版用 1.869 ms，thrust 用 0.283 ms，后者快 6.6 倍。
+算一下自写版本的流量：flags 读 $a$ 写 $f$（$8N$），scan（$16N$），scatter 读 $a$ 和 $pos$（$8N$），共约 $32N=3.2$ GB。按 1.87 ms 算是 1.71 TB/s，已经贴近显存带宽上限~\cite{williams2009}。
+所以自写版本并不是哪一步写得慢，而是遍数太多。\texttt{copy\_if} 用单遍 look-back，把谓词计算和压缩合在一个 kernel 里，基本只读一次 $a$（$4N$），流量少约 8 倍。
+重复率升到 50\% 时，thrust 从 0.283 ms 增加到 0.404 ms，因为要多写 $0.5N$ 个输出；自写版从 1.869 增加到 2.198 ms。
+
+把所有访存受限的 kernel 放在同一根轴上，能更直观地看出「离上限有多远」。
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.8\linewidth]{gpu_bandwidth_roof.pdf}
 \caption{访存受限 kernel 与 1.79 TB/s 上限对比（按算法必需的字节数计：scan 为 $8N$，find\_repeats 为 $4N$）。}\label{fig:roof}
 \end{figure}
-\Cref{fig:roof} 把各 kernel 放在同一根「必需字节数 / 时间」的轴上比较：SAXPY 88\%、cub 85\%、thrust scan 79\%、thrust copy\_if 79\%；自写 smem/raking 只有 42\%--43\%（nopad 39\%），因为实际流量是必需流量的两倍；naive 只有 7\%。
-在这根轴上，离上限的距离就是多出来的访存遍数。
+\Cref{fig:roof} 按「算法必需的字节数除以时间」计算带宽。SAXPY 到 88\%，cub 85\%，thrust scan 79\%，thrust copy\_if 79\%；
+自写的 smem 和 raking 只有 42\%--43\%（nopad 39\%），因为实际流量是必需流量的两倍；naive 只有 7\%。在这根轴上，离上限的距离就是多出来的访存遍数。
 
 \subsection{Part 3：渲染器}
+
+渲染器要同时满足正确和快。这一节先确认 starter 的写法错在哪里，再看各个正确版本是怎样一步步变快的，最后讨论 tile 大小怎么选。
+\cref{fig:gallery} 是 CPU 参考的渲染结果，后面所有对比都以它为准。
 
 \begin{figure}[H]\centering
 \includegraphics[width=\linewidth]{gpu_render_gallery.pdf}
@@ -363,6 +417,8 @@ $N=10^8$、1\% 重复时，自写 smem 版 1.869 ms，thrust 0.283 ms，后者�
 \end{figure}
 
 \subsubsection{(a) naive 一线程一圆是错的}\label{sec:naive}
+
+先看错误长什么样。\cref{fig:naive-img} 把参考图、naive 的输出和两者之差并排放在一起，\cref{fig:naive-err} 和\cref{tab:naive} 给出定量统计。
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.95\linewidth]{gpu_render_naive_images.pdf}
@@ -394,16 +450,21 @@ micro2M & 0.840 & 589547 & 569401 & 608102 \\
 \end{tabular}
 \end{table}
 
-\Cref{fig:naive-img,fig:naive-err,tab:naive} 显示了两种不同的错误：
-\begin{itemize}
-\item \textbf{只有顺序错误，结果是确定的。} rgb 场景的三个圆在同一个 warp 中，三条 lane 以 lockstep 方式各自遍历自己的包围盒。同一像素在不同循环迭代中被访问，先后由包围盒的几何形状决定，与输入顺序无关。
-因此 24.3\% 的像素出错，但两次运行结果完全一样（0 个像素不同）。这个例子说明，结果可复现并不代表正确。
-\item \textbf{读--改--写竞争。} 其余场景中，不同 warp、不同 SM 同时读写同一像素，有的更新被覆盖丢失，有的顺序随机。rand100k 两次运行的所有像素都不同。
-biglittle 的 naive 图中大圆浮在最上层（\cref{fig:naive-img} 第 4 列）：大圆对应的线程循环最长，最后才写完，所以它们的写入覆盖了小圆。这与输入顺序（大圆在底层）正好相反。
-\item pattern 场景重叠少（平均覆盖 1.9），只在圆有重叠的斜带上出错，48.5\% 的像素错，两次运行只有 1462 个像素不同：大部分错误来自确定的顺序，少量来自竞争。
-\end{itemize}
+这些数据里能分出两种性质不同的错误。
+
+第一种只有顺序错，结果却是确定的，rgb 场景就是这样。三个圆的线程在同一个 warp 里，三条 lane 以 lockstep 方式各自遍历自己的包围盒。
+同一个像素会在不同的循环迭代里被不同的圆访问，谁先谁后由包围盒的几何形状决定，与输入顺序无关。
+结果是 24.3\% 的像素出错，但两次运行完全一样（0 个像素不同）。这个例子提醒我们：结果可复现，并不代表结果正确。
+
+第二种是读--改--写竞争。其余场景中，不同 warp、不同 SM 会同时读写同一像素，有的更新被覆盖丢失，有的顺序随机，rand100k 两次运行时所有像素都不同。
+biglittle 的 naive 图里，大圆反而浮在了最上层（\cref{fig:naive-img} 第 4 列）：大圆对应的线程循环最长，最后才写完，它们的写入就盖住了小圆。这与输入顺序（大圆在底层）正好相反。
+
+pattern 场景介于两者之间。它的重叠很少（平均覆盖 1.9），只在圆有重叠的斜带上出错：48.5\% 的像素错，但两次运行只有 1462 个像素不同。
+可见它的错误大部分来自确定的顺序，只有少量来自竞争。
 
 \subsubsection{(b) 正确且快：各优化阶段}
+
+确认了必须按像素并行之后，问题变成：怎样让每个像素只看真正覆盖它的圆？\cref{tab:render} 汇总了各阶段的每帧时间。
 
 \begin{table}[H]
 \centering\small
@@ -431,37 +492,46 @@ micro2M & 2000000 & 6.8 & 147.8 & 0.638 (54.3\%) & 1690.730 & 0.463 (8) & 0.505 
 \caption{各优化阶段的每帧时间（对数轴，最优 tile，包含分桶时间）。}\label{fig:stages}
 \end{figure}
 
-\Cref{tab:render,fig:stages} 的读法：
-\begin{itemize}
-\item \textbf{allcircles 正确，但工作量是 $O(NP)$。} rand1M 有 $1.05\times10^{12}$ 次圆--像素测试，用时 844 ms，约为每秒 $1.24\times10^{12}$ 次测试，比单核 CPU 参考（383 ms）还慢。
-CPU 参考只测包围盒内的像素，工作量与覆盖面积成正比，而不是与 $NP$ 成正比。
-\item \textbf{binned 把测试数降到 $P\times\overline{L}$}，$\overline{L}$ 为每个 tile 的平均列表长度。rand1M 在 $T=16$ 时 $\overline{L}=609.5$，只需 $6.39\times10^8$ 次测试，是 allcircles 的 1/1640。
-render kernel 0.385 ms，约为每秒 $1.66\times10^{12}$ 次测试。单次测试的吞吐与 allcircles 差不多，加速几乎全部来自测试次数的减少。
-\item \textbf{shared memory 批量取圆}（binned $\to$ binned\_smem）。在 $T\ge16$ 时有效：rand100k $T=32$ 的 render 时间从 0.502 降到 0.293 ms（1.71 倍），rand1M $T=32$ 从 1.772 降到 0.849 ms（2.09 倍）。
-有两个原因：每个圆的 7 个参数每个 block 只从 global memory 读一次；寄存器从 52 个降到 34 个（\cref{tab:renderattrs}），256 线程块的理论 occupancy 从 0.67 升到 1.0。
-$T=8$ 时每批只有 64 个圆，加上同步开销，没有收益。
-\item \textbf{blockscan} 只有一次 launch，没有全局排序，在 $N$ 小的场景最快（rgb 0.015 ms，pattern 0.047 ms）。但它的工作量是 tile 数 $\times N$ 次包围盒测试，
-micro2M 在 $T=16$ 时是 $4096\times2\times10^6=8.2\times10^9$ 次，用时 28.8 ms，比 binned 慢 30 倍以上。
-\end{itemize}
+沿着\cref{tab:render} 和\cref{fig:stages} 从左往右，每一步都对应一个具体的改进。
+
+allcircles 是正确的，但工作量是 $O(NP)$。rand1M 要做 $1.05\times10^{12}$ 次圆--像素测试，用时 844 ms，约合每秒 $1.24\times10^{12}$ 次测试，比单核 CPU 参考（383 ms）还慢。
+这是因为 CPU 参考只测包围盒内的像素，工作量与覆盖面积成正比，而不是与 $NP$ 成正比。
+
+binned 把测试次数降到 $P\times\overline{L}$，其中 $\overline{L}$ 是每个 tile 的平均列表长度。rand1M 在 $T=16$ 时 $\overline{L}=609.5$，只需 $6.39\times10^8$ 次测试，是 allcircles 的 1/1640。
+它的 render kernel 用 0.385 ms，约合每秒 $1.66\times10^{12}$ 次测试。单次测试的吞吐与 allcircles 差不多，所以加速几乎全部来自测试次数的减少。
+
+binned\_smem 在此基础上改用 shared memory 批量取圆，在 $T\ge16$ 时有效：rand100k $T=32$ 的 render 时间从 0.502 降到 0.293 ms（1.71 倍），rand1M $T=32$ 从 1.772 降到 0.849 ms（2.09 倍）。
+收益来自两处。一是每个圆的 7 个参数，每个 block 只从 global memory 读一次；二是寄存器从 52 个降到 34 个（\cref{tab:renderattrs}），256 线程块的理论 occupancy 从 0.67 升到 1.0。
+$T=8$ 时每批只有 64 个圆，同步开销抵掉了收益。
+
+blockscan 只有一次 launch，也不需要全局排序，所以在 $N$ 很小的场景里最快（rgb 0.015 ms，pattern 0.047 ms）。但它的工作量是「tile 数 $\times N$」次包围盒测试：
+micro2M 在 $T=16$ 时要做 $4096\times2\times10^6=8.2\times10^9$ 次，用时 28.8 ms，比 binned 慢 30 倍以上。
+
+表格里的场景各不相同，不容易分清每种方法随 $N$ 怎么变。下面的 sweep 固定 overdraw、只改变 $N$，把渐近行为单独拿出来看。
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.8\linewidth]{gpu_render_sweep.pdf}
 \caption{overdraw 固定为约 45、$N$ 从 $10^3$ 到 $3\times10^6$（\texttt{render\_sweep.jsonl}，$T=16$）。allcircles 在 $N>3\times10^5$ 时不再运行。}\label{fig:sweep}
 \end{figure}
-\Cref{fig:sweep} 把渐近行为分开来看：allcircles 的斜率为 1（$N$ 每增加 10 倍，时间也增加约 10 倍：$10^4$ 时 8.33 ms，$10^5$ 时 84.6 ms），在 $3\times10^5$ 时与 CPU 相当（253.8 和 263.3 ms）。
-blockscan 的斜率也接近 1，因为它测试的是 tile 数 $\times N$。binned\_smem 在 $N$ 增加 3000 倍的过程中只从 0.222 ms 增加到 1.101 ms：总覆盖面积不变，渲染工作量基本不变，增加的是分桶开销和随 $N$ 变长的列表（圆变小后，跨 tile 的包围盒占比上升）。
-两条曲线的交点在 $N\approx5000$：$N=3000$ 时 blockscan 更快（0.107 和 0.157 ms），$N=10^4$ 时 binned\_smem 更快（0.144 和 0.226 ms）。
+\Cref{fig:sweep} 中，allcircles 的斜率为 1：$N$ 每增加 10 倍，时间也增加约 10 倍（$10^4$ 时 8.33 ms，$10^5$ 时 84.6 ms），到 $3\times10^5$ 时已与 CPU 相当（253.8 和 263.3 ms）。
+blockscan 的斜率也接近 1，因为它测试的是「tile 数 $\times N$」。binned\_smem 则几乎是平的：$N$ 增加 3000 倍，它只从 0.222 ms 增加到 1.101 ms。
+原因是总覆盖面积不变，渲染工作量基本不变；增加的只是分桶开销，以及圆变小后跨 tile 的包围盒占比上升带来的更长列表。
+两条曲线在 $N\approx5000$ 处相交：$N=3000$ 时 blockscan 更快（0.107 和 0.157 ms），$N=10^4$ 时 binned\_smem 更快（0.144 和 0.226 ms）。
 CPU 参考的时间与 $N$ 关系不大（109--418 ms），因为它的工作量同样与覆盖面积成正比。
 
 \subsubsection{分桶开销、列表长度与 tile 大小}
+
+分桶本身也要花时间。对圆很少的场景，这笔固定开销可能比渲染还贵。
 
 \begin{figure}[H]\centering
 \includegraphics[width=0.85\linewidth]{gpu_render_breakdown.pdf}
 \caption{binned\_smem 在 $T=16$ 时分桶与渲染的时间分解。}\label{fig:break}
 \end{figure}
-\Cref{fig:break}：分桶时间大致在 0.05--0.15 ms，下限是 6 次 launch、2 次 D2H 同步加一次 radix sort。rgb 只有 3 个圆，分桶仍需 0.050 ms，占总时间的 82\%；
-而且每个大圆要由单个线程把覆盖的约 1500 个 tile 依次 \texttt{atomicAdd} 和 emit，这是一线程一圆分桶在大圆上的负载不均衡。
-在 rand1M 和 micro2M 中，渲染占 72\% 和 65\%（0.385 和 0.380 ms），分桶的固定成本被摊薄。
+\Cref{fig:break} 中，分桶时间大致在 0.05--0.15 ms，下限由 6 次 launch、2 次 D2H 同步和一次 radix sort 决定。
+rgb 只有 3 个圆，分桶仍要 0.050 ms，占总时间的 82\%。而且每个大圆要由单个线程把它覆盖的约 1500 个 tile 依次 \texttt{atomicAdd} 和 emit，
+这暴露了「一线程一圆」分桶在大圆上的负载不均衡。在 rand1M 和 micro2M 中，渲染占 72\% 和 65\%（0.385 和 0.380 ms），分桶的固定成本被摊薄了。
+
+tile 大小同时影响分桶和渲染两头，下面两张图分别从时间和列表长度两个角度看这个权衡。
 
 \begin{figure}[H]\centering
 \includegraphics[width=\linewidth]{gpu_render_tile_sweep.pdf}
@@ -471,11 +541,14 @@ CPU 参考的时间与 $N$ 关系不大（109--418 ms），因为它的工作量
 \includegraphics[width=\linewidth]{gpu_render_lists.pdf}
 \caption{左：(tile, circle) 对的数量；右：最长列表与平均列表长度之比（负载不均衡程度）。}\label{fig:lists}
 \end{figure}
-\Cref{fig:tile,fig:lists}：tile 越小，(tile, circle) 对越多（rand10k 在 $T=8$ 时 1093947 对，$T=32$ 时 108651 对），分桶工作量越大；tile 越大，每个像素要遍历的列表越长。
-micro2M 的圆半径约 1 像素，列表长度近似与 tile 面积成正比：$T=8,16,32$ 时分别为 232、689、2332，所以 $T=8$ 最快（binned 0.463 ms），$T=32$ 慢 6.2 倍（2.858 ms）。
-只有 3 个大圆的 rgb 在 $T=32$ 时最快（binned\_smem 0.047 ms），因为每个圆本来就跨很多 tile，小 tile 只会增加对的数量。
-对 blockscan 来说，tile 越大，tile 数越少，包围盒测试的总量就越少（tile 数 $\times N$），所以除 rgb（$N=3$，测试量可以忽略）外，都是 $T=32$ 最快。
-负载均衡方面，max/mean 在 rand 类场景中为 1.1--1.6 倍，均衡情况良好；rgb 和 pattern 有大面积空白 tile 与重叠区并存，为 1.8--2.9 倍。
+\Cref{fig:tile,fig:lists} 说明 tile 大小是一个两头受限的权衡。tile 越小，(tile, circle) 对越多，分桶的工作量越大：rand10k 在 $T=8$ 时有 1093947 对，$T=32$ 时只有 108651 对。
+tile 越大，每个像素要遍历的列表就越长。最优点落在哪里，取决于圆的大小。
+micro2M 的圆半径约 1 像素，列表长度近似与 tile 面积成正比，$T=8,16,32$ 时分别为 232、689、2332，所以 $T=8$ 最快（binned 0.463 ms），$T=32$ 慢 6.2 倍（2.858 ms）。
+只有 3 个大圆的 rgb 则在 $T=32$ 时最快（binned\_smem 0.047 ms），因为每个圆本来就跨很多 tile，小 tile 只会让对数变多。
+blockscan 的情况不同：tile 越大，tile 数越少，包围盒测试的总量（tile 数 $\times N$）就越少，所以除了 rgb（$N=3$，测试量可以忽略），它都是 $T=32$ 最快。
+负载均衡方面，rand 类场景的 max/mean 在 1.1--1.6 倍，分布相当均匀；rgb 和 pattern 里大片空白 tile 与重叠区并存，达到 1.8--2.9 倍。
+
+tile 大小还会通过 block 大小影响资源占用，\cref{tab:renderattrs} 列出了各渲染 kernel 的数据。
 
 \begin{table}[H]
 \centering\small
@@ -494,160 +567,173 @@ k\_render\_blockscan & 34 & 6 & 1.00 & 28672 & 0.67 \\
 \bottomrule
 \end{tabular}
 \end{table}
-\Cref{tab:renderattrs}：1024 线程块（$T=32$）每个 SM 只能放一个，occupancy 上限为 1024/1536=0.67，所以 $T=32$ 本身就比 $T=16$ 的 6 个 256 线程块（1.0）吃亏。
+$T=32$ 对应 1024 线程的 block，每个 SM 只放得下一个，occupancy 上限是 1024/1536=0.67。相比之下，$T=16$ 的 256 线程块每 SM 可以放 6 个，occupancy 为 1.0。
+所以 $T=32$ 一开始就吃了亏。
 
 \begin{findingbox}[：渲染器]
-保序的关键是把并行轴从「圆」换成「像素 / tile」，并用 scan 计算偏移、生成每个 tile 内仍按输入顺序排列的圆列表。之后每个像素在寄存器中按顺序混合，既不需要原子操作，也不需要锁。
-从 allcircles 到 binned 的加速来自测试次数减少（rand1M 少 1640 倍）；shared memory 批量取圆再带来 1.3--2.1 倍；tile 大小要根据圆半径选：小圆选小 tile，大圆选大 tile。
-在本测试集中 $T=16$ 是最稳妥的默认值，9 个场景里有 7 个的 binned\_smem 最优值落在 $T=16$。
+保序的关键是把并行轴从「圆」换成「像素 / tile」，并用 scan 算偏移，生成每个 tile 内仍按输入顺序排列的圆列表；之后每个像素在寄存器里按顺序混合，不需要原子操作，也不需要锁。
+速度主要来自测试次数的减少（rand1M 少 1640 倍），shared memory 批量取圆再带来 1.3--2.1 倍；在本测试集中，9 个场景里有 7 个的 binned\_smem 最优值落在 $T=16$。
 \end{findingbox}
 
 %=====================================================================
 \section{与理论模型的对照}
 
+前面的结论都来自测量。这一节反过来，用简单的模型去预测这些数字，看模型能解释多少、解释不了的又是什么。
+
 \subsection{SAXPY：屋顶线与 PCIe}
-算术强度 $I=2/12=0.167$ FLOP/B。RTX 5090 的 FP32 峰值约 105 TFLOP/s（厂商规格），屋脊点约为 $105\times10^{12}/1.79\times10^{12}\approx58$ FLOP/B，SAXPY 远在其左侧。kernel 时间的预测为
+SAXPY 的算术强度 $I=2/12=0.167$ FLOP/B。RTX 5090 的 FP32 峰值约 105 TFLOP/s（厂商规格），屋脊点（算力受限和带宽受限的分界）约为 $105\times10^{12}/1.79\times10^{12}\approx58$ FLOP/B，
+SAXPY 远在它的左边，所以 kernel 时间只取决于搬多少字节：
 \[
 t_\text{kernel}=\frac{12N}{B_\text{DRAM}}=\frac{3.22\ \text{GB}}{1.79\ \text{TB/s}}=1.80\ \text{ms}\quad(\text{实测 }2.04\ \text{ms，88\%}).
 \]
-端到端时间的预测（使用实测的单向带宽）：
+端到端时间再加上两次拷贝（使用实测的单向带宽）：
 \[
 t_\text{e2e}=\frac{8N}{B_\text{H2D}}+t_\text{kernel}+\frac{4N}{B_\text{D2H}}
 =\frac{2.147}{56.45}+2.04+\frac{1.074}{54.10}\ \text{ms}=38.0+2.0+19.8=59.9\ \text{ms},
 \]
-与实测的 59.91 ms 一致（这几个量都取自同一行数据，所以是自洽性检查）。拷贝和计算完全流水化时，时间下限为 $\max(8N/B_\text{H2D},4N/B_\text{D2H})=38.0$ ms，实测 streams 为 41.8 ms，差距是首尾块无法重叠的部分。
+与实测的 59.91 ms 一致。需要说明，这几个量取自同一行数据，所以这只是自洽性检查，不是独立的预测。
+如果拷贝和计算完全流水化，时间下限是 $\max(8N/B_\text{H2D},4N/B_\text{D2H})=38.0$ ms。streams 实测 41.8 ms，多出的部分来自首尾两块无法重叠。
 
 \subsection{scan：访存遍数模型}
-设持续显存带宽为 $B=1.52$ TB/s（取 cub 在 $2^{28}$ 时的值）。
+既然大 $N$ 时 scan 跑在带宽上限，最直接的模型就是「时间 = 字节数 / 带宽」。取持续显存带宽 $B=1.52$ TB/s（cub 在 $2^{28}$ 时的值）：
 \begin{align*}
 \text{cub（单遍 look-back）}: &\ 8N\ \text{B} \Rightarrow 2.147\ \text{GB}/B = 1.41\ \text{ms}\quad(\text{实测 }1.412)\\
 \text{smem / raking（两遍 + 递归）}: &\ 16N\ \text{B} \Rightarrow 2.82\ \text{ms}\quad(\text{实测 }2.817\ /\ 2.839)\\
 \text{naive（逐层跨步）}: &\ \approx 84N\ \text{B} \Rightarrow 14.8\ \text{ms}\quad(\text{实测 }16.75)
 \end{align*}
-naive 的 $84N$ 是这样估算的。DRAM 和 L2 的访问粒度是 32 B 的 sector（8 个 int）。stride $s=2^{d+1}<16$ 的前三层几乎连续访问，每层约读写整个数组（$8N$ 字节），up-sweep 和 down-sweep 合计约 $48N$。
-$s\ge16$ 的层中，每个线程的两个地址落在不同 sector：up-sweep 读 2 个、写 1 个 sector（96 B），down-sweep 读 2 个、写 2 个（128 B）。线程数为 $N/s$，求和 $\sum_{s\ge16}1/s=1/8$，
-这部分合计 $(96+128)N/8=28N$。再加上初始复制 $8N$，总计约 $84N$。实测比估算慢 13\%，多出的部分包括 56 次 launch（约 0.1 ms）和深层访问的 DRAM 行局部性较差。
-这个模型说明，naive 慢的主要原因是跨步访问浪费 sector，从 work（加法次数）上看不出这一点。
+cub 和 smem 的字节数一目了然，naive 的 $84N$ 需要估算一下。DRAM 和 L2 的访问粒度是 32 B 的 sector（8 个 int），哪怕只用其中 4 字节，也要搬整个 sector。
+stride $s=2^{d+1}<16$ 的前三层几乎是连续访问，每层大约读写整个数组（$8N$ 字节），up-sweep 和 down-sweep 合计约 $48N$。
+到了 $s\ge16$ 的层，每个线程的两个地址落在不同的 sector 上：up-sweep 读 2 个、写 1 个 sector（96 B），down-sweep 读 2 个、写 2 个（128 B）。
+线程数为 $N/s$，而 $\sum_{s\ge16}1/s=1/8$，所以这部分合计 $(96+128)N/8=28N$。再加上初始复制的 $8N$，总计约 $84N$。
+实测比估算慢 13\%，多出的部分包括 56 次 launch（约 0.1 ms），以及深层访问的 DRAM 行局部性较差。
+这个模型说明，naive 慢的主要原因是跨步访问浪费了 sector，而这一点从 work（加法次数）上完全看不出来。
 
-\paragraph{work 与 span 在 GPU 上对应什么。} numpy 版统计的 span $=2\log_2 m$，在 naive GPU 版中就是 $2\log_2 m$ 次 launch。按每次约 2\,$\mu$s 计，
-$N=2^{20}$ 时的下限约为 $40\times2=80\,\mu$s，实测 83.3\,$\mu$s，可见 naive 在 $2^{20}$ 时完全由 span（launch 次数）决定。
-分块版本把 span 的大部分放到块内用 \texttt{\_\_syncthreads} 完成（代价是几十纳秒而不是微秒），跨块的同步只剩递归层数（$\log_{1024}N$），launch 数为 3--5 次。
-Brent~\cite{brent1974} 定理 $T_P\le W/P+S$ 依然成立，只是在 GPU 上，跨块的 $S$ 每一步要乘以约 2\,$\mu$s，而块内的每一步只是一次 barrier。
+\paragraph{work 与 span 在 GPU 上对应什么。} numpy 版统计的 span $=2\log_2 m$，到了 naive GPU 版就是 $2\log_2 m$ 次 launch。按每次约 2\,$\mu$s 算，
+$N=2^{20}$ 时的下限约为 $40\times2=80\,\mu$s，实测 83.3\,$\mu$s，可见 naive 在这个规模下完全由 span（launch 次数）决定。
+分块版本把大部分 span 放进块内，用 \texttt{\_\_syncthreads} 完成，每步代价是几十纳秒而不是微秒；跨块的同步只剩递归层数（$\log_{1024}N$），launch 数为 3--5 次。
+Brent~\cite{brent1974} 定理 $T_P\le W/P+S$ 在 GPU 上依然成立，只是跨块的 $S$ 每一步要乘以约 2\,$\mu$s，而块内的每一步只是一次 barrier。
 
 \subsection{渲染器的成本模型}
-设 $P$ 为像素数，$N$ 为圆数，$T$ 为 tile 边长，$\overline{L}(T)$ 为平均每 tile 的列表长度，$c$ 为平均覆盖数：
+渲染器的三类做法，工作量结构不同。设 $P$ 为像素数，$N$ 为圆数，$T$ 为 tile 边长，$\overline{L}(T)$ 为平均每 tile 的列表长度，$c$ 为平均覆盖数，则
 \begin{align*}
 t_\text{allcircles} &\approx \frac{P\,N}{R_\text{test}}, &
 t_\text{binned} &\approx t_\text{bin}(N,\#\text{pairs}) + \frac{P\,\overline{L}(T)}{R_\text{test}}, &
 t_\text{blockscan} &\approx \frac{(P/T^2)\,N}{R_\text{bbox}} + \frac{P\,\overline{L}(T)}{R_\text{test}},
 \end{align*}
-对于半径为 $r$ 像素的圆，$\overline{L}(T)\approx c\,(1+2r/T)^2$。由 rand1M 数据可得 $R_\text{test}\approx1.2$--$1.7\times10^{12}$/s；
-由 micro2M 的 blockscan（$T=16$，$8.2\times10^9$ 次包围盒测试，28.8 ms）可得 $R_\text{bbox}\approx2.8\times10^{11}$/s。按这个模型，
-blockscan 与 binned 的交点在 $N\,P/T^2\approx R_\text{bbox}\cdot t_\text{bin}$，即 $N\approx2.8\times10^{11}\times10^{-4}\ \text{s}/4096\approx7000$（$T=16$、$t_\text{bin}\approx0.1$ ms），
-与 sweep 实测的约 5000 处于同一量级。
+对于半径为 $r$ 像素的圆，$\overline{L}(T)\approx c\,(1+2r/T)^2$。从 rand1M 的数据可以得到 $R_\text{test}\approx1.2$--$1.7\times10^{12}$/s；
+从 micro2M 的 blockscan（$T=16$，$8.2\times10^9$ 次包围盒测试，28.8 ms）可以得到 $R_\text{bbox}\approx2.8\times10^{11}$/s。
+按这个模型，blockscan 与 binned 的交点在 $N\,P/T^2\approx R_\text{bbox}\cdot t_\text{bin}$，即 $N\approx2.8\times10^{11}\times10^{-4}\ \text{s}/4096\approx7000$（$T=16$、$t_\text{bin}\approx0.1$ ms），
+与 sweep 实测的约 5000 处于同一量级。模型粗糙，但足以说明交点为什么会落在几千个圆这个范围。
 
 %=====================================================================
 \section{面试专题}
+
+这一节把前面的结果整理成面试里能直接说出口的话。
 
 \paragraph{20 秒讲法。} 「我在 RTX 5090 上复刻了 CS149 作业 3。SAXPY 的 kernel 能跑到显存带宽的 88\%，但加上 PCIe 拷贝后只剩 54 GB/s，kernel 只占 3\% 的时间。
 scan 上，我写的分块版本和 cub 都已经跑在显存带宽上限，cub 快一倍，是因为它只读写一遍。渲染器的难点是保序：一线程一圆的写法在 9 个场景里有 24\% 到 100\% 的像素出错。
 我改成按 tile 并行，用 scan 和稳定排序为每个 tile 生成按输入顺序排列的圆列表，再用 shared memory 分批取圆。结果与 CPU 参考逐位相同，rand1M 比 CPU 快 712 倍。」
 
 \paragraph{STAR 故事。}
-\textbf{S}：渲染器有两个正确性约束（原子、保序）；starter 的一线程一圆 kernel 在 rand10k 上全部 1048576 个像素出错，两次运行有 591059 个像素不同。
-\textbf{T}：在逐位正确的前提下，让 rand1M、micro2M 这类上百万个圆的场景达到亚毫秒级。
-\textbf{A}：先写一线程一像素、遍历全部圆的版本，确认可以做到逐位正确（为此加了 \texttt{-fmad=false}，并让 host 和 device 共用 \texttt{shade()}）；再加上基于 scan 的全局分桶和稳定 radix sort；
-接着用 shared memory 分批取圆，把寄存器数从 52 降到 34；最后扫描 tile 大小，并加了一个 overdraw 固定、$N$ 变化的 sweep 来区分各方法的渐近行为。
-\textbf{R}：rand1M 从 844 ms 降到 0.538 ms（1569 倍），比 CPU 参考快 712 倍；90 个 (场景, 阶段, tile) 组合全部通过逐像素比较；
-同时发现 blockscan 在 $N\lesssim5000$ 时更快，tile 大小应按圆半径选择。
+情境（S）：渲染器有原子和保序两个正确性约束，而 starter 的一线程一圆 kernel 在 rand10k 上全部 1048576 个像素出错，两次运行有 591059 个像素不同。
+任务（T）：在逐位正确的前提下，让 rand1M、micro2M 这类上百万个圆的场景做到亚毫秒级。
+行动（A）：我先写了一线程一像素、遍历全部圆的版本，确认能做到逐位正确，为此加了 \texttt{-fmad=false}，并让 host 和 device 共用 \texttt{shade()}。
+然后加上基于 scan 的全局分桶和稳定 radix sort；接着用 shared memory 分批取圆，寄存器数从 52 降到 34；最后扫描 tile 大小，
+又加了一个 overdraw 固定、$N$ 变化的 sweep，把各方法的渐近行为分开。
+结果（R）：rand1M 从 844 ms 降到 0.538 ms（1569 倍），比 CPU 参考快 712 倍；90 个 (场景, 阶段, tile) 组合全部通过逐像素比较。
+另外还发现 blockscan 在 $N\lesssim5000$ 时更快，tile 大小应按圆半径选择。
 
 \begin{iqbox}{为什么一线程一圆、每像素加 atomic 也不对？}
-\textbf{答}：atomic 只保证一次「读--改--写」不被打断，不保证不同圆之间的先后顺序。over 混合（\cref{eq:over}）不满足交换律，两个 $\alpha=0.5$ 的圆交换顺序后，像素颜色就不同。
-另外 float4 颜色没有现成的原子 over 操作，需要用 CAS 循环或锁来实现，而且仍然无法保序。正确的做法是按像素并行，每个像素按顺序遍历覆盖它的圆。
-\par\textbf{常见错答}：「加 \texttt{atomicAdd} 就好了。」加法满足交换律，over 不满足；rgb 场景即使没有竞争（结果可复现）也有 24.3\% 的像素出错。
+因为 atomic 只保证一次「读--改--写」不被打断，不保证不同圆之间的先后顺序，而 over 混合（\cref{eq:over}）不满足交换律，两个 $\alpha=0.5$ 的圆换个顺序，像素颜色就不同。
+何况 float4 颜色没有现成的原子 over 操作，只能用 CAS 循环或锁来实现，而且依然无法保序。正确的做法是按像素并行，每个像素按顺序遍历覆盖它的圆。
+\par 常见的错答是「加 \texttt{atomicAdd} 就好了」。加法满足交换律，over 不满足；rgb 场景即使没有竞争（结果可复现），也有 24.3\% 的像素出错。
 \end{iqbox}
 
 \begin{iqbox}{SAXPY 放到 GPU 上为什么没变快？}
-\textbf{答}：算术强度只有 0.17 FLOP/B，kernel 受显存带宽限制，1578 GB/s 已经是 88\% 的峰值。端到端还要经过 PCIe：pinned 内存 53.8 GB/s，比显存慢 29 倍，kernel 只占 3.4\% 的时间。
-pageable 内存还要多一次 CPU staging 拷贝，只有 10.5 GB/s。要让 GPU 有收益，数据要常驻显存，或者用 stream 让拷贝与计算重叠，或者把多个操作融合，提高每字节传输对应的计算量。
-\par\textbf{常见错答}：「GPU 算力强，所以一定更快。」或者只报 kernel 时间而忽略拷贝；或者认为 PCIe 是半双工，实际上 streams 版本达到了 77 GB/s。
+因为它的算术强度只有 0.17 FLOP/B，kernel 受显存带宽限制，1578 GB/s 已经是 88\% 的峰值；而端到端还要过 PCIe，pinned 内存只有 53.8 GB/s，比显存慢 29 倍，kernel 只占 3.4\% 的时间。
+pageable 内存还要多一次 CPU staging 拷贝，只有 10.5 GB/s。要让 GPU 有收益，数据要常驻显存，或者用 stream 让拷贝与计算重叠，或者把多个操作融合起来，提高每字节传输对应的计算量。
+\par 常见的错答有三种：「GPU 算力强，所以一定更快」；只报 kernel 时间、忽略拷贝；以为 PCIe 是半双工，而实际上 streams 版本达到了 77 GB/s。
 \end{iqbox}
 
 \begin{iqbox}{Blelloch 的 work 是 $O(N)$，为什么 naive GPU 版仍比 cub 慢 12 倍？}
-\textbf{答}：一是 launch 数为 $2\log_2 m$（$2^{28}$ 时 56 次）；二是深层跨步访问，每个线程用 4 字节却要搬 32 字节的 sector，总流量约 $84N$ 字节，而 cub 只需 $8N$。
-work 统计的是加法次数，但 GPU 上的成本是字节数和同步次数。
-\par\textbf{常见错答}：「Blelloch 是 work-efficient 的，所以在 GPU 上已经最优。」work-efficient 只说明加法次数少，不说明访存次数少。
+因为 GPU 上的成本是字节数和同步次数，而不是加法次数。naive 的 launch 数为 $2\log_2 m$（$2^{28}$ 时 56 次）；更要紧的是深层的跨步访问，每个线程只用 4 字节却要搬 32 字节的 sector，
+总流量约 $84N$ 字节，而 cub 只要 $8N$。
+\par 常见的错答是「Blelloch 是 work-efficient 的，所以在 GPU 上已经最优」。work-efficient 只说明加法少，不说明访存少。
 \end{iqbox}
 
 \begin{iqbox}{cub 的单遍 scan 是怎么做到只读写一遍的？}
-\textbf{答}：采用 decoupled look-back\cite{merrill2016}。每个 tile 扫完自己的数据后，先发布本块的局部和（状态 A），再查看前面的 tile：如果遇到已经发布全局前缀的 tile（状态 P）就停止，否则累加它们的局部和。
-这样块间的依赖通过 L2 中的状态字解决，不需要第二次 launch，也不需要把数据再读一遍。实测 $2^{28}$ 时 1.41 ms，与 $8N/1.52$ TB/s 的预测一致。
-\par\textbf{常见错答}：「每个块等前一个块算完再开始。」这是串行链，look-back 的作用就是避免这种等待。
+靠 decoupled look-back\cite{merrill2016}。每个 tile 扫完自己的数据后，先发布本块的局部和（状态 A），再往前看：遇到已经发布全局前缀的 tile（状态 P）就停下，否则累加前面各块的局部和。
+这样块间依赖通过 L2 里的状态字解决，既不需要第二次 launch，也不需要把数据再读一遍。实测 $2^{28}$ 时 1.41 ms，与 $8N/1.52$ TB/s 的预测一致。
+\par 常见的错答是「每个块等前一个块算完再开始」。那是一条串行链，look-back 正是为了避免这种等待。
 \end{iqbox}
 
 \begin{iqbox}{为什么 bank-conflict padding 有用？代价是什么？}
-\textbf{答}：up-sweep 第 $d$ 层的访问步长是 $2^{d+1}$，步长为 32 的倍数时一个 warp 的访问落在同一个 bank 上，访问被串行化。每 32 个元素插 1 个空位（\texttt{i + (i>>5)}）可以把这些访问错开到不同 bank。
-实测 $2^{24}$ 时从 146.9 降到 112.1\,$\mu$s。代价是每块多用 1/32 的 shared memory（1024 元素多 32 个 int），以及每次访问多一次移位加法。
-\par\textbf{常见错答}：「padding 是为了对齐。」它的目的是打乱 bank 映射，与对齐无关。
+因为 up-sweep 第 $d$ 层的访问步长是 $2^{d+1}$，步长为 32 的倍数时，一个 warp 的访问全落在同一个 bank 上，只能串行。每 32 个元素插 1 个空位（\texttt{i + (i>>5)}），就能把这些访问错开到不同的 bank。
+实测 $2^{24}$ 时从 146.9 降到 112.1\,$\mu$s。代价是每块多用 1/32 的 shared memory（1024 个元素多 32 个 int），以及每次访问多一次移位和加法。
+\par 常见的错答是「padding 是为了对齐」。它的目的是打乱 bank 映射，与对齐无关。
 \end{iqbox}
 
 \begin{iqbox}{为什么不对 (tile, circle) 对做全局排序也能保序？你的实现里为什么又用了 radix sort？}
-\textbf{答}：保序需要的是：在每个 tile 内，圆按下标递增排列。按圆的下标做 exclusive scan 得到偏移，emit 出来的数组就已经按圆排好；之后只要做一次\emph{稳定}的按 tile 分组。
-可以用稳定的 radix sort，只排 $\lceil\log_2\#\text{tiles}\rceil$ 位；也可以在 tile 内按圆分块，对命中标志做 scan 压缩（blockscan 就是这样做的），完全不需要排序。
-稳定性是关键：如果用不稳定的排序，同一 tile 内的顺序会被打乱，图像就会出错。
-\par\textbf{常见错答}：「按 (tile, depth) 排序。」CS149 的场景没有给出可比较的深度值，顺序就是输入下标。
+保序只要求每个 tile 内的圆按下标递增排列。按圆的下标做 exclusive scan 得到偏移，emit 出来的数组本来就按圆排好了，之后只需要一次\emph{稳定}的按 tile 分组。
+分组可以用稳定的 radix sort，只排 $\lceil\log_2\#\text{tiles}\rceil$ 位；也可以在 tile 内按圆分块、对命中标志做 scan 压缩（blockscan 就是这样），完全不用排序。
+无论哪种，稳定性都不能丢：用不稳定的排序，同一 tile 内的顺序会被打乱，图像就会出错。
+\par 常见的错答是「按 (tile, depth) 排序」。CS149 的场景没有给出可比较的深度值，顺序就是输入下标。
 \end{iqbox}
 
 \begin{iqbox}{tile 大小怎么选？}
-\textbf{答}：(tile, circle) 对的数量约为 $N(1+2r/T)^2$，tile 越小越多；每像素的列表长度约为 $c(1+2r/T)^2$，覆盖数 $c$ 固定时，tile 越大列表越长，因为包围盒被放大的部分越多。
-对半径约 1 像素的 micro2M，$T=8$ 最快，$T=32$ 慢 6.2 倍；对大圆场景，$T=32$ 最快。另外，$T=32$ 对应 1024 线程的 block，每个 SM 只能放一个，occupancy 上限为 0.67。本测试集中 $T=16$ 是最稳妥的默认值。
-\par\textbf{常见错答}：「tile 越小，并行度越高，就越快。」tile 越小，分桶的对数和排序开销都在增加。
+按圆的半径选：圆小用小 tile，圆大用大 tile。(tile, circle) 对的数量约为 $N(1+2r/T)^2$，tile 越小越多；每像素的列表长度约为 $c(1+2r/T)^2$，覆盖数 $c$ 固定时，tile 越大，包围盒被放大的部分越多，列表就越长。
+半径约 1 像素的 micro2M 在 $T=8$ 时最快，$T=32$ 慢 6.2 倍；大圆场景则是 $T=32$ 最快。另外，$T=32$ 对应 1024 线程的 block，每个 SM 只能放一个，occupancy 上限为 0.67。在本测试集中，$T=16$ 是最稳妥的默认值。
+\par 常见的错答是「tile 越小，并行度越高，就越快」。tile 越小，分桶的对数和排序开销都会增加。
 \end{iqbox}
 
 \begin{iqbox}{小数组的 scan 为什么不该放在 GPU 上？}
-\textbf{答}：GPU 上每次 launch 约 2\,$\mu$s，加上同步约 6\,$\mu$s。$N=1000$ 时最快的 GPU 版本也要 4.4\,$\mu$s，而 CPU 顺序扫描 1000 个 int 只需几百纳秒。
-GPU 有吞吐优势，但单次调用的延迟更高，这类小工作量应该在 CPU 上做，或者合并成一个大 kernel（kernel fusion、persistent kernel）。
-\par\textbf{常见错答}：「thrust 很快，可以随便调用。」thrust 每次调用都要分配临时缓冲区，$N=1000$ 时用了 12.3\,$\mu$s，是最慢的之一。
+因为 GPU 的单次调用延迟太高。每次 launch 约 2\,$\mu$s，加上同步约 6\,$\mu$s；$N=1000$ 时最快的 GPU 版本也要 4.4\,$\mu$s，而 CPU 顺序扫描 1000 个 int 只需几百纳秒。
+GPU 的优势在吞吐，这类小工作量应该留在 CPU 上做，或者合并进一个大 kernel（kernel fusion、persistent kernel）。
+\par 常见的错答是「thrust 很快，可以随便调用」。thrust 每次调用都要分配临时缓冲区，$N=1000$ 时用了 12.3\,$\mu$s，是最慢的之一。
 \end{iqbox}
 
 \begin{iqbox}{find\_repeats 为什么比 thrust::copy\_if 慢 6.6 倍？怎么改？}
-\textbf{答}：我的实现分三遍（flags、scan、scatter），scan 本身又是两遍，总流量约 $32N$ 字节，按 1.87 ms 算已经是 1.71 TB/s，接近带宽上限。
-copy\_if 把谓词计算、scan 和压缩合并在一个 kernel 中，只读一遍 $a$。改进方法是融合：在 scan 的 tile 内部直接计算谓词，并在 look-back 得到块前缀后立刻 scatter。
-\par\textbf{常见错答}：「scan 部分写得不够快。」实际上每个阶段都已经接近带宽上限，问题在于遍数。
+因为遍数多。我的实现分三遍（flags、scan、scatter），scan 本身又是两遍，总流量约 $32N$ 字节，按 1.87 ms 算已经是 1.71 TB/s，贴近带宽上限；
+copy\_if 把谓词计算、scan 和压缩合在一个 kernel 里，只读一遍 $a$。改进方法是融合：在 scan 的 tile 内部直接计算谓词，look-back 拿到块前缀之后立刻 scatter。
+\par 常见的错答是「scan 部分写得不够快」。实际上每个阶段都已经接近带宽上限，问题出在遍数。
 \end{iqbox}
 
 \begin{iqbox}{这个渲染器和 3D Gaussian Splatting 的光栅化有什么关系？}
-\textbf{答}：思路相同\cite{kerbl2023}：每个 Gaussian 先计算覆盖哪些 $16\times16$ tile，生成 (tile$|$depth, id) 键值对，用 radix sort 排序，再对每个 tile 用一个 block 按顺序做 $\alpha$ 混合，
-并用 shared memory 分批取数据。区别在于 3DGS 按深度而不是输入下标排序，并且在累计透明度足够低时提前终止。本实验中的 tile 大小权衡和分桶开销占比，在 3DGS 中同样存在。
-\par\textbf{常见错答}：「3DGS 用的是硬件光栅化。」它用的是 CUDA 实现的 tile 软件光栅化，与本实验的 binned\_smem 是同一类方法。
+思路是同一套\cite{kerbl2023}：每个 Gaussian 先算出覆盖哪些 $16\times16$ tile，生成 (tile$|$depth, id) 键值对，用 radix sort 排序，再让每个 tile 用一个 block 按顺序做 $\alpha$ 混合，
+并用 shared memory 分批取数据。区别在于 3DGS 按深度而不是输入下标排序，并且累计透明度足够低时会提前终止。本实验里的 tile 大小权衡和分桶开销占比，在 3DGS 中同样存在。
+\par 常见的错答是「3DGS 用的是硬件光栅化」。它用的是 CUDA 实现的 tile 软件光栅化，与本实验的 binned\_smem 属于同一类方法。
 \end{iqbox}
 
 %=====================================================================
 \section{局限}
 
+下面这些限制决定了哪些结论可以外推、哪些不能。
+
 \begin{caveatbox}
 \begin{itemize}
-\item \textbf{没有 ncu 数据。} 容器没有性能计数器权限（\texttt{ERR\_NVGPUCTRPERM}），所以没有实测的 achieved occupancy、DRAM 吞吐和 bank conflict 次数。文中的 occupancy 是 API 给出的理论值，
-DRAM 流量是根据访存模式推算的字节数。padding 消除 bank conflict 的结论只有时间上的证据。
-\item \textbf{不能推出「GPU 渲染比 CPU 快 712 倍」具有普遍性。} CPU 参考是单线程、未向量化的 C++；用 16 核加 SIMD 的 CPU 实现，差距会缩小一到两个数量级。
-\item \textbf{场景是「类似官方」，不是官方场景。} 官方 starter 的场景文件和雪花颜色表无法离线获得，本文的场景参数是自己定义的（\cref{tab:scenes}），时间不能直接与课程排行榜比较。
-\item \textbf{snow 场景不是逐位相等。} 误差为 $2.98\times10^{-7}$，来自 device 端 \texttt{expf} 与 glibc 实现的差异；其余场景依赖 \texttt{-fmad=false}，打开 FMA 后会有 ULP 级的差别。
-\item \textbf{L2 效应。} $N=2^{20}$–$2^{24}$ 的带宽数字（如 SAXPY 4759 GB/s）是 L2 带宽，不能当作显存带宽引用。
-\item \textbf{分桶时间包含 D2H 同步。} 读取 pairs 总数需要两次 4 字节 D2H，这是本实现的选择；预分配上界或使用 CUDA graph 可以去掉，所以小场景的分桶时间（约 0.05 ms）偏高。
-\item \textbf{只有一块 GPU、一次运行。} 每个点是 5--50 次重复的中位数，没有报告方差；与其他用户共享机器时，通过 GPU 锁保证独占，但 CPU 和 PCIe 的状态无法完全控制。
+\item 没有 ncu 数据。容器没有性能计数器权限（\texttt{ERR\_NVGPUCTRPERM}），所以没有实测的 achieved occupancy、DRAM 吞吐和 bank conflict 次数。文中的 occupancy 是 API 给出的理论值，
+DRAM 流量是根据访存模式推算的字节数，padding 消除 bank conflict 的结论只有时间上的证据。
+\item 不能推出「GPU 渲染比 CPU 快 712 倍」具有普遍性。CPU 参考是单线程、未向量化的 C++；换成 16 核加 SIMD 的 CPU 实现，差距会缩小一到两个数量级。
+\item 场景只是「类似官方」，不是官方场景。官方 starter 的场景文件和雪花颜色表无法离线获得，本文的场景参数是自己定义的（\cref{tab:scenes}），时间不能直接与课程排行榜比较。
+\item snow 场景不是逐位相等。误差为 $2.98\times10^{-7}$，来自 device 端 \texttt{expf} 与 glibc 实现的差异；其余场景依赖 \texttt{-fmad=false}，打开 FMA 后会有 ULP 级的差别。
+\item L2 效应。$N=2^{20}$–$2^{24}$ 的带宽数字（如 SAXPY 的 4759 GB/s）是 L2 带宽，不能当作显存带宽引用。
+\item 分桶时间包含 D2H 同步。读取 pairs 总数需要两次 4 字节 D2H，这是本实现的选择；预分配上界或使用 CUDA graph 可以去掉它，所以小场景的分桶时间（约 0.05 ms）偏高。
+\item 只有一块 GPU、一次运行。每个点是 5--50 次重复的中位数，没有报告方差；与其他用户共享机器时，GPU 锁保证了独占，但 CPU 和 PCIe 的状态无法完全控制。
 \end{itemize}
 \end{caveatbox}
 
 %=====================================================================
 \section{结论}
 
+回到开头的三个问题，读者可以带走这几点：
+
 \begin{enumerate}
-\item \textbf{SAXPY}：kernel 1578 GB/s（88\% 峰值），端到端 pinned 53.8、pageable 10.5、streams 77.1 GB/s；kernel 只占端到端时间的 3.4\%。访存受限的 kernel，瓶颈在 PCIe。
-\item \textbf{scan}：六种实现在 19 个规模（包括非 2 的幂）上全部正确。大规模下的速度取决于访存遍数（$84N$、$16N$、$8N$ 字节），三类实现折算后都在约 1.52 TB/s；小规模下由 launch 数决定，每次约 2\,$\mu$s。
+\item SAXPY 的 kernel 跑到 1578 GB/s（88\% 峰值），端到端却只有 pinned 53.8、pageable 10.5、streams 77.1 GB/s，kernel 只占端到端时间的 3.4\%。访存受限的 kernel，瓶颈在 PCIe。
+\item 六种 scan 在 19 个规模（包括非 2 的幂）上全部正确。大规模下的速度由访存遍数决定（$84N$、$16N$、$8N$ 字节），三类实现折算后都在约 1.52 TB/s；小规模下由 launch 数决定，每次约 2\,$\mu$s。
 naive 补齐到 2 的幂的代价在 $10^8$ 时为 1.37 倍。
-\item \textbf{find\_repeats}：自写的三遍版本在 $10^8$ 时 1.87 ms，比单遍的 thrust::copy\_if 慢 6.6 倍。差距来自访存遍数，可以通过 kernel 融合消除。
-\item \textbf{渲染器}：starter 式 kernel 在除 rgb 外的 8 个场景中 48.5\%--100\% 像素出错（rgb 24.3\%），且多数场景结果不可复现；四个正确阶段全部与 CPU 参考逐位一致。分桶使测试次数减少约 1640 倍，shared memory 批量取圆再带来 1.3--2.1 倍；
-$T=16$ 是稳妥的默认值，圆很小时用 $T=8$；$N\lesssim5000$ 时 blockscan（单次 launch）更快。
+\item 自写的三遍 \texttt{find\_repeats} 在 $10^8$ 时用 1.87 ms，比单遍的 thrust::copy\_if 慢 6.6 倍。差距来自访存遍数，可以靠 kernel 融合消除。
+\item 渲染器方面，starter 式 kernel 在除 rgb 外的 8 个场景中有 48.5\%--100\% 的像素出错（rgb 为 24.3\%），且多数场景结果不可复现；四个正确阶段全部与 CPU 参考逐位一致。
+分桶让测试次数减少约 1640 倍，shared memory 批量取圆再带来 1.3--2.1 倍。$T=16$ 是稳妥的默认值，圆很小时用 $T=8$；$N\lesssim5000$ 时，单次 launch 的 blockscan 更快。
 \end{enumerate}
 
 \begin{thebibliography}{99}

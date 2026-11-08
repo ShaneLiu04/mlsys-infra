@@ -1,6 +1,7 @@
 # 资料索引
 
-只放链接，不转载内容。访问日期 2026-10-28。
+这里只放链接，不转载内容，访问日期 2026-10-28。如果只能挑一份课外读物，我推荐下面「书与长文」里的 How to Scale Your Model：
+它把 roofline、分片和通信估算讲得最系统，和这个仓库的白板估算是同一套思路。
 
 ## 三门课
 
@@ -23,8 +24,7 @@
 | Stanford CS336 Language Modeling from Scratch | 从零训练 LM，含 Triton kernel 和并行作业 | https://stanford-cs336.github.io/ |
 | UC Berkeley CS294 / CS267 | 分布式系统与 HPC | https://sites.google.com/lbl.gov/cs267-spr2024 |
 
-本工作区里已有的 `Stanford-CS336`、`nano-vLLM`、`nano-gpt-modern` 仓库可以和本仓库互相引用：
-CS336 补训练侧的 Triton 与并行实践，nano-vLLM 补推理引擎的真实实现。
+如果还想对照着看，CS336 补的是从零训练和 Triton，nano-vLLM 补的是一个小而完整的推理引擎。它们不在这个仓库里，这里只留课程和论文的链接。
 
 ## 书与长文
 

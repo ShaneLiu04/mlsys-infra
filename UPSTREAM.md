@@ -1,14 +1,14 @@
 # 上游材料
 
-本仓库只收录原创笔记、面试材料和个人实现。官方材料按下表的地址获取，
-`scripts/sync-upstream.ps1` 会把 starter code 克隆到 `assignments/`（只读，不修改）并记下 commit。
+这个仓库只收录我自己写的笔记、面试材料和实现。官方材料请按下表的地址获取。
+`scripts/sync-upstream.ps1` 会把 starter code 克隆到 `assignments/`（只读，不改动），并记下每个仓库的 commit。
 
 ## 状态
 
-2026-10-28 建仓时，公司网络访问 github.com 返回 407（代理认证），starter code 尚未镜像。
-三门课的大纲、日程和作业列表已从官方网站核对，写进 [CURRICULUM.md](CURRICULUM.md)。
-`solutions/` 里的实验因此是按作业要求独立实现的 CPU 版本，每个 README 的「对应官方作业」
-一节写明了与原作业的差异。
+2026-10-28 建仓时，公司网络访问 github.com 返回 407（代理要求认证），所以 starter code 至今没有镜像。
+三门课的大纲、日程和作业列表是从官方网站逐项核对的，写在 [CURRICULUM.md](CURRICULUM.md)。
+
+因为拿不到 starter，`solutions/` 里的实验都是按作业要求独立实现的。每个 README 里「对应官方作业」那一节写明了和原作业的差异。
 
 ## Stanford CS149 Parallel Computing（Fall 2024）
 

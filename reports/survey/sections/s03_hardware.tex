@@ -1,78 +1,78 @@
 \section{并行硬件与编程模型}
 \label{sec:hw}
 
-本节对应 CS149 的前半部分。我们沿着「如何把晶体管变成吞吐」这条线，依次讨论多核、SIMD、硬件多线程、
-cache coherence 与内存一致性，再把这些概念映射到 GPU 的 SIMT 模型上。面试中这一层的问题看似基础，
-但它们是回答「为什么这个 kernel 慢」的唯一依据。
+上一节的 roofline 只告诉我们「上界在哪」。一个 kernel 离上界很远时，要解释它为什么慢，就得知道硬件是怎样把晶体管变成吞吐的。
+本节对应 CS149 的前半部分，依次讨论多核、SIMD、硬件多线程、cache coherence 和内存一致性，再把这些概念对应到 GPU 的 SIMT 模型上。
+这一层的面试题看起来很基础，但回答「这个 kernel 为什么慢」时，能依靠的只有这些知识。
 
 \subsection{多核、SIMD 与硬件多线程}
 
-现代处理器用三种正交的手段提高吞吐~\cite{hennessy2019golden}：（1）\textbf{多核}，复制整个取指--执行流水线；
-（2）\textbf{SIMD}，一条指令驱动 $W$ 个 ALU（AVX2 为 8 个 fp32 lane，AVX-512 为 16 个），把取指译码开销摊到 $W$ 个数据上；
-（3）\textbf{硬件多线程}（SMT），在一个核上保存多个线程的上下文，一个线程等待内存时切换到另一个线程。
-三者分别利用了任务并行、数据并行与延迟隐藏。GPU 把三者推到极致：H100 有 132 个 SM，每个 SM 同时驻留最多 64 个 warp，
-每个 warp 32 个线程以 SIMT 方式执行~\cite{lindholm2008tesla,nickolls2008cuda}。
+现代处理器用三种相互独立的手段提高吞吐~\cite{hennessy2019golden}。第一种是多核，把整条取指--执行流水线复制多份，利用任务并行。
+第二种是 SIMD，一条指令同时驱动 $W$ 个 ALU（AVX2 是 8 个 fp32 lane，AVX-512 是 16 个），取指和译码的开销因此摊到 $W$ 个数据上，利用的是数据并行。
+第三种是硬件多线程（SMT），一个核上保存多个线程的上下文，某个线程等内存时就切换到另一个，用来隐藏延迟。
+GPU 把这三种手段都推到了极致：H100 有 132 个 SM，每个 SM 最多同时驻留 64 个 warp，每个 warp 的 32 个线程以 SIMT 方式一起执行~\cite{lindholm2008tesla,nickolls2008cuda}。
 
-\textbf{SIMD 发散}（divergence）是数据并行的主要效率损失。一组 $W$ 个 lane 必须执行到组内最慢的 lane 结束，因此利用率为
+数据并行最主要的效率损失来自 SIMD 发散（divergence）。一组 $W$ 个 lane 必须一起等到组内最慢的 lane 做完，所以利用率是
 \begin{equation}
 U = \frac{\sum_{i} w_i}{W\cdot \max_{i\in\text{gang}} w_i},
 \end{equation}
-其中 $w_i$ 为第 $i$ 个 lane 的有效迭代数。\lab{CS149 A1}的模拟显示，每个 8 宽 gang 中只要有一条慢 lane，
-利用率就跌到 0.163（加速 1.30 倍而非 8 倍）；在 numpy 中实测，掩码执行在「每 16 个元素有 1 个慢元素」的输入上与全部都慢的输入
-一样贵（353 对 356~ns/元素），先压缩活跃集合后降到 29~ns。GPU 的 warp 发散与此完全同构，工程解法是按工作量排序或分桶，
-让同一个 warp 内线程的工作量接近，或者改为持续从队列拉取工作的 persistent kernel。
+其中 $w_i$ 是第 $i$ 个 lane 的有效迭代数。这个代价可以非常大。\lab{CS149 A1}的模拟显示，每个 8 宽的 gang 里只要有一条慢 lane，
+利用率就跌到 0.163，加速只有 1.30 倍，而不是 8 倍。在 numpy 中实测也是如此：对「每 16 个元素里有 1 个慢元素」的输入，
+掩码执行和「全部元素都慢」一样贵（353 对 356~ns/元素）；先把活跃元素压缩到一起再算，就降到了 29~ns。
+GPU 的 warp 发散和这完全是同一回事。工程上的解法是按工作量排序或分桶，让同一个 warp 内各线程的工作量接近；
+或者改成 persistent kernel，让线程持续从队列里拉取新工作。
 
 \begin{qa}{SIMD/warp 发散的代价怎么算？if/else 只执行一个分支，为什么还有代价？}
-\ans 同一 warp 的线程共享一个程序计数器（Volta 之后有独立线程调度，但发散路径仍串行化），两个分支依次执行，
-不活跃的 lane 被掩码。代价为 $W\cdot\max w_i/\sum w_i$ 倍。工作量差异越大，代价越高。
-\wrong 「if/else 两个分支只执行一个，所以没有代价」；或者认为发散只发生在 GPU 而不发生在 CPU SIMD 上。
+\ans 因为同一个 warp 的线程共享一个程序计数器，两个分支只能先后执行，不该执行的 lane 被掩码屏蔽。
+Volta 之后有了独立线程调度，但发散的路径仍然是串行化的。代价是 $W\cdot\max w_i/\sum w_i$ 倍，lane 之间的工作量差得越多，代价越高。
+\wrong 「if/else 两个分支只执行一个，所以没有代价」；或者以为发散只发生在 GPU 上，CPU 的 SIMD 不会发散。
 \end{qa}
 
-\textbf{硬件多线程}用并发换延迟：若访存延迟为 $\ell$ 周期、每个线程两次访存之间平均有 $c$ 个周期的计算，
-则约需 $\ell/c$ 个线程才能让核保持忙碌。代价是每个线程都要占用寄存器与上下文，片上存储被分摊。
-GPU 的 occupancy（每个 SM 驻留 warp 数与上限之比）就是这件事的量化。
+硬件多线程是用并发换延迟。假设访存延迟是 $\ell$ 个周期，每个线程两次访存之间平均有 $c$ 个周期的计算，
+那么大约需要 $\ell/c$ 个线程才能让核一直有活干。代价是每个线程都要占用寄存器和上下文，片上存储被分摊得更薄。
+GPU 的 occupancy，也就是每个 SM 实际驻留的 warp 数与上限之比，就是这件事的量化指标。
 
 \subsection{Cache coherence、false sharing 与同步}
 
-多核共享内存时，每个核私有的 cache 需要一致性协议。MESI 一类基于失效的协议~\cite{papamarcos1984low} 保证单个地址上
-「写串行化」：一个核写某 cache line 前必须使其它核的副本失效。由此产生了 \textbf{false sharing}：
-两个核写同一 64 字节 cache line 上的不同变量，协议让这条 line 在两个核之间来回迁移（每次数十到上百 ns），
-表现为加线程反而变慢。修法是按 cache line 填充或让每个线程写私有副本，最后归约。
+多个核共享内存时，每个核私有的 cache 里可能有同一份数据的副本，于是需要一致性协议。MESI 一类基于失效的协议~\cite{papamarcos1984low}
+保证同一个地址上的写是串行化的：一个核要写某条 cache line，必须先让其他核的副本失效。这条规则带来了 false sharing（伪共享）：
+两个核写的是同一条 64 字节 cache line 上的不同变量，协议却会让这条 line 在两个核之间来回迁移，每次耗时数十到上百 ns。
+它的症状是线程加多了，程序反而变慢。修法是按 cache line 填充，或者让每个线程写私有副本，最后再归约。
 
-一致性（coherence）只约束单个地址；\textbf{内存一致性模型}（consistency）约束不同地址之间读写的可见顺序。
-顺序一致性（SC）~\cite{lamport1979make} 要求所有核看到同一个全局交错顺序；x86 的 TSO 允许「写后读」重排（store buffer），
-ARM 与 GPU 采用更弱的模型~\cite{adve1996shared}。程序员通过 fence 或 acquire/release 原子操作建立
-happens-before 关系。GPU 上的典型陷阱是：用一个普通标志位在 block 之间传递「数据已就绪」，没有 \texttt{\_\_threadfence()}
-时另一个 SM 可能先看到标志后看到数据。
+coherence 只管单个地址。不同地址之间的读写以什么顺序被其他核看到，由内存一致性模型（consistency）规定。
+顺序一致性（SC）~\cite{lamport1979make} 要求所有核看到同一个全局交错顺序；x86 的 TSO 允许「写后读」重排，因为写操作会先进 store buffer；
+ARM 和 GPU 采用更弱的模型~\cite{adve1996shared}。程序员需要用 fence 或 acquire/release 原子操作来建立 happens-before 关系。
+GPU 上一个典型的坑是：用一个普通标志位在 block 之间传递「数据已就绪」，如果没有 \texttt{\_\_threadfence()}，
+另一个 SM 可能先看到标志、后看到数据。
 
-无锁数据结构依赖 CAS（compare-and-swap），其经典问题是 \textbf{ABA}：线程读到栈顶 A 后被挂起，其他线程弹出 A、弹出 B、
-再压回 A，CAS 仍然成功，但 A 的 next 指针已失效。解法是带版本号的指针、hazard pointer 或 epoch 回收。
+无锁数据结构依赖 CAS（compare-and-swap），它有一个经典问题叫 ABA。线程读到栈顶是 A 之后被挂起；其他线程弹出 A、弹出 B、又把 A 压回去。
+等这个线程恢复执行，CAS 发现栈顶仍是 A，于是成功了，但 A 的 next 指针早已失效。解法有带版本号的指针、hazard pointer 和 epoch 回收。
 
 \begin{qa}{什么是 false sharing？怎么发现，怎么修？}
-\ans 不同核写同一 cache line 上的不同变量，coherence 协议使该 line 反复失效迁移。症状是线程数增加而吞吐下降，
-perf 中 HITM（命中其它核修改过的 line）事件很高。修法：按 64~B 对齐填充每线程计数器，或写线程私有副本再归约。
-\wrong 「没有共享变量就没有竞争」——竞争的单位是 cache line，不是变量。
+\ans 不同的核写同一条 cache line 上的不同变量，coherence 协议会让这条 line 反复失效、来回迁移。症状是线程数增加而吞吐下降，
+用 perf 看会发现 HITM 事件（命中了其他核修改过的 line）很高。修法是按 64~B 对齐填充每个线程的计数器，或者让每个线程写私有副本再归约。
+\wrong 「没有共享变量就没有竞争」。竞争的单位是 cache line，不是变量。
 \end{qa}
 
 \begin{qa}{x86 上一个线程写 \texttt{data=1; flag=1}，另一个线程 \texttt{while(!flag); print(data)}，一定打印 1 吗？在 ARM 或 GPU 上呢？}
-\ans x86 的 TSO 不重排「写--写」与「读--读」，所以硬件层面会打印 1，但编译器仍可能重排或把 \texttt{flag} 提到寄存器里，
-必须用 \texttt{std::atomic} 的 release/acquire。ARM 与 GPU 的弱内存模型允许写--写重排，没有 fence 时可能打印 0。
-\wrong 「有 cache coherence 就一定看到最新值」——coherence 不约束不同地址之间的顺序。
+\ans 在 x86 上，硬件层面会打印 1，因为 TSO 不重排「写--写」和「读--读」。但编译器仍可能重排这两条语句，或者把 \texttt{flag} 提到寄存器里，
+所以必须用 \texttt{std::atomic} 的 release/acquire。ARM 和 GPU 的弱内存模型允许写--写重排，没有 fence 时可能打印 0。
+\wrong 「有 cache coherence 就一定能看到最新值」。coherence 不约束不同地址之间的顺序。
 \end{qa}
 
-同步原语的选择是另一个高频题。\lab{CS149 A2}在 Python 中复刻了 CS149 的任务系统，测得 8 个空任务一次 launch：
-条件变量（sleep）线程池 38.7~\textmu s，每次新建线程 3169~\textmu s，纯自旋线程池 31--50~ms。后者在 C++ 中本应最快，
-但在 CPython 中自旋线程持有 GIL，要等 5~ms 的切换间隔才让出，空闲时还烧满 1 个核。这个实验的价值在于说明
-\emph{「spin 还是 sleep」取决于自旋者是否阻塞干活的线程}，而不是一个与平台无关的定论。
-同一实验中，异步依赖图让 48 个 9 任务的 launch 从 259~ms 降到 152~ms，接近理想比值 $2/(9/8)=1.78$
-（实测 1.71 倍），这是「填满尾部空闲」的直接证据，与 CUDA stream 和 CUDA Graph 的动机相同。
+同步原语怎么选也是高频题。\lab{CS149 A2}在 Python 中复刻了 CS149 的任务系统，测量 8 个空任务一次 launch 的开销：
+基于条件变量（sleep）的线程池是 38.7~\textmu s，每次新建线程是 3169~\textmu s，纯自旋的线程池却要 31--50~ms。
+在 C++ 里，自旋线程池本应最快。它在 CPython 里最慢，是因为自旋的线程一直持有 GIL，要等 5~ms 的切换间隔才让出，空闲时还烧满一个核。
+这个实验的价值在于说明：「spin 还是 sleep」取决于自旋的线程会不会挡住真正干活的线程，并没有一个与平台无关的标准答案。
+同一个实验里，异步依赖图让 48 个 9 任务的 launch 从 259~ms 降到 152~ms，实测 1.71 倍，接近理想比值 $2/(9/8)=1.78$。
+这说明加速来自填满了每次 launch 尾部的空闲，CUDA stream 和 CUDA Graph 的动机也是这个。
 
 \subsection{GPU 的 SIMT 编程模型}
 
-CUDA 把计算组织为 grid--block--thread 三级，block 内的线程可以通过 shared memory 通信并用 \texttt{\_\_syncthreads()} 同步，
-block 之间默认独立~\cite{nickolls2008cuda}。硬件上 block 被调度到 SM，SM 以 32 线程的 warp 为单位发射指令。
-H100 的存储层次见表~\ref{tab:gpumem}：寄存器与 shared memory 的带宽比 HBM 高一个数量级以上，延迟低一个数量级，
-所以几乎所有 GPU 优化都是把数据「搬近、复用、搬远」三步~\cite{volkov2010better,cutlass}。
+有了 CPU 上的这些概念，GPU 就好理解了。CUDA 把计算组织成 grid、block、thread 三级：同一个 block 内的线程可以通过 shared memory 通信，
+并用 \texttt{\_\_syncthreads()} 同步；不同 block 之间默认相互独立~\cite{nickolls2008cuda}。硬件上，block 被调度到 SM 上，
+SM 以 32 个线程组成的 warp 为单位发射指令。H100 的存储层次见表~\ref{tab:gpumem}。寄存器和 shared memory 的带宽比 HBM 高一个数量级以上，
+延迟低一个数量级，所以几乎所有 GPU 优化都在做同一件事：把数据搬到离计算近的地方，尽可能多地复用，再写回去~\cite{volkov2010better,cutlass}。
 
 \begin{table}[!t]
 \centering
@@ -92,60 +92,62 @@ HBM3 & 80~GB & 3.35~TB/s & $\sim$500 周期；roofline 的默认 $B$ \\
 \end{tabularx}
 \end{table}
 
-\textbf{访存合并}（coalescing）：一个 warp 的 32 个线程访问连续且对齐的地址时，硬件合并为少量 32~B/128~B 事务；
-按列访问行主序矩阵（stride 等于行宽）时每个线程一个事务，有效带宽下降一个数量级。常用的修法是借 shared memory 做转置中转。
+在这个层次结构上，有三个概念最常被问到：访存合并、bank conflict 和 occupancy。
 
-\textbf{Bank conflict}：shared memory 分为 32 个 bank、每 bank 4 字节宽。同一 warp 的线程访问同一 bank 的不同地址会被串行化。
-典型例子是 $32\times32$ 的 float 矩阵按列读取，所有线程落在同一 bank；声明为 $32\times33$（填充一列）即可错开。
-同一地址的广播不冲突。
+访存合并（coalescing）说的是 HBM 的访问方式。一个 warp 的 32 个线程如果访问连续且对齐的地址，硬件会把它们合并成少量 32~B 或 128~B 的事务。
+如果按列访问一个行主序矩阵，相邻线程的地址相差一整行，每个线程各占一个事务，有效带宽会下降一个数量级。常见的修法是借 shared memory 做一次转置中转。
+
+bank conflict 说的是 shared memory。shared memory 分成 32 个 bank，每个 bank 4 字节宽；同一个 warp 里的线程如果访问同一个 bank 的不同地址，
+这些访问会被串行化。典型例子是按列读取一个 $32\times32$ 的 float 矩阵：所有线程都落在同一个 bank 上。把它声明成 $32\times33$，多填充一列，就能错开。
+所有线程读同一个地址则不算冲突，硬件会广播。
 
 \begin{qa}{什么是 memory coalescing？给一个不合并的例子。}
-\ans 合并的单位是 warp，看的是 32 个线程地址的模式：连续对齐时一个 128~B 事务就能服务整个 warp。
-行主序矩阵按列读、结构体数组（AoS）只读一个字段、随机 gather 都不合并。修法：改数据布局（SoA）、shared memory 转置、
-或者让相邻线程处理相邻元素。
-\wrong 「同一个 block 内的访问会自动合并」；或把 coalescing 与 shared memory bank conflict 混为一谈。
+\ans 合并以 warp 为单位，看的是 32 个线程地址的排列：地址连续且对齐时，一个 128~B 事务就能服务整个 warp。
+不合并的例子有：按列读行主序矩阵、在结构体数组（AoS）里只读一个字段、随机 gather。修法是改数据布局（改成 SoA）、
+借 shared memory 转置，或者让相邻线程处理相邻元素。
+\wrong 「同一个 block 内的访问会自动合并」；或者把 coalescing 和 shared memory 的 bank conflict 混为一谈。
 \end{qa}
 
 \begin{qa}{Shared memory bank conflict 怎么产生、怎么避免？}
-\ans 同一 warp 中多个线程访问同一 bank 的\emph{不同}地址时串行化。按列访问 $32\times32$ float 矩阵是 32 路冲突；
-填充为 $32\times33$ 使第 $i$ 行第 $j$ 列落在 bank $(33i+j)\bmod 32$，冲突消失。Hopper 的 TMA 与 swizzle 布局也是为了这件事。
-\wrong 「bank conflict 发生在 global memory」；「所有线程读同一地址也冲突」（那是广播）。
+\ans 同一个 warp 中多个线程访问同一个 bank 的\emph{不同}地址时，访问会被串行化。按列访问 $32\times32$ 的 float 矩阵就是 32 路冲突。
+填充成 $32\times33$ 后，第 $i$ 行第 $j$ 列落在 bank $(33i+j)\bmod 32$，冲突就消失了。Hopper 的 TMA 和 swizzle 布局也是为了解决这件事。
+\wrong 「bank conflict 发生在 global memory」；「所有线程读同一个地址也冲突」（那是广播，不冲突）。
 \end{qa}
 
-\textbf{Occupancy} 是延迟隐藏的手段而不是目标。Volkov 的经典报告~\cite{volkov2010better} 指出，
-依靠指令级并行（ILP）和寄存器分块，低 occupancy 的 kernel 可以更快：高性能 GEMM 常让每个线程计算 $8\times8$ 以上的输出块，
-占用大量寄存器，occupancy 只有 25\% 左右，但数据复用显著更高。CUTLASS~\cite{cutlass} 的层次化分块
-（threadblock tile → warp tile → MMA tile）把这一思想系统化。
+最后是 occupancy。它是隐藏延迟的一种手段，本身并不是优化目标。Volkov 的经典报告~\cite{volkov2010better} 指出，
+靠指令级并行（ILP）和寄存器分块，低 occupancy 的 kernel 可以跑得更快。高性能 GEMM 常让每个线程算 $8\times8$ 以上的输出块，
+占用大量寄存器，occupancy 只有 25\% 左右，但数据复用率高得多。CUTLASS~\cite{cutlass} 的层次化分块把这个思路系统化了：
+先切成 threadblock tile，再切成 warp tile，最后是 MMA tile。
 
 \begin{qa}{occupancy 越高越好吗？}
-\ans 不是。occupancy 只是隐藏延迟的一种方式，另一种是 ILP 与异步拷贝。寄存器分块很重的 GEMM 和 FlashAttention
-故意降低 occupancy 换取复用。判断标准是吞吐：Nsight Compute 显示 stall 原因主要是「等待内存」时提高 occupancy 有用，
-主要是「等待 tensor core」时没用。
-\wrong 「把 occupancy 拉到 100\% 性能就最好」。
+\ans 不是。occupancy 只是隐藏延迟的一种方式，另一种方式是 ILP 和异步拷贝。寄存器分块很重的 GEMM 和 FlashAttention
+都是故意降低 occupancy 来换取复用。判断标准是吞吐：Nsight Compute 显示 stall 主要是「等内存」时，提高 occupancy 有用；
+主要是「等 tensor core」时，提高 occupancy 没用。
+\wrong 「把 occupancy 拉到 100\%，性能就最好」。
 \end{qa}
 
 \subsection{Tensor core 与 Hopper 的异步执行}
 
-Volta 引入 tensor core，每个时钟完成一个小矩阵乘加~\cite{nvidiavolta2017}；Ampere 增加 BF16/TF32 与 2:4 结构化稀疏~\cite{nvidiaa100,mishra2021accelerating}；
-Hopper 增加 FP8、TMA（Tensor Memory Accelerator，异步批量搬运张量块）、warpgroup 级的异步 MMA 指令（wgmma）
-以及 thread block cluster 与分布式 shared memory~\cite{nvidiah100}。这些特性的共同方向是：
-\emph{把搬运与计算交给不同的硬件单元异步执行}，让软件流水线（producer 负责搬运、consumer 负责计算）成为可能。
-FlashAttention-3 的 warp specialization 正是建立在这些特性之上~\cite{shah2024flashattention3}。
+GPU 的矩阵算力主要来自 tensor core，它的演进方向值得了解。Volta 引入 tensor core，每个时钟完成一个小矩阵乘加~\cite{nvidiavolta2017}；
+Ampere 增加了 BF16、TF32 和 2:4 结构化稀疏~\cite{nvidiaa100,mishra2021accelerating}；Hopper 增加了 FP8、TMA（Tensor Memory Accelerator，
+异步地批量搬运张量块）、warpgroup 级的异步 MMA 指令（wgmma），以及 thread block cluster 和分布式 shared memory~\cite{nvidiah100}。
+这些特性指向同一个方向：让搬运和计算由不同的硬件单元异步完成。这样软件就能组织成流水线，一部分 warp（producer）负责搬数据，
+另一部分（consumer）负责算。FlashAttention-3 的 warp specialization 就建立在这些特性之上~\cite{shah2024flashattention3}。
 
 \begin{keypts}
 \begin{itemize}
-\item 三种并行：多核（任务）、SIMD/SIMT（数据）、多线程（延迟隐藏）；发散的代价按组内最慢 lane 计。
-\item coherence 管单地址，consistency 管多地址顺序；false sharing 的单位是 cache line；无锁结构注意 ABA。
-\item GPU 三件事：合并访存（warp 地址模式）、bank conflict（shared memory）、occupancy（手段不是目标）。
-\item Hopper 的方向是异步：TMA 负责搬、wgmma 负责算，软件用 warp specialization 把两者流水起来。
+\item 三种并行：多核对应任务并行，SIMD/SIMT 对应数据并行，多线程用来隐藏延迟；发散的代价按组内最慢的 lane 计算。
+\item coherence 管单个地址，consistency 管多个地址之间的顺序；false sharing 的单位是 cache line；无锁结构要注意 ABA。
+\item GPU 的三件事：访存合并看 warp 的地址模式，bank conflict 发生在 shared memory，occupancy 是手段而不是目标。
+\item Hopper 的方向是异步：TMA 负责搬，wgmma 负责算，软件用 warp specialization 把两者组成流水线。
 \end{itemize}
 \end{keypts}
 
 \begin{research}
 \begin{itemize}
-\item 如何自动选择 warp specialization 的 producer/consumer 划分与流水深度？这是一个带资源约束（寄存器、shared memory）的
+\item 如何自动选择 warp specialization 中 producer 与 consumer 的划分以及流水线深度？这是一个带资源约束（寄存器、shared memory）的
 调度问题，目前多由专家手写（CUTLASS、FlashAttention-3）。
-\item 设计一个微基准，测量 H100 上 shared memory bank conflict、L2 命中与 TMA 异步拷贝对一个 tile 化 GEMM 的各自贡献；
-关键是每次只改变一个因素，并给出与 roofline 上界的差距分解。
+\item 设计一个微基准，分别测量 H100 上 shared memory bank conflict、L2 命中和 TMA 异步拷贝对一个分块 GEMM 的贡献。
+关键是每次只改变一个因素，并给出与 roofline 上界之间差距的分解。
 \end{itemize}
 \end{research}
